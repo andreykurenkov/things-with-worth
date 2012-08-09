@@ -1,0 +1,31 @@
+package edu.gatech.GradeAwesome.tests.manual;
+
+import java.awt.Color;
+
+import javax.swing.JPanel;
+
+import edu.gatech.GradeAwesome.GUI.Components.JColorableTextPane;
+
+public class JColorableTextPanelTest {
+	private JPanel testPanel;
+
+	public static void main(String[] args) {
+
+	}
+
+	public JColorableTextPanelTest() {
+		testPanel = new JPanel();
+		JColorableTextPane test=new JColorableTextPane();
+		test.addColoring("public", Color.blue);
+		test.addColoring("Test", Color.red);
+		test.append(Color.yellow, "This text should be yellow. You can inpu public, which should be blue, or test, which should be red.");
+		testPanel.add(test);
+		testPanel.setPreferredSize(new Dimension(800,600));
+
+	}
+
+	public JPanel getTestPanel() {
+		return testPanel;
+	}
+
+}

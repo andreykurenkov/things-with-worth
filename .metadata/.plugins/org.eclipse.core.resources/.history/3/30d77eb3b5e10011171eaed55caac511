@@ -1,0 +1,12 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.Color;
+import java.util.HashMap;
+
+import javax.swing.JEditorPane;
+
+//TODO
+public class JColorableEditorPane extends JEditorPane {
+	private HashMap<String, Color> coloring;
+
+}

@@ -1,0 +1,69 @@
+package com.thingswithworth.genregetter.wikiio;
+
+import info.bliki.api.Page;
+
+import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class BandWikiParser extends WikiParserNoImageSupport {
+	private final boolean DEBUG = true;
+
+	private final String[] infobox = { "name,image,genre,website" };
+
+	private BandWikiParser(Page toParse) {
+		super(toParse);
+	}
+
+	public static BandWikiParser[] getParser(String bandName) {
+		List<Page> pages = WikiParser.standardInterface.getPages(bandName);
+		if (pages.size() == 0)
+			return null;
+		BandWikiParser[] parsers = new BandWikiParser[pages.size()];
+		for (int i = 0; i < parsers.length; i++)
+			parsers[i] = new BandWikiParser(pages.get(i));
+		return parsers;
+	}
+
+	@Override
+	public String[] infoboxSupport() {
+		return infobox;
+	}
+
+	@Override
+	public Object[] getInfoboxInfo(String forType) {
+		if (Arrays.asList(infobox).contains(forType)) {
+			if (forType.equals("genre"))
+				return getGenres();
+		}
+		return null;
+	}
+
+	public Image getInfoboxImage() {
+		return null;
+	}
+
+	public String[] getGenres() {
+		if (DEBUG)
+			System.out.println("Start BandWikiParser;getGenres() : ");
+		String infobox = this.getInfobox();
+		int start = infobox.indexOf(" genre ");
+		if (start < 0) {
+			if (DEBUG)
+				System.err.println("BandWikiParser;getGenres() error: no genre information");
+			return null;
+		}
+		int end = infobox.indexOf("\n", start + 1);
+		String searchIn = infobox.substring(start, end);
+		searchIn.replaceAll("<ref>(.*)</ref>", "ignore");
+		start = searchIn.indexOf("[[", start + 1);
+		ArrayList<String> genres = new ArrayList<String>();
+		while (start < searchIn.length() && start > 0) {
+			end = searchIn.indexOf("]]", start + 1);
+			genres.add(searchIn.substring(start + 2, end));
+			start = searchIn.indexOf("[[", start + 1);
+		}
+		return genres.toArray(new String[genres.size()]);
+	}
+}

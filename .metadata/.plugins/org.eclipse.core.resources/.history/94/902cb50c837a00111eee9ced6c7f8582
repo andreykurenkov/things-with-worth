@@ -1,0 +1,476 @@
+package edu.gatech.fiveminutesleft;
+
+import java.util.LinkedList;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+import edu.gatech.fiveminutesleft.model.TaskList;
+
+/**
+ * The GUI view for a TaskList. Displays the names of given tasks and allows to add, remove, or edit
+ * tasks.
+ * 
+ * @author Garret Malmquist, Andrey Kurenkov, Nick Johnson
+ */
+public class TaskListActivity extends Activity {
+
+	/**
+	 * Launch method to be used by other Activities to transition into this activity.
+	 * 
+	 * @param source
+	 *            the Activity that called launch
+	 * @param TaskList
+	 *            the TaskList for which to display Tasks
+	 */
+	public static void launch(Activity source, TaskList list) {
+		Intent n = new Intent(source, TaskListActivity.class);
+		GUISpace.put(TaskListActivity.class, "list", list);
+		GUISpace.put(TaskListActivity.class, "filter", new FilterWrapper(TaskFilter.FILTER_ALL));
+		source.startActivity(n);
+	}
+
+	// Variables that allow for dynamically growing and scrollable lists
+	private ListView			listView;
+	private TaskListAdapter		adapter		= new TaskListAdapter(this);
+	// Holds actual representation of tasks
+	private LinkedList<GUITask>	guiTaskList	= new LinkedList<GUITask>();
+	private Button				addTaskButton;
+
+	/**
+	 * Standard Android method. Called when Activity gets launched without already being in stopped
+	 * or paused state. Initializes the activity. Sets up the layout and listView.
+	 */
+	@Override
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		Log.d("TaskListActivity.onCreate", "TaskListActivity Created");
+		setContentView(R.layout.task_list);
+		if (GUISpace.has(getClass(), "list"))
+			setTitle(((TaskList) GUISpace.get(getClass(), "list")).getName());
+
+		listView = (ListView) findViewById(R.id.taskListView);
+		listView.setAdapter(adapter);
+		addTaskButton = (Button) findViewById(R.id.addTaskButton);
+
+		reloadTasks();
+	}
+
+	private String[] getCategoryList(boolean includeDefaults) {
+		LinkedList<String> cats = new LinkedList<String>();
+		if (includeDefaults) {
+			cats.add("personal");
+			cats.add("school");
+			cats.add("work");
+		}
+		TaskList list = getList();
+		for (Task t : list) {
+			String tags = t.getTags();
+			if (tags == null || tags.length() == 0)
+				continue;
+			String[] tagsA = tags.split(",");
+			for (String s : tagsA) {
+				if (s == null)
+					continue;
+				s = s.trim();
+				if (!cats.contains(s))
+					cats.add(s);
+			}
+		}
+
+		String[] result = new String[cats.size()];
+		int size = cats.size();
+		for (int i = 0; i < size; i++) {
+			result[i] = cats.pop();
+		}
+		return result;
+	}
+
+	private TaskList getList() {
+		return (TaskList) GUISpace.get(getClass(), "list");
+	}
+
+	private void reloadTasks() {
+		guiTaskList.clear();
+		TaskFilter filter = ((FilterWrapper) GUISpace.get(getClass(), "filter")).getFilter();
+		TaskList list = getList();
+		for (int i = 0; i < list.size(); i++) {
+			Task t = list.getTask(i);
+			Log.d("TaskListActivity.onStart", "loading task " + t.getName());
+			if (!filter.accept(t))
+				continue;
+			if (GUISpace.getBoolean(getClass(), "hidecompleted") && t.getCompleted().equals("true"))
+				continue;
+			GUITask task = new GUITask(this, t);
+			task.loadFields();
+			guiTaskList.addFirst(task);
+		}
+		adapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * Standard Android method. Called when this activity becomes displayed after being stopped or
+	 * paused. Loads gui elements to display correct info.
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		Log.d("TaskListActivity.onStart", "TaskListActivity Started");
+		addTaskButton.setText(R.string.add_task);
+		for (GUITask task : guiTaskList)
+			task.loadFields();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		reloadTasks();
+	}
+
+	/**
+	 * Creates a new model Task and adds it to the model TaskList being displayed in this Activity
+	 * 
+	 * @param name
+	 *            the name of the new task
+	 * @return the new Task created
+	 */
+	private Task getNewTask(String name) {
+		Task t = new Task();
+		getList().addFirst(t);
+		t.setName(name);
+		return t;
+	}
+
+	/**
+	 * Removes a GUITask from the currently displaying tasks.
+	 * 
+	 * @param task
+	 *            the GUITask to remove
+	 */
+	private void removeTask(GUITask task) {
+		finishEditing(task);
+		getList().remove(task.getTask());
+		guiTaskList.remove(task);
+		adapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * Handles displaying the delete confirmation question after a user clicks the delete button for
+	 * a Task.
+	 * 
+	 * @param task
+	 *            The task to delete
+	 */
+	private void showDeleteBox(final GUITask task) {
+		final AlertDialog.Builder b = new AlertDialog.Builder(this);
+		b.setTitle("Confirm Delete");
+		b.setMessage("Area you sure you want to delete this task?");
+
+		b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				removeTask(task);
+			}
+		});
+
+		b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+
+			}
+		});
+
+		b.show();
+	}
+
+	/**
+	 * Called when user clicks the physical Menu button. Look at task_list_menu.xml in res for what
+	 * is displayed.
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.task_list_menu, menu);
+		return true;
+	}
+
+	/**
+	 * Clear out any remaining persistent data when this task is done.
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.FilterTasksCompleted:
+				if (GUISpace.toggle(getClass(), "hidecompleted")) {
+					// We're now hiding completed items
+					item.setTitle("Show Completed");
+				} else {
+					// We're now showing completed items
+					item.setTitle("Hide Completed");
+				}
+				finishEditing();
+				reloadTasks();
+				return true;
+			case R.id.FilterTasksAdvanced:
+				FilteringActivity.launch(this, getCategoryList(false), (FilterWrapper) GUISpace.get(getClass(), "filter"));
+				return true;
+			case R.id.DeleteCompletedTasks:
+				deleteCompleted();
+				return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+	/**
+	 * Transition method from GUITask being edited to just being viewed
+	 * 
+	 * @param task
+	 *            the GUITask to return to viewing mode.
+	 */
+	private void finishEditing(GUITask task) {
+		task.finishEditing();
+		addTaskButton.setText(R.string.add_task);
+		adapter.notifyDataSetChanged();
+	}
+
+	private boolean deleteCompleted() {
+		boolean anyWereDeleted = false;
+		LinkedList<GUITask> removeStack = new LinkedList<GUITask>();
+		for (GUITask t : guiTaskList) {
+			if (t.isCompleted()) {
+				removeStack.push(t);
+				anyWereDeleted = true;
+			}
+		}
+		for (GUITask gt : removeStack)
+			removeTask(gt);
+
+		adapter.notifyDataSetChanged();
+
+		return anyWereDeleted;
+	}
+
+	/**
+	 * Transition method from viewing a task to editing it.
+	 * 
+	 * @param task
+	 *            the GUITask to start editing
+	 */
+	private void startEditing(GUITask task) {
+		addTaskButton.setText(R.string.add_task_done);
+		task.setEditing(true);
+		adapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * onClick method for addTask button. Add a new empty GUITask to the displayed list and
+	 * associate it with an empty model Task.
+	 * 
+	 * @param view
+	 *            Button that was clicked to call this method.
+	 */
+	public void addTask(View view) {
+		if (!finishEditing()) {
+			Log.d("TaskListActivity", "New Text Clicked");
+
+			GUITask task = new GUITask(this, getNewTask(""));
+			guiTaskList.addFirst(task);
+			startEditing(task);
+		}
+	}
+
+	/**
+	 * Finish editing any tasks that are being edited and delete any tasks that are empty.
+	 * 
+	 * @return true if there were any tasks that were being edited
+	 */
+	private boolean finishEditing() {
+		boolean anyWereEditing = false;
+
+		LinkedList<GUITask> removeStack = new LinkedList<GUITask>();
+		for (GUITask t : guiTaskList) {
+			if (t.isEditing()) {
+				finishEditing(t);
+				if (t.isEmpty())
+					removeStack.push(t);
+				anyWereEditing = true;
+			}
+		}
+		for (GUITask gt : removeStack)
+			removeTask(gt);
+
+		adapter.notifyDataSetChanged();
+
+		return anyWereEditing;
+	}
+
+	/**
+	 * Called when user presses the back button. Currently has default behavior.
+	 */
+	@Override
+	public void onBackPressed() {
+		if (!finishEditing()) {
+			super.onBackPressed();
+		}
+	}
+
+	/**
+	 * Transition method from viewing a list of the names of Tasks to the specific internal
+	 * information of a task.
+	 * 
+	 * @param guiTask
+	 *            the task to view more info for
+	 */
+	private void showMoreInfo(GUITask guiTask) {
+		Task task = null;
+
+		for (Task t : getList()) {
+			if (t.getName().equals(guiTask.getText())) {
+				task = t;
+				break;
+			}
+		}
+
+		if (task == null)
+			return;
+		if (guiTask.isEditing()) {
+			TaskEditActivity.launch(this, task, getCategoryList(true));
+		} else
+			TaskViewActivity.launch(this, task, getCategoryList(true));
+
+		adapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * Class that handles the expandable view of tasks.
+	 * 
+	 * @author Garrett Malmquist
+	 */
+	class TaskListAdapter extends BaseAdapter {
+		private Context	context;
+
+		public TaskListAdapter(Context c) {
+			this.context = c;
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the amount of items to display, which is
+		 * the amount of TaskLists stored by the used AccountLists.
+		 */
+		public int getCount() {
+			return guiTaskList.size();
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the item displayed at the given index.
+		 * 
+		 * @param i
+		 *            the index of the item to be retrieved
+		 */
+		public Object getItem(int position) {
+			return guiTaskList.get(position);
+		}
+
+		/**
+		 * Return a unique id for the item displayed at that position. This id should remain the
+		 * same even as the item changed positions within the display.
+		 * 
+		 * @param position
+		 *            the hashcode of the item at the given index
+		 */
+		public long getItemId(int position) {
+			return guiTaskList.get(position).getId();
+		}
+
+		/**
+		 * Standard Android method for Adapter. Called whenever any visual element being displayed
+		 * is changed. Returns the View or Edit layout as appropriate for the TaskList with the
+		 * given index position.
+		 * 
+		 * @param position
+		 *            the position of the displayed item in the display
+		 * @param convert
+		 *            a possibly reusable old view
+		 * @param parent
+		 *            The parent that this view will eventually be attached to
+		 */
+		public View getView(int position, View convertView, ViewGroup parent) {
+			LinearLayout itemLayout;
+			final GUITask task = guiTaskList.get(position);
+
+			itemLayout = task.getLayout(context, convertView, parent);
+
+			task.setCompletedListener(new ContentListener() {
+				public void dataChanged(String string) {
+					reloadTasks();
+				}
+			});
+
+			if (!task.isEditing()) {
+				View editButton = null;
+				if ((editButton = itemLayout.findViewById(R.id.TaskEdit)) != null) {
+					editButton.setOnClickListener(new OnClickListener() {
+						public void onClick(View v) {
+							if (!task.isEditing()) {
+								finishEditing();
+								startEditing(task);
+							}
+						}
+					});
+
+				}
+
+				View taskBody = itemLayout.findViewById(R.id.TaskBody);
+				taskBody.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						showMoreInfo(task);
+					}
+				});
+			} else {
+				View deleteButton = null;
+				if ((deleteButton = itemLayout.findViewById(R.id.TaskDelete)) != null) {
+					deleteButton.setOnClickListener(new OnClickListener() {
+						public void onClick(View v) {
+							showDeleteBox(task);
+						}
+					});
+				}
+			}
+
+			View moreButton = itemLayout.findViewById(R.id.TaskArrow);
+			moreButton.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					showMoreInfo(task);
+				}
+			});
+
+			task.loadFields();
+
+			return itemLayout;
+
+		}
+	}
+}

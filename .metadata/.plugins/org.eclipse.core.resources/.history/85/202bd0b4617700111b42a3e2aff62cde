@@ -1,0 +1,93 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="5dip" >
+
+        <TextView
+            android:id="@+id/SettingsNameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name: " />
+
+        <EditText
+            android:id="@+id/SettingsName"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="Name Nameson" />
+
+        <TextView
+            android:id="@+id/SettingsUsernameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username: " />
+
+        <EditText
+            android:id="@+id/SettingsUsername"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="Username" />
+
+        <TextView
+            android:id="@+id/SettingsEmailLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email: " />
+
+        <EditText
+            android:id="@+id/SettingsEmail"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text="Email" />
+
+        <TextView
+            android:id="@+id/SettingsPasswordLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Password: " />
+
+        <Button
+            android:id="@+id/SettingsPassword"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:onClick="changePassword"
+            android:text="Change Password" />
+
+        <TextView
+            android:id="@+id/SettingsStatus"
+            android:layout_width="fill_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/todo_error" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="cancel"
+                android:text="Cancel" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="save"
+                android:text="Save" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

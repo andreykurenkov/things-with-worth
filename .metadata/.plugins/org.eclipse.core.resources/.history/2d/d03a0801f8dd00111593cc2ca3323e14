@@ -1,0 +1,5 @@
+package com.thingswithworth.genregetter.io;
+
+public class WikiInterface {
+
+}

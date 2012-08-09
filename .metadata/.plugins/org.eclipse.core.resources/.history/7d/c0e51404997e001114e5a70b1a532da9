@@ -1,0 +1,148 @@
+package edu.gatech.fiveminutesleft.model;
+
+/**
+ * This class manages parsing for the Repeat field in Task. It's mostly used by the GUI as things
+ * stand.
+ * 
+ * @author g
+ */
+public class TaskRepeat {
+
+	public static final int			REPEAT_NEVER	= 0;
+	public static final int			REPEAT_DAYS		= 1;
+	public static final int			REPEAT_WEEKS	= 2;
+	public static final int			REPEAT_MONTHS	= 3;
+	public static final int			REPEAT_YEARS	= 4;
+
+	private static final String[]	SINGULAR		= { "Never", "Daily", "Weekly", "Monthly", "Yearly" };
+	private static final String[]	PLURAL			= { "never", "days", "weeks", "months", "years" };
+
+	private int						unit			= 0;
+	private int						count			= 1;
+
+	/**
+	 * Creates a new TaskRepeat with the specified units and count
+	 * 
+	 * @param unit
+	 *            - REPEAT_NEVER, REPEAT_DAYS, etc
+	 * @param count
+	 *            - A positive integer for how many units are between each repetition
+	 */
+	public TaskRepeat(int unit, int count) {
+		setUnit(unit);
+		setCount(count);
+	}
+
+	/**
+	 * Creates a new TaskRepeat by parsing the String. This should only be passed strings that have
+	 * been created by calling the toString() method on other TaskRepeats at some point.
+	 * 
+	 * @param text
+	 */
+	public TaskRepeat(String text) {
+		if (text != null && text.length() > 0) {
+			if (text.startsWith("Every")) {
+				String[] parts = text.split(" ");
+				if (parts.length == 3 && parts[1].matches("\\d+")) {
+					setCount(Integer.parseInt(parts[1]));
+					for (int i = 0; i < PLURAL.length; i++) {
+						if (parts[2].equals(PLURAL[i])) {
+							setUnit(i);
+							break;
+						}
+					}
+				}
+			} else {
+				setCount(1);
+				for (int i = 0; i < SINGULAR.length; i++) {
+					if (text.equals(SINGULAR[i])) {
+						setUnit(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Gets the list of valid unit names as human-readable Strings.
+	 * 
+	 * @return
+	 */
+	public static String[] getUnitNames() {
+		return PLURAL;
+	}
+
+	/**
+	 * Returns the human-readable name for this unit
+	 * 
+	 * @param unit
+	 * @return
+	 */
+	public static String getUnitName(int unit) {
+		return PLURAL[unit];
+	}
+
+	/**
+	 * Sets the unit of this TaskRepeat (use REPEAT_NEVER, REPEAT_DAYS, etc)
+	 * 
+	 * @param unit
+	 */
+	public void setUnit(int unit) {
+		if (unit < 0)
+			unit = 0;
+		if (unit > SINGULAR.length - 1)
+			unit = SINGULAR.length - 1;
+		this.unit = unit;
+	}
+
+	/**
+	 * Sets the count of this TaskRepeat (the number of units before the next repetition). It is
+	 * impossible to set a count lower than 1.
+	 * 
+	 * @param count
+	 */
+	public void setCount(int count) {
+		if (count < 1)
+			count = 1;
+		this.count = count;
+	}
+
+	/**
+	 * Returns the integer id of the unit associated with this TaskRepeat (REPEAT_NEVER,
+	 * REPEAT_DAYS, etc)
+	 * 
+	 * @return
+	 */
+	public int getUnit() {
+		return unit;
+	}
+
+	/**
+	 * Returns the number of units between each repetition
+	 * 
+	 * @return
+	 */
+	public int getCount() {
+		return count;
+	}
+
+	/**
+	 */
+	@Override
+	public String toString() {
+		if (unit > SINGULAR.length) {
+			return "OoB " + unit + " (" + count + ")";
+		}
+		if (count == 1 || unit == REPEAT_NEVER) {
+			return SINGULAR[unit];
+		}
+
+		StringBuffer sb = new StringBuffer(PLURAL[unit].length() + 7 + unit);
+		sb.append("Every ");
+		sb.append(count);
+		sb.append(" ");
+		sb.append(PLURAL[unit]);
+		return sb.toString();
+	}
+}

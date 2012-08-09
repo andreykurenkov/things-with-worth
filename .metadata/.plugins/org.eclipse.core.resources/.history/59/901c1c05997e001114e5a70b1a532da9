@@ -1,0 +1,76 @@
+package edu.gatech.fiveminutesleft.storage.jsonfile;
+
+import java.io.IOException;
+
+import org.json.JSONException;
+
+import edu.gatech.fiveminutesleft.storage.EmailReference;
+import edu.gatech.fiveminutesleft.storage.Storage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+public class EmailReferenceImpl implements EmailReference {
+
+	private LocalJSONFileStorage	store;
+	private String					email;
+
+	public EmailReferenceImpl(LocalJSONFileStorage s, String email, boolean create) throws ObjectNotFoundException {
+		this.store = s;
+		this.email = email;
+
+		if (!create) {
+			if (!s.dbstate.has("email:" + email)) {
+				throw new ObjectNotFoundException();
+			}
+		}
+	}
+
+	public String read() {
+		String data = "";
+
+		try {
+			data = store.dbstate.getString("email:" + this.email);
+		} catch (JSONException e) {
+			return "";
+		}
+
+		return data;
+	}
+
+	public void update(String data) {
+
+		try {
+			store.dbstate.put("email:" + this.email, data);
+
+			try {
+				store.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return;
+		}
+	}
+
+	public void delete() {
+		store.dbstate.remove("email:" + this.email);
+
+		try {
+			store.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public StorageAddress getAddress() {
+		return new StorageAddress(store.getServerAddress(), this.email);
+	}
+
+	public Storage getStorage() {
+		return this.store;
+	}
+
+}

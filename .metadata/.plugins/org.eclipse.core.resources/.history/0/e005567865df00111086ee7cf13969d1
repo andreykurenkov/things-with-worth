@@ -1,0 +1,117 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.EmptyStackException;
+import java.util.Stack;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileSystemView;
+
+import edu.gatech.GradeAwesome.Observer;
+import edu.gatech.GradeAwesome.FileIO.SmartDirectory;
+
+public class DirectoryBrowser extends JPanel {
+	private JFileList currentFolders;
+	private JScrollPane dirScroll;
+	private File currentDir;
+	private Stack<File> previous;
+	private Stack<File> next;
+	private BackActionNextButtons previousNext;
+
+	public DirectoryBrowser(File startDir) {
+		super(new BorderLayout());
+		currentDir = new SmartDirectory(startDir);
+		previous = new Stack<File>();
+		next = new Stack<File>();
+		FileFilter dirFilter = new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				return file.isDirectory() && !file.isHidden();
+			}
+
+		};
+		currentFolders = new JFileList(dirFilter, currentDir);
+		previousNext = new BackActionNextButtons("Jump Dir", false);
+		previousNext.getBack().setEnabled(false);
+		previousNext.getNext().setEnabled(false);
+		dirScroll = new JScrollPane(currentFolders);
+
+		Observer<JFileList> changeDirObserver = new Observer<JFileList>() {
+			private boolean ignore;
+
+			@Override
+			public void acceptNotification(JFileList source, Object arg) {
+				System.out.println("aight");
+				if (arg != null) {
+					previous.add(currentDir);
+					previousNext.getBack().setEnabled(true);
+					source.changeDirectory(source.getLastOpened());
+					currentDir = source.getCurrentDirectory();
+
+				}
+			}
+
+		};
+		previousNext.getBack().addActionListener(new StackListener(previous, changeDirObserver));
+		previousNext.getNext().addActionListener(new StackListener(next, changeDirObserver));
+		currentFolders.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent evt) {
+				JFileList list = (JFileList) evt.getSource();
+				if (evt.getClickCount() == 2) {
+					next = new Stack<File>();
+					previousNext.getNext().setEnabled(false);
+					list.updateOpened((File) list.getSelectedValue());
+				}
+			}
+		});
+		currentFolders.acceptObserver(changeDirObserver);
+		currentFolders.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		this.add(previousNext, BorderLayout.NORTH);
+		this.add(dirScroll, BorderLayout.CENTER);
+	}
+
+	public DirectoryBrowser() {
+		this(FileSystemView.getFileSystemView().getHomeDirectory());
+	}
+
+	public class StackListener implements ActionListener {
+		private Stack<File> theStack;
+		private Observer<JFileList> observer;
+
+		public StackListener(Stack<File> forStack, Observer<JFileList> observer) {
+			this.theStack = forStack;
+			this.observer = observer;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				File newDir = theStack.pop();
+				if (theStack == previous) {
+					next.add(currentFolders.getCurrentDirectory());
+					previousNext.getNext().setEnabled(true);
+					if (theStack.empty())
+						previousNext.getBack().setEnabled(false);
+				} else {
+					previous.add(currentFolders.getCurrentDirectory());
+					previousNext.getBack().setEnabled(true);
+					if (theStack.empty())
+						previousNext.getNext().setEnabled(false);
+				}
+				currentFolders.changeDirectory(newDir);
+			} catch (EmptyStackException ex) {
+				System.err.println("DirectoryBrowser;StackListener: back or next clicked when empty - should be disabled");
+			}
+
+		}
+	}
+
+}

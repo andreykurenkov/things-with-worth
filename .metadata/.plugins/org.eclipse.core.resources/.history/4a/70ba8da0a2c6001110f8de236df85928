@@ -1,0 +1,93 @@
+/**
+ * Model representation of game of life.
+ * 
+ * @author Andrey
+ */
+public class GameOfLife {
+	private Cell[][] gameField;
+	private int rows, cols;
+
+	public enum LifeState {
+		NEW, RUNNING, PAUSED, STABLE
+	};
+
+	LifeState currentState;
+
+	public GameOfLife(int rows, int cols, boolean[][] initState) {
+		this.rows = rows;
+		this.cols = cols;
+		gameField = new Cell[rows][cols];
+		init(initState);
+		currentState = LifeState.NEW;
+	}
+
+	public GameOfLife(int height, int cols) {
+		this(height, cols, new boolean[height][cols]);
+	}
+
+	public void update() {
+		for (int x = 0; x < gameField.length; x++) {
+			for (int y = 0; y < gameField[x].length; y++) {
+				updateCell(x, y);
+			}
+		}
+	}
+
+	private void updateCell(int x, int y) {
+		Cell pertinent = gameField[x][y];
+		if (pertinent.isAlive())
+			pertinent.age();
+
+		int aliveCount = 0;
+		for (int checkY = boundH(y - 1); checkY < boundH(y - 1) + 3; checkY = boundH(checkY + 1)) {
+			for (int checkX = boundW(x - 1); checkX < boundW(x - 1) + 3; checkX = boundW(checkX + 1)) {
+				if (gameField[checkX][checkY].isAlive()) {
+					aliveCount++;
+				}
+			}
+		}
+
+		if (aliveCount <= 1 || aliveCount >= 4) {
+			pertinent.kill();// killing dead cells does nothing - no need to check
+		}
+
+		if (aliveCount == 3) {
+			pertinent.revive();// Reviving an alive cell does nothing - no need to check
+		}
+
+	}
+
+	public void reset() {
+		for (int x = 0; x < gameField.length; x++) {
+			for (int y = 0; y < gameField[x].length; y++) {
+				gameField[x][y].kill();
+			}
+		}
+	}
+
+	public int getCols() {
+		return cols;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void init(boolean[][] toState) {
+		if (toState.length != gameField.length || toState[0].length != gameField[0].length)
+			return;
+		for (int x = 0; x < toState.length; x++) {
+			for (int y = 0; y < toState[x].length; y++) {
+				gameField[x][y].revive();
+			}
+		}
+	}
+
+	private int boundW(int getBounded) {
+		return (cols + getBounded % cols) % cols;
+	}
+
+	private int boundH(int getBounded) {
+		return (rows + getBounded % rows) % rows;
+	}
+}

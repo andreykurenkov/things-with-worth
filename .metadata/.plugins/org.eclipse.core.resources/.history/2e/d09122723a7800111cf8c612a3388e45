@@ -1,0 +1,5 @@
+package edu.gatech.fiveminutesleft.model;
+
+public interface TimeUnit {
+
+}

@@ -1,0 +1,43 @@
+import java.awt.Color;
+
+public class Cell {
+	private int age;
+	private boolean state;
+	public final static boolean DEAD = false;
+	public final static boolean ALIVE = true;
+
+	public Cell() {
+		age = 0;
+		state = false;
+	}
+
+	public void age() {
+		age++;
+	}
+
+	public void kill() {
+		state = DEAD;
+		age = 0;
+	}
+
+	public void revive() {
+		state = ALIVE;
+	}
+
+	public boolean getState() {
+		return state;
+	}
+
+	public boolean isAlive() {
+		return state == ALIVE;// better style to check equality
+	}
+
+	public Color getColor() {
+		if (state == DEAD) {
+			return Color.DARK_GRAY;
+		} else {
+			System.out.println("" + (age % 200) + " " + (((age / 200) * age) % 200) + " " + (((age / 400) * age) % 200));
+			return new Color(age % 200, ((age / 200) * age) % 200, ((age / 400) * age) % 200);
+		}
+	}
+}

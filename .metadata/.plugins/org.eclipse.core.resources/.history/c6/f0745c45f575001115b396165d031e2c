@@ -1,0 +1,197 @@
+package edu.gatech.fiveminutesleft.model;
+
+public abstract class TaskFilter {
+	public abstract boolean accept(Task task);
+
+	public static final TaskFilter	FILTER_ALL				= new TaskFilter() {
+																public boolean accept(Task task) {
+																	return true;
+																}
+															};
+	public static final TaskFilter	FILTER_UNCOMPLETED_ONLY	= createNotFilter(createFieldFilter("completed", "true"));
+
+	public static final int			COMBO_MODE_AND			= 1;
+	public static final int			COMBO_MODE_OR			= 2;
+	public static final int			COMBO_MODE_NOT			= 4;
+	public static final int			COMBO_MODE_NAND			= COMBO_MODE_AND | COMBO_MODE_NOT;
+	public static final int			COMBO_MODE_NOR			= COMBO_MODE_OR | COMBO_MODE_NOT;
+
+	protected static final boolean flagSet(int num, int flag) {
+		return (num & flag) == flag;
+	}
+
+	public static final TaskFilter createCategoryFilter(final String[] categories, final int comboMode) {
+		return new CategoryFilter(categories, comboMode);
+	}
+
+	public static final int	DATE_BEFORE	= 1;
+	public static final int	DATE_AFTER	= 2;
+	public static final int	DATE_ON		= 4;
+
+	public static final TaskFilter createDateFilter(int[] date, int dateMode) {
+		return new DateFilter(date[0], date[1], date[2], dateMode);
+	}
+
+	public static final TaskFilter createComboFilter(int mode, TaskFilter... filters) {
+		return createComboFilter(filters, COMBO_MODE_AND);
+	}
+
+	public static final TaskFilter createComboFilter(TaskFilter[] filters, int mode) {
+		return new ComboFilter(filters, mode);
+	}
+
+	public static final TaskFilter createFieldFilter(String fieldName, String fieldValue) {
+		return new FieldFilter(fieldName, fieldValue);
+	}
+
+	public static final TaskFilter createNotFilter(final TaskFilter filter) {
+		return new TaskFilter() {
+			public boolean accept(Task t) {
+				return !filter.accept(t);
+			}
+		};
+	}
+}
+
+class FieldFilter extends TaskFilter {
+	private String	field;
+	private String	value;
+
+	public FieldFilter(String fieldName, String value) {
+		this.field = fieldName;
+		this.value = value;
+	}
+
+	public boolean accept(Task t) {
+		return t.getTag(field).equals(value);
+	}
+}
+
+class ComboFilter extends TaskFilter {
+	private TaskFilter[]	combos;
+	private int				mode;
+
+	public ComboFilter(TaskFilter[] combos, int mode) {
+		this.combos = combos;
+		this.mode = mode;
+	}
+
+	public boolean accept(Task task) {
+		boolean result = false;
+
+		if (flagSet(mode, COMBO_MODE_AND)) {
+			result = true;
+			for (TaskFilter m : combos) {
+				if (!m.accept(task)) {
+					result = false;
+					break;
+				}
+			}
+		} else if (flagSet(mode, COMBO_MODE_OR)) {
+			result = false;
+			for (TaskFilter m : combos) {
+				if (m.accept(task)) {
+					result = true;
+					break;
+				}
+			}
+		}
+
+		if (flagSet(mode, COMBO_MODE_NOT))
+			result = !result;
+		return result;
+	}
+}
+
+class DateFilter extends TaskFilter {
+	private int	month, day, year, mode;
+
+	public DateFilter(int year, int month, int day, int mode) {
+		this.year = year;
+		this.month = month;
+		this.day = day;
+		this.mode = mode;
+	}
+
+	public boolean accept(Task task) {
+		int ty = task.getDateYear();
+		int tm = task.getDateMonth();
+		int td = task.getDateDay();
+
+		switch (mode) {
+		// Return true if on the same date
+			case DATE_ON:
+				return this.year == ty && this.month == tm && this.day == td;
+				// Return true if same date or before
+			case DATE_BEFORE:
+				if (ty > year) return false;
+				if (ty < year) return true;
+				
+				if (tm > month) return false;
+				if (tm < month) return true;
+				
+				return (td < day);
+			case DATE_AFTER:
+				if (ty > year) return true;
+				if (ty < year) return false;
+				
+				if (tm > month) return true;
+				if (tm < month) return false;
+				
+				return (td >= day);
+		}
+
+		return false;
+	}
+}
+
+class CategoryFilter extends TaskFilter {
+	private String[]	categories;
+	private int			comboMode;
+
+	public CategoryFilter(String[] categories, int comboMode) {
+		this.categories = categories;
+		this.comboMode = comboMode;
+	}
+
+	private boolean contains(String[] ss, String s) {
+		s = s.trim();
+		for (String t : ss) {
+			if (t.trim().equals(s))
+				return true;
+		}
+		return false;
+	}
+
+	public boolean accept(Task task) {
+		boolean result = false;
+
+		if (task.getTags() == null || task.getTags().length() == 0) {
+			result = categories.length == 0 || categories[0].length() == 0;
+		} else {
+			String[] tags = task.getTags().split(",");
+
+			if (flagSet(comboMode, COMBO_MODE_AND)) {
+				result = true;
+				for (String cat : categories) {
+					if (!contains(tags, cat)) {
+						result = false;
+						break;
+					}
+				}
+			} else if (flagSet(comboMode, COMBO_MODE_OR)) {
+				result = false;
+				for (String cat : categories) {
+					if (contains(tags, cat)) {
+						result = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (flagSet(comboMode, COMBO_MODE_NOT))
+			result = !result;
+		return result;
+	}
+}

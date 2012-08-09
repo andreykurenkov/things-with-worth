@@ -1,0 +1,89 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.Iterator;
+
+public interface TaskList extends Iterable<Task> {
+	/**
+	 * Setter for name
+	 * 
+	 * @param setTo
+	 *            new value of name
+	 */
+	public void setName(String setTo);
+
+	/**
+	 * Getter for name
+	 * 
+	 * @return the TaskList's name
+	 */
+	public String getName();
+
+	/**
+	 * Deletes taskList from storage.
+	 */
+	public void delete();
+
+	/**
+	 * Getter for the Task at the given index within the list
+	 * 
+	 * @param index
+	 *            the index of the requested Task
+	 * @return
+	 */
+	public Task getTask(int index);
+
+	/**
+	 * Setter for Task at a given index
+	 * 
+	 * @param index
+	 *            the index at which to set the task
+	 * @param t
+	 *            the new value of the task
+	 */
+	public void setTask(int index, Task t);
+
+	/**
+	 * Add a new Task to the list
+	 * 
+	 * @param t
+	 *            the new task
+	 */
+	public void add(Task t);
+
+	/**
+	 * Adds a task at the first position in the list
+	 * 
+	 * @param t
+	 *            the new task
+	 */
+	public void addFirst(Task t);
+
+	/**
+	 * Removes a task from this list
+	 * 
+	 * @param t
+	 *            the task to remove
+	 */
+	public void remove(Task t);
+
+	/**
+	 * @return list size
+	 */
+	public int size();
+
+	/**
+	 * Returns an iterator for this list of Tasks.
+	 * @return iterator for tasks
+	 */
+	public Iterator<Task> iterator();
+
+	/**
+	 * Returns an appropriate Task implementation for this implementation of TaskList
+	 * @return a new Task appropriate for storage in this TaskList
+	 */
+	public Task makeTask();
+
+	@Override
+	public boolean equals(Object equalTo);
+
+}

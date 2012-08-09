@@ -1,0 +1,260 @@
+package edu.gatech.GradeAwesome.FileIO;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
+
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.text.JTextComponent;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
+
+import edu.gatech.GradeAwesome.GUI.Helpers.Dialogs;
+
+//TODO: add legitimate support for images(load/transfer to appropriate point)
+public class SmartFile extends File {
+	private boolean isRunning;
+	private Process runningProcess;
+
+	public String getName() {
+		return super.getName();
+	}
+
+	public SmartFile(String path) {
+		super(path);
+	}
+
+	public SmartFile(File f) {
+		this(f.getAbsolutePath());
+	}
+
+	public String toString() {
+		return this.getName();
+	}
+
+	public boolean isCompilable() {
+		return this.getName().endsWith(".java");
+	}
+
+	public boolean isRunnable() {
+		String name = this.getName();
+		int index = 0;
+		if ((index = name.indexOf('.')) <= 0)
+			return false;
+		if (!name.substring(index).equals(".class"))
+			return false;
+		try {
+			URL[] load = { new File(this.getAbsolutePath().substring(0, this.getAbsolutePath().indexOf(this.getName())))
+					.toURI().toURL() };
+			URLClassLoader loader = new URLClassLoader(load);
+			Class<?> myClass = loader.loadClass(this.getNonExtensionName());
+			myClass.getMethod("main", String[].class);
+		} catch (MalformedURLException e2) {
+			e2.printStackTrace();
+			return false;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		} catch (SecurityException e) {
+			e.printStackTrace();
+			return false;
+		} catch (NoSuchMethodException e) {
+			return false;
+		}
+		return true;
+
+	}
+
+	public boolean isReadable() {
+		return this.canRead() && (this.getName().contains(".java") || this.getName().contains(".txt"));
+	}
+
+	public String getNonExtensionName() {
+		String name = this.getName();
+		int index = 0;
+		if ((index = name.indexOf('.')) > 0)
+			return name.substring(0, index);
+		return this.getName();
+	}
+
+	public String getExtension() {
+		String name = this.getName();
+		int index = 0;
+		if ((index = name.indexOf('.')) > 0)
+			return name.substring(index);
+		return this.getName();
+	}
+
+	public void run() {
+		if (this.isRunnable()) {
+			try {
+				runningProcess = Runtime.getRuntime().exec("java " + this.getNonExtensionName(), null,
+						this.getDirectory().getAbsoluteFile());
+				isRunning = true;
+			} catch (IOException e) {
+				Dialogs.showError("Could not run file!");
+				e.printStackTrace();
+			}
+		} else
+			System.err.println("Cannot run this file!");
+	}
+
+	public boolean compile(Writer writer) {
+		if (this.isCompilable()) {
+			JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+			DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+			StandardJavaFileManager fm = compiler.getStandardFileManager(diagnostics, null, null);
+			List<File> dir = new ArrayList<File>();
+			dir.add(new File(this.getAbsolutePath().substring(0, this.getAbsolutePath().lastIndexOf('/'))));
+			try {
+				fm.setLocation(StandardLocation.CLASS_PATH, dir);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			ArrayList<File> file = new ArrayList<File>(1);
+			file.add(this);
+			JavaCompiler.CompilationTask task = null;
+			task = compiler.getTask(writer, fm, diagnostics, null, null, fm.getJavaFileObjectsFromFiles(file));
+
+			boolean success = task.call();
+			if (success) {
+				return true;
+			} else {
+				JOptionPane.showMessageDialog(null, "Compilation not succesful", "Compilation error",
+						JOptionPane.ERROR_MESSAGE);
+				for (Diagnostic<? extends JavaFileObject> d : diagnostics.getDiagnostics())
+					try {
+						writer.append(d.toString());
+						System.err.println(d.toString());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				return false;
+			}
+		} else
+			return false;
+	}
+
+	public static boolean compile(ArrayList<SmartFile> files, Writer writer) {
+		List<File> dir = new ArrayList<File>();
+		for (SmartFile sm : files) {
+			if (!sm.isCompilable())
+				return false;
+			else
+				dir.add(new File(sm.getAbsolutePath().substring(0, sm.getAbsolutePath().lastIndexOf('/'))));
+		}
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+		StandardJavaFileManager fm = compiler.getStandardFileManager(diagnostics, Locale.ENGLISH, Charset.defaultCharset());
+
+		try {
+			fm.setLocation(StandardLocation.CLASS_PATH, dir);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		JavaCompiler.CompilationTask task = null;
+		task = compiler.getTask(writer, fm, diagnostics, null, null, fm.getJavaFileObjectsFromFiles(files));
+
+		boolean success = task.call();
+		if (success) {
+			return true;
+		} else {
+			JOptionPane.showMessageDialog(null, "Compilation not succesful", "Compilation error", JOptionPane.ERROR_MESSAGE);
+			for (Diagnostic<? extends JavaFileObject> d : diagnostics.getDiagnostics())
+				try {
+					writer.append(d.toString());
+					System.err.println(d.toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			return false;
+		}
+	}
+
+	public String read() {
+		if (this.isReadable()) {
+			Scanner scan = null;
+			try {
+				scan = new Scanner(this);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			String res = "";
+			String next = "";
+			while (scan.hasNextLine())
+				if ((next = scan.nextLine()) != null && next.length() > 0)
+					res += "\n" + next;
+			return res;
+		} else
+			return null;
+
+	}
+
+	public JTextComponent getVisibleText(boolean editable) {
+		JTextArea area = new JTextArea();
+		area.setEditable(editable);
+		area.setText(this.read());
+		area.setName(this.getName());
+		return area;
+	}
+
+	public static SmartFile[] makeSmarter(File[] stupid) {
+		SmartFile[] smart = new SmartFile[stupid.length];
+		for (int i = 0; i < stupid.length; i++)
+			smart[i] = new SmartFile(stupid[i].getAbsolutePath());
+		return smart;
+	}
+
+	public void copyTo(File to) throws IOException {
+
+		BufferedInputStream in = new BufferedInputStream(new FileInputStream(this));
+		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(to));
+		int c;
+
+		while ((c = in.read()) != -1)
+			out.write(c);
+
+		in.close();
+		out.close();
+	}
+
+	public SmartFile getDirectory() {
+		if (this.isDirectory())
+			return this;
+		String path = this.getAbsolutePath();
+		return new SmartFile(path.substring(0, path.indexOf(this.getNonExtensionName())));
+	}
+
+	public boolean isTxt() {
+		return this.getExtension().equals(".txt");
+	}
+
+	private final String imageNames[] = { ".png", ".jpg", ".jpeg", ".bmp" };
+
+	public boolean isImage() {
+		for (String s : imageNames)
+			if (this.getExtension().equals(s))
+				return true;
+		return false;
+	}
+
+}

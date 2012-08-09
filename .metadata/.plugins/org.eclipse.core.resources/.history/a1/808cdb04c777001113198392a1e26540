@@ -1,0 +1,216 @@
+package edu.gatech.fiveminutesleft.GUI.Filtering;
+
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.GUI.GUISpace;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+import edu.gatech.fiveminutesleft.model.TaskList;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Spinner;
+
+public class FilteringCategoryActivity extends Activity {
+
+	/**
+	 * Launches this activity
+	 * @param source
+	 * @param wrapper - filter wrapper to work on
+	 * @param categories - list of categories to provide as options
+	 */
+	public static void launch(Activity source, FilterWrapper wrapper, String[] categories) {
+		Intent n = new Intent(source, FilteringCategoryActivity.class);
+		GUISpace.put(FilteringCategoryActivity.class, "wrapper", wrapper);
+		GUISpace.put(FilteringCategoryActivity.class, "options", categories);
+		
+		boolean[] choices = new boolean[categories.length];
+		for (int i = 0; i < choices.length; i++)
+			choices[i] = false;
+		
+		if (wrapper.hasMeta("ncats")) {
+			int ncats = Integer.parseInt(wrapper.getMeta("ncats"));
+			for (int i = 0; i < ncats; i++) {
+				String cat = wrapper.getMeta("cat" + i);
+				for (int k = 0; k < categories.length; k++) {
+					if (categories[k].equals(cat)) {
+						choices[k] = true;
+						break;
+					}
+				}
+			}
+		}
+		
+		if (wrapper.hasMeta("type")) {
+			GUISpace.put(FilteringCategoryActivity.class, "type", Integer.parseInt(wrapper.getMeta("type")));
+		} else {
+			GUISpace.put(FilteringCategoryActivity.class, "type", 0);
+		}
+		
+		GUISpace.put(FilteringCategoryActivity.class, "choices", choices);
+		source.startActivity(n);
+	}
+	
+	private Spinner typeSpin;
+	private String[] prepositions = {"all of these", "any of these", "none of these"};
+	private LinearLayout checksLayout;
+	private CheckBox[] checks;
+	
+	@Override
+	/**
+	 * Sets the layout and initializes stuff
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		
+		setContentView(R.layout.filtering_edit_category_layout);
+		
+
+		typeSpin = (Spinner) findViewById(R.id.FilterCategoryType);
+		
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, prepositions);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		typeSpin.setAdapter(adapter);
+		
+		typeSpin.setSelection(GUISpace.getInt(getClass(), "type"));
+		
+		typeSpin.setOnItemSelectedListener(new OnItemSelectedListener() {
+			public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				GUISpace.put(FilteringCategoryActivity.class, "type", arg2);
+			}
+
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		checksLayout = (LinearLayout) findViewById(R.id.FilterCategoryChecks);
+		
+		String[] options = (String[]) GUISpace.get(getClass(), "options");
+		checks = new CheckBox[options.length];
+		int i = 0;
+		for (String option : options) {
+			CheckBox check = new CheckBox(this);
+			check.setText(option);
+			check.setChecked(getBool(i));
+			
+			final int k = i;
+			check.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+					setBool(k, isChecked);
+				}
+			});
+			
+			checks[i++] = check;
+			
+			check.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+			
+			checksLayout.addView(check);
+		}
+	}
+	
+	@Override
+	/**
+	 * Restores saved GUI data after rotations, etc
+	 */
+	public void onResume() {
+		super.onResume();
+		for (int i = 0; i < checks.length; i++) {
+			checks[i].setChecked(getBool(i));
+		}
+	}
+	
+	private void setBool(int i, boolean b) {
+		((boolean[])GUISpace.get(getClass(), "choices"))[i] = b;
+	}
+	
+	private boolean getBool(int i) {
+		return ((boolean[])GUISpace.get(getClass(), "choices"))[i];
+	}
+	
+	/**
+	 * Closes this view when the user presses "Cancel"
+	 * @param v
+	 */
+	public void cancel(View v) {
+		finish();
+	}
+	
+	/**
+	 * Stores the filter data in the FilterWrapper passed at launch(), and 
+	 * closes the Activity. Called when the user presses "Done" (or "Save", if
+	 * it's been renamed).
+	 * @param v
+	 */
+	public void done(View v) {
+		FilterWrapper wrapper = (FilterWrapper) GUISpace.get(getClass(), "wrapper");
+		String[] options = (String[]) GUISpace.get(getClass(), "options");
+		boolean[] cbools = (boolean[]) GUISpace.get(getClass(), "choices");
+		int numCats = 0;
+		for (boolean b : cbools) if (b) numCats++;
+		
+		if (numCats > 0) {
+			String[] cats = new String[numCats];
+			int k = 0;
+			for (int i = 0; i < cbools.length; i++) {
+				if (cbools[i]) {
+					cats[k++] = options[i];
+				}
+			}
+			
+			int mode = 0;
+			switch (typeSpin.getSelectedItemPosition()) {
+				case 0:
+					mode = TaskFilter.COMBO_MODE_AND;
+					break;
+				case 1:
+					mode = TaskFilter.COMBO_MODE_OR;
+					break;
+				case 2:
+					mode = TaskFilter.COMBO_MODE_NOR;
+					break;
+			}
+			
+			wrapper.setFilter(TaskFilter.createCategoryFilter(cats, mode));
+			
+			wrapper.setMeta("type", typeSpin.getSelectedItemPosition());
+			
+			StringBuffer sb = new StringBuffer();
+			sb.append(prepositions[typeSpin.getSelectedItemPosition()]);
+			sb.setCharAt(0, (char)(sb.charAt(0) & (~0x20)));
+			sb.append(": ");
+			
+			wrapper.setMeta("ncats", cats.length);
+			for (int i = 0; i < cats.length; i++) {
+				if (i > 0) {
+					sb.append(", ");
+				}
+				wrapper.setMeta("cat" + i, cats[i]);
+				sb.append(cats[i]);
+			}
+			wrapper.setText(sb.toString());
+		}
+		
+		finish();
+	}
+	
+	/**
+	 * Clear out any remaining persistent data when this task is done.
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+}

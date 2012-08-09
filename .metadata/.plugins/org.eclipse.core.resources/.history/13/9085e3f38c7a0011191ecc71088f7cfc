@@ -1,0 +1,90 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+import android.util.Log;
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.TaskListReference;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+public interface TaskList {
+	/**
+	 * Setter for name
+	 * 
+	 * @param setTo
+	 *            new value of name
+	 */
+	public void setName(String setTo);
+
+	/**
+	 * Getter for name
+	 * 
+	 * @return the TaskList's name
+	 */
+	public String getName();
+
+	
+	/**
+	 * Deletes taskList from storage.
+	 */
+	public void delete();
+
+	/**
+	 * Getter for the Task at the given index within the list
+	 * 
+	 * @param index
+	 *            the index of the requested Task
+	 * @return
+	 */
+	public Task getTask(int index);
+	/**
+	 * Setter for Task at a given index
+	 * 
+	 * @param index
+	 *            the index at which to set the task
+	 * @param t
+	 *            the new value of the task
+	 */
+	public void setTask(int index, Task t);
+
+	/**
+	 * Add a new Task to the list
+	 * 
+	 * @param t
+	 *            the new task
+	 */
+	public void add(Task t);
+
+	/**
+	 * Adds a task at the first position in the list
+	 * 
+	 * @param t
+	 *            the new task
+	 */
+	public void addFirst(Task t);
+
+	/**
+	 * Removes a task from this list
+	 * 
+	 * @param t
+	 *            the task to remove
+	 */
+	public void remove(Task t);
+	
+
+	/**
+	 * @return list size
+	 */
+	public int size();
+
+
+	public Iterator<Task> iterator();
+
+
+	@Override
+	public boolean equals(Object equalTo);
+
+}

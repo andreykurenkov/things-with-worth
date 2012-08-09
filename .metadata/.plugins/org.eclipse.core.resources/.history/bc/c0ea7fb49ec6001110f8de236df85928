@@ -1,0 +1,47 @@
+/**
+ * Model representation of game of life.
+ * 
+ * @author Andrey
+ */
+public class GameOfLife {
+	private Cell[][] gameField;
+
+	public GameOfLife(int height, int width, boolean[][] initState) {
+		gameField = new Cell[height][width];
+		init(initState);
+	}
+
+	public GameOfLife(int height, int width) {
+		this(height, width, new boolean[height][width]);
+	}
+
+	public void update() {
+		for (int x = 0; x < gameField.length; x++) {
+			for (int y = 0; y < gameField[x].length; y++) {
+				updateCell(x, y);
+			}
+		}
+	}
+
+	private void updateCell(int x, int y) {
+
+	}
+
+	public void reset() {
+		for (int x = 0; x < gameField.length; x++) {
+			for (int y = 0; y < gameField[x].length; y++) {
+				gameField[x][y].kill();
+			}
+		}
+	}
+
+	public void init(boolean[][] toState) {
+		if (toState.length != gameField.length || toState[0].length != gameField[0].length)
+			return;
+		for (int x = 0; x < toState.length; x++) {
+			for (int y = 0; y < toState[x].length; y++) {
+				gameField[x][y].revive();
+			}
+		}
+	}
+}

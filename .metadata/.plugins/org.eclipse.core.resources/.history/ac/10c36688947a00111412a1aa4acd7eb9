@@ -1,0 +1,271 @@
+package edu.gatech.fiveminutesleft;
+
+import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.model.Task;
+
+/**
+ * GUI representation for tasks within the TaskList dynamic view. Allows to display and edit names
+ * of model Tasks.
+ * 
+ * @author Garrett Malmquist, Andrey Kurenkov
+ */
+public class GUITask extends View {
+	private Task			myTask;
+	private boolean			editing;
+
+	private LinearLayout	editLayout;
+	private LinearLayout	viewLayout;
+	private TextWatcher		myTextWatcher;
+
+	private ContentListener	content;
+
+	/**
+	 * Constructor to set up the GUI representation based on an exisiting model Task
+	 * 
+	 * @param context
+	 *            Context in which this was created
+	 * @param myTask
+	 *            Task for this to display in GUI
+	 */
+	public GUITask(Context context, Task myTask) {
+		super(context);
+		this.myTask = myTask;
+		myTextWatcher = new TextWatcher() {
+			public void afterTextChanged(Editable s) {
+			}
+
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				if (isEditing()) {
+					setText(s.toString());
+				}
+			}
+		};
+
+		setEditing(false);
+	}
+
+	/**
+	 * Sets the ContentListener for this task's completed checkbox
+	 * 
+	 * @param cont
+	 */
+	public void setCompletedListener(ContentListener cont) {
+		this.content = cont;
+	}
+
+	/**
+	 * Method needed for dynamic display of tasks. Returns appropriate layout for state.
+	 * 
+	 * @param context
+	 *            Context from which this was called
+	 * @param convertView
+	 *            old view that is possibly reusable
+	 * @param parent
+	 *            The parent that this view will eventually be attached to
+	 * @return appropriate layout, i.e. editLayout if editing and viewLayour otherwise.
+	 */
+	public LinearLayout getLayout(Context context, View convertView, ViewGroup parent) {
+		if (isEditing())
+			return getEditLayout(context, convertView, parent);
+
+		return getViewLayout(context, convertView, parent);
+	}
+
+	/**
+	 * Stores text currently in GUITask to model task and ends editing state
+	 */
+	public void finishEditing() {
+		if (editLayout != null) {
+			final TextView textE = (TextView) editLayout.findViewById(R.id.TaskText);
+			textE.removeTextChangedListener(myTextWatcher);
+			Log.d("GUITask", "text for field now" + textE.getText().toString());
+
+		}
+		myTask.setName(getText());
+		setEditing(false);
+		loadFields();
+	}
+
+	/**
+	 * Gives Android View for editing the GUITask. Only called in getLayout if appropriate.
+	 * 
+	 * @param context
+	 *            Context from which this was called
+	 * @param convertView
+	 *            old view that is possibly reusable
+	 * @param parent
+	 *            The parent that this view will eventually be attached to
+	 * @return editLayout representing GUI method for editing tasks
+	 */
+	public LinearLayout getEditLayout(Context context, View convertView, ViewGroup parent) {
+		if (editLayout != null && editLayout.equals(convertView)) {
+			editLayout = (LinearLayout) convertView;
+
+		} else
+			editLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.task_edit_layout, parent, false);
+
+		final TextView textE = (TextView) editLayout.findViewById(R.id.TaskText);
+		textE.addTextChangedListener(myTextWatcher);
+
+		return editLayout;
+	}
+
+	/**
+	 * Gives Android View for viewing the GUITask. Only called in getLayout if appropriate.
+	 * 
+	 * @param context
+	 *            Context from which this was called
+	 * @param convertView
+	 *            old view that is possibly reusable
+	 * @param parent
+	 *            The parent that this view will eventually be attached to
+	 * @return viewLayoutrepresenting GUI display of a task within a TaskList(just the name)
+	 */
+	public LinearLayout getViewLayout(Context context, View convertView, ViewGroup parent) {
+		if (viewLayout != null && viewLayout.equals(convertView)) {
+			return viewLayout = (LinearLayout) convertView;
+
+		}
+
+		viewLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.task_layout, parent, false);
+
+		CheckBox checkV = (CheckBox) viewLayout.findViewById(R.id.TaskCheckbox);
+		checkV.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				setCompleted(isChecked);
+				if (content != null)
+					content.dataChanged(String.valueOf(isChecked));
+			}
+		});
+
+		return viewLayout;
+	}
+
+	/**
+	 * Updates GUI components of display to the actual values stored in domain Task.
+	 */
+	public void loadFields() {
+		if (editLayout != null) {
+			TextView textE = (TextView) editLayout.findViewById(R.id.TaskText);
+
+			if (isEditing()) {
+				textE.setFocusable(true);
+				textE.setText(getText());
+			}
+
+		}
+
+		if (viewLayout != null) {
+			CheckBox checkV = (CheckBox) viewLayout.findViewById(R.id.TaskCheckbox);
+			checkV.setChecked(isCompleted());
+
+			TextView textE = (TextView) viewLayout.findViewById(R.id.TaskText);
+			textE.setText(getText());
+
+			TextView tags = (TextView) viewLayout.findViewById(R.id.TaskCats);
+			tags.setText(myTask.getTags());
+
+			TextView date = (TextView) viewLayout.findViewById(R.id.TaskDate);
+			date.setText(myTask.getDate());
+
+			TextView time = (TextView) viewLayout.findViewById(R.id.TaskTime);
+			time.setText(myTask.getTime() + " ");
+		}
+	}
+
+	/**
+	 * @return true if contains empty string, false otherwise
+	 */
+	public boolean isEmpty() {
+		return getText().trim().length() == 0;
+	}
+
+	/**
+	 * @return true if editing, false otherwise
+	 */
+	public boolean isEditing() {
+		return editing;
+	}
+
+	/**
+	 * @return true if completed, false otherwise
+	 */
+	public boolean isCompleted() {
+		if (myTask == null)
+			return false;
+		String completed = myTask.getCompleted();
+		if (completed == null)
+			return false;
+		return completed.equals(Task.TRUE_STRING);
+	}
+
+	/**
+	 * Returns text from model Task.
+	 * 
+	 * @return the name of the model Task.
+	 */
+	public String getText() {
+		if (myTask == null)
+			return "Unsynched!";
+		String text = myTask.getName();
+		if (text != null)
+			return text;
+		return "Error on getting name";
+	}
+
+	/**
+	 * Setter for editing.
+	 * 
+	 * @param b
+	 *            true to edit, false otherwise
+	 */
+	public void setEditing(boolean b) {
+		this.editing = b;
+	}
+
+	/**
+	 * Changes the text of this GUITask, and so the model Task's name
+	 * 
+	 * @param text
+	 *            String to set name to
+	 */
+	public void setText(String text) {
+		if (myTask != null)
+			myTask.setName(text);
+	}
+
+	/**
+	 * Setter for completed state. Changes Task state.
+	 * 
+	 * @param b
+	 *            value to setComppleted to
+	 */
+	public void setCompleted(boolean b) {
+		if (myTask != null)
+			myTask.setTag("completed", b ? Task.TRUE : Task.FALSE);
+	}
+
+	/**
+	 * Getter for the model Task that this GUITask displays
+	 * 
+	 * @return the model that this GUITask wraps
+	 */
+	public Task getTask() {
+		return myTask;
+	}
+
+}

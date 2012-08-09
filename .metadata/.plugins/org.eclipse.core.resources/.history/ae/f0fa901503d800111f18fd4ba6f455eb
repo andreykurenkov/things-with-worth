@@ -1,0 +1,7 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import javax.swing.JList;
+
+public class FileBrowser extends JList {
+
+}

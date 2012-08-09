@@ -1,0 +1,98 @@
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+public class GradingPanel extends JPanel {
+	private File saveDir;
+	private File loadDir;
+	private String saveLoadName;
+	private ArrayList<StudentPanel> panels;
+	private JButton save, load;
+
+	public GradingPanel(Student[] students) {
+		this.setLayout(new GridLayout(1 + students.length, 1));
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(1, 2));
+		save = new JButton("Save");
+		panels = new ArrayList<StudentPanel>(students.length);
+		for (int i = 0; i < students.length; i++) {
+			StudentPanel sp = new StudentPanel(students[i].getName());
+			panels.add(sp);
+			this.add(sp);
+		}
+
+	}
+
+	public void setSaveDir(File setTo) {
+		saveDir = setTo;
+	}
+
+	public void setLoadDir(File setTo) {
+		loadDir = setTo;
+	}
+
+	public void setSaveLoadName(String setTo) {
+		saveLoadName = setTo;
+	}
+
+	public void load() {
+
+	}
+
+	public void save() {
+		try {
+			File saveTo = new File(saveDir.getAbsolutePath() + saveLoadName);
+			FileOutputStream out = new FileOutputStream(saveTo);
+			for (StudentPanel sp : panels) {
+				out.write(sp.name.getText().getBytes());
+				out.write(",".getBytes());
+				out.write(sp.grade.getText().getBytes());
+				out.write(",".getBytes());
+				out.write(sp.comments.getText().getBytes());
+				out.write("\n".getBytes());
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private class StudentPanel extends JPanel {
+		public JLabel name;
+		public JTextField grade;
+		public JTextArea comments;
+
+		public StudentPanel(String name) {
+			this.setLayout(new GridBagLayout());
+			this.name = new JLabel(name);
+			this.grade = new JTextField("(score)");
+			this.comments = new JTextArea(5, 25);
+			comments.setEditable(true);
+			JScrollPane commentScroll = new JScrollPane(comments);
+			GridBagConstraints constraint = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.NONE, 0.3, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+			this.add(this.name, constraint);
+			constraint = ConstraintsHelper.makeConstraints(1, 0, GridBagConstraints.NONE, 0.1, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+			this.add(grade, constraint);
+			constraint = ConstraintsHelper.makeConstraints(2, 0, GridBagConstraints.BOTH, 0.6, 1,
+					GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+			this.add(commentScroll, constraint);
+		}
+	}
+}

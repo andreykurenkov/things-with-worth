@@ -1,0 +1,17 @@
+package edu.gatech.fiveminutesleft.storage.exception;
+
+public class AddressSyntaxException extends Exception {
+
+	private static final long serialVersionUID = -1388229323732907870L;
+
+	private final String string;
+	
+	public AddressSyntaxException(String string) {
+		this.string = string;
+	}
+	
+	public String toString() {
+		return this.string;
+	}
+	
+}

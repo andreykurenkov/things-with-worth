@@ -1,0 +1,127 @@
+package edu.gatech.geochat;
+
+import edu.gatech.geochat.database.Storage;
+import edu.gatech.geochat.model.User;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.opengl.GLSurfaceView;
+import android.os.Bundle;
+import android.os.Looper;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
+
+public class GeoChatActivity extends BetterActivity {
+	private GLSurfaceView glView;
+	
+	public static void launch(Activity source, User user) {
+		if (user == null) return;
+		GUISpace.put(GeoChatActivity.class, "user", user);
+		Intent n = new Intent(source, GeoChatActivity.class);
+		source.startActivity(n);
+	}
+	
+	private void setupLocationStuff() {
+		LocationManager locManager;
+		Location currentLocation;
+		locManager = (LocationManager) GeoChatActivity.getActiveContext().getSystemService(Context.LOCATION_SERVICE);
+		Looper.prepare();
+		currentLocation = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		Log.d("Initial Location", "Location set to: " + currentLocation);
+		if (!locManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+			Log.d("User location", "Provider does not work");
+		}
+		LocationListener listener = new LocationListener() {
+
+			@Override
+			public void onLocationChanged(Location location) {
+				((User)GUISpace.get(GeoChatActivity.class, "user")).setLocation(location);
+				((User)GUISpace.get(GeoChatActivity.class, "user")).updateCloseMessages();
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				Toast.makeText(GeoChatActivity.getActiveContext(), "Provider has been disabled", Toast.LENGTH_SHORT);
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				Toast.makeText(GeoChatActivity.getActiveContext(), "Provider has been enabled", Toast.LENGTH_SHORT);
+
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status, Bundle extras) {
+
+			}
+		};
+
+		SensorEventListener gyros = new SensorEventListener() {
+
+			@Override
+			public void onAccuracyChanged(Sensor sensor, int accuracy) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onSensorChanged(SensorEvent event) {
+
+			}
+
+		};
+
+		// minDelay in milliseconds, minDistance in meters
+		locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 10, listener);
+	}
+	
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        glView = new RadarView(this);
+        setContentView(glView);
+        setupLocationStuff();
+    }
+    
+    public static Context getActiveContext() {
+    	return (Activity) GUISpace.get(GeoChatActivity.class, "ActiveActivity");
+    }
+    
+//    @Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//		MenuInflater inflater = getMenuInflater();
+//		inflater.inflate(R.menu.radar_menu, menu);
+//		return true;
+//	}
+//	@Override
+//	public boolean onOptionsItemSelected(MenuItem item) {
+//		switch (item.getItemId()) {
+//		case R.id.login:
+//			LoginActivity.launch(this);
+//			break;
+//		}
+//		return super.onOptionsItemSelected(item);
+//	}
+    
+    @Override
+    public void onPause() {
+    	super.onPause();
+    	glView.onPause();
+    }
+    
+    @Override
+    public void onResume() {
+    	super.onResume();
+    	glView.onResume();
+    }
+}

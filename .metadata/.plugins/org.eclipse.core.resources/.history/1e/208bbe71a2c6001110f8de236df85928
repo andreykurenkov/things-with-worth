@@ -1,0 +1,35 @@
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+public class LifePanel extends JPanel {
+	private JButton[][] visibleCells;
+	private GameOfLife myLife;
+	private int rows, cols;
+
+	public LifePanel(GameOfLife life, Dimension myDim) {
+		this.setPreferredSize(myDim);
+		myLife = life;
+		rows = myLife.getRows();
+		cols = myLife.getCols();
+
+		visibleCells = new JButton[rows][cols];
+		for()
+	}
+	
+	public class LifeListener implements ActionListener{
+		private int col;
+		private int row;
+		public LifeListener(int x, int y){
+			row=y;
+			col=x;
+			
+		}
+		public void actionPerformed(ActionEvent e){
+			
+		}
+	}
+}

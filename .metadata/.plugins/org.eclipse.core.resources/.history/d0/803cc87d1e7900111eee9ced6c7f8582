@@ -1,0 +1,343 @@
+package edu.gatech.fiveminutesleft.model;
+
+/**
+ * This is the class which acts as a filter for Tasks in a TaskList. It's both a Strategy and a
+ * Factory for instances of itself.
+ * 
+ * @author g
+ */
+public abstract class TaskFilter {
+	/**
+	 * Whether this filter accepts a task.
+	 * 
+	 * @param task
+	 * @return
+	 */
+	public abstract boolean accept(Task task);
+
+	/** Basic filter which accepts all tasks */
+	public static final TaskFilter	FILTER_ALL				= new TaskFilter() {
+																public boolean accept(Task task) {
+																	return true;
+																}
+															};
+	/** Basic filter which accepts only unfinished taskes */
+	public static final TaskFilter	FILTER_UNCOMPLETED_ONLY	= createNotFilter(createFieldFilter("completed", "true"));
+
+	/** All variables must be true */
+	public static final int			COMBO_MODE_AND			= 1;
+	/** At least one of the variables must be true */
+	public static final int			COMBO_MODE_OR			= 2;
+	/** The penultimate result must be false */
+	public static final int			COMBO_MODE_NOT			= 4;
+	/** At least one of the variables must be false */
+	public static final int			COMBO_MODE_NAND			= COMBO_MODE_AND | COMBO_MODE_NOT;
+	/** All of the variables must be false */
+	public static final int			COMBO_MODE_NOR			= COMBO_MODE_OR | COMBO_MODE_NOT;
+
+	protected static final boolean flagSet(int num, int flag) {
+		return (num & flag) == flag;
+	}
+
+	/**
+	 * Creates a filter which filters by category
+	 * 
+	 * @param categories
+	 *            - the categories to filter
+	 * @param comboMode
+	 *            - COMBO_MODE_AND, COMBO_MODE_OR, etc
+	 * @return
+	 */
+	public static final TaskFilter createCategoryFilter(final String[] categories, final int comboMode) {
+		return new CategoryFilter(categories, comboMode);
+	}
+
+	/** The task must come before the given date */
+	public static final int	BEFORE			= 1;
+	/** The task must come after (or on) the given date */
+	public static final int	AFTER			= 2;
+	/** The task must be on the given date */
+	public static final int	ON				= 4;
+
+	/** The task must be checked relative to date date */
+	public static final int	ONLY_DATE		= 1;
+	/** The task must be checked relative to time */
+	public static final int	ONLY_TIME		= 2;
+	/** The task must be checked relative to date and time */
+	public static final int	DATE_AND_TIME	= 3;
+
+	public static final TaskFilter createDateFilter(int[] date, int typeMode) {
+		return createDateFilter(date, typeMode, date.length == 5 ? DATE_AND_TIME : ONLY_DATE);
+	}
+
+	public static final TaskFilter createDateFilter(TimeAndDate createWith, int typeTime, int typeMode) {
+		switch (typeTime) {
+			case DATE_AND_TIME:
+				return new DateFilter(createWith, typeMode);
+			case ONLY_DATE:
+				return new DateFilter(createWith.getDate(), typeMode);
+			case ONLY_TIME:
+				return new DateFilter(createWith.getTime(), typeMode);
+		}
+		return new DateFilter(createWith, typeMode);
+	}
+
+	/**
+	 * Creates a new filter which filters by date.
+	 * 
+	 * @param date
+	 *            - in the format int[] {year, month, day}
+	 * @param dateMode
+	 *            - DATE_BEFORE, DATE_AFTER, or DATE_ON
+	 * @return
+	 */
+	public static final TaskFilter createDateFilter(int[] date, int typeMode, int timeMode) {
+		int year = 0, month = 0, day = 0, hour = 0, minute = 0;
+		if (date.length < 5) {
+			switch (timeMode) {
+				case DATE_AND_TIME:
+					hour = date[3];
+					minute = date[4];
+				case ONLY_DATE:
+					year = date[0];
+					month = date[1];
+					day = date[2];
+					break;
+				case ONLY_TIME:
+					hour = date[0];
+					minute = date[1];
+					break;
+			}
+		} else {
+			year = date[0];
+			month = date[1];
+			day = date[2];
+			hour = date[3];
+			minute = date[4];
+		}
+		return new DateFilter(year, month, day, hour, minute, typeMode, timeMode);
+	}
+
+	/**
+	 * Creates a new filter made of the other filters combined with the specified mode
+	 * 
+	 * @param mode
+	 *            - COMBO_MODE_X
+	 * @param filters
+	 *            - Filters to combine
+	 * @return
+	 */
+	public static final TaskFilter createComboFilter(int mode, TaskFilter... filters) {
+		return createComboFilter(filters, COMBO_MODE_AND);
+	}
+
+	/**
+	 * Creates a new filter made of the other filters combined with the specified mode
+	 * 
+	 * @param filters
+	 *            - Filters to combine
+	 * @param mode
+	 *            - COMBO_MODE_X
+	 * @return
+	 */
+	public static final TaskFilter createComboFilter(TaskFilter[] filters, int mode) {
+		return new ComboFilter(filters, mode);
+	}
+
+	/**
+	 * Creates a filter that only accepts task which have the given [fieldName] set to the given
+	 * [fieldValue].
+	 * 
+	 * @param fieldName
+	 * @param fieldValue
+	 * @return
+	 */
+	public static final TaskFilter createFieldFilter(String fieldName, String fieldValue) {
+		return new FieldFilter(fieldName, fieldValue);
+	}
+
+	/**
+	 * Creates a new filter that returns true exactly when the given filter returns false.
+	 * 
+	 * @param filter
+	 * @return
+	 */
+	public static final TaskFilter createNotFilter(final TaskFilter filter) {
+		return new TaskFilter() {
+			public boolean accept(Task t) {
+				return !filter.accept(t);
+			}
+		};
+	}
+}
+
+// Inner classes which make the Factory functions less ugly.
+
+class FieldFilter extends TaskFilter {
+	private String	field;
+	private String	value;
+
+	public FieldFilter(String fieldName, String value) {
+		this.field = fieldName;
+		this.value = value;
+	}
+
+	public boolean accept(Task t) {
+		return t.getTag(field).equals(value);
+	}
+}
+
+class ComboFilter extends TaskFilter {
+	private TaskFilter[]	combos;
+	private int				mode;
+
+	public ComboFilter(TaskFilter[] combos, int mode) {
+		this.combos = combos;
+		this.mode = mode;
+	}
+
+	public boolean accept(Task task) {
+		boolean result = false;
+
+		if (flagSet(mode, COMBO_MODE_AND)) {
+			result = true;
+			for (TaskFilter m : combos) {
+				if (!m.accept(task)) {
+					result = false;
+					break;
+				}
+			}
+		} else if (flagSet(mode, COMBO_MODE_OR)) {
+			result = false;
+			for (TaskFilter m : combos) {
+				if (m.accept(task)) {
+					result = true;
+					break;
+				}
+			}
+		}
+
+		if (flagSet(mode, COMBO_MODE_NOT))
+			result = !result;
+		return result;
+	}
+}
+
+class DateFilter extends TaskFilter {
+	private int			modeTypePreposition;
+	private int			modeTypeTime;
+	private TimeUnit	myUnit;
+
+	public DateFilter(int year, int month, int day, int hours, int minutes, int modeForPrep, int modeForTime) {
+		this.modeTypePreposition = modeForPrep;
+		this.modeTypeTime = modeForTime;
+		timeAndDate = new TimeAndDate(new Date(year, month, day), new TimeOfDay(hours, minutes));
+	}
+
+	public DateFilter(Date compareDate, int modeForPrep) {
+		this.modeTypeTime = TaskFilter.ONLY_DATE;
+		this.modeTypePreposition = modeForPrep;
+		myUnit = compareDate;
+	}
+
+	public DateFilter(TimeOfDay compareTime, int modeForPrep) {
+		this.modeTypeTime = TaskFilter.ONLY_TIME;
+		this.modeTypePreposition = modeForPrep;
+		myUnit = compareTime;
+	}
+
+	public DateFilter(TimeAndDate TimeAndDate, int modeForPrep) {
+		this.modeTypeTime = TaskFilter.DATE_AND_TIME;
+		this.modeTypePreposition = modeForPrep;
+		myUnit = TimeAndDate;
+	}
+
+	@SuppressWarnings("rawtypes")
+	public boolean accept(Task task) {
+
+		TimeAndDate otherTimeAndDate = TimeAndDate.getFromTask(task);
+		TimeUnit otherUnit = otherTimeAndDate;
+
+		switch (modeTypeTime) {
+			case ONLY_DATE:
+				if (!Date.validDateString(task.getDate()))
+					return true;
+				otherUnit = otherTimeAndDate.getDate();
+				break;
+			case ONLY_TIME:
+				if (!TimeOfDay.validTimeString(task.getTime()))
+					return true;
+				otherUnit = otherTimeAndDate.getTime();
+				break;
+			case DATE_AND_TIME:
+				if (!Date.validDateString(task.getDate()))
+					return true;
+				otherUnit = otherTimeAndDate;
+				if (!TimeOfDay.validTimeString(task.getTime())) {
+					otherUnit = otherTimeAndDate.getDate();
+				}
+				break;
+		}
+
+		switch (modeTypePreposition) {
+			case ON:
+				return otherUnit.compareTo(myUnit) == 0;
+			case BEFORE:
+				return otherUnit.compareTo(myUnit) < 0;
+			case AFTER:
+				return otherUnit.compareTo(myUnit) > 0;
+		}
+		return true;
+	}
+}
+
+class CategoryFilter extends TaskFilter {
+	private String[]	categories;
+	private int			comboMode;
+
+	public CategoryFilter(String[] categories, int comboMode) {
+		this.categories = categories;
+		this.comboMode = comboMode;
+	}
+
+	private boolean contains(String[] ss, String s) {
+		s = s.trim();
+		for (String t : ss) {
+			if (t.trim().equals(s))
+				return true;
+		}
+		return false;
+	}
+
+	public boolean accept(Task task) {
+		boolean result = false;
+
+		if (task.getTags() == null || task.getTags().length() == 0) {
+			result = categories.length == 0 || categories[0].length() == 0;
+		} else {
+			String[] tags = task.getTags().split(",");
+
+			if (flagSet(comboMode, COMBO_MODE_AND)) {
+				result = true;
+				for (String cat : categories) {
+					if (!contains(tags, cat)) {
+						result = false;
+						break;
+					}
+				}
+			} else if (flagSet(comboMode, COMBO_MODE_OR)) {
+				result = false;
+				for (String cat : categories) {
+					if (contains(tags, cat)) {
+						result = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (flagSet(comboMode, COMBO_MODE_NOT))
+			result = !result;
+		return result;
+	}
+}

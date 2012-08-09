@@ -1,0 +1,350 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.io.IOException;
+
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.cache.TaskCache;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.TaskReference;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+/**
+ * Model representation for a Task. Essentially a facade for the cache layer of a task. Tasks are
+ * handles as String key-value maps. Standard Keys and relevant methods are provided in Task, but
+ * others may be defined elsewhere. Task only contains and gives access to Strings - wrappers such
+ * as Date and TaskRepeats parse those strings as needed
+ * 
+ * @author Andrey Kurenkov
+ */
+public class AppTask implements Task {
+
+	/* Standard tag names */
+	public static final String	TAG_NAME		= "name";
+	public static final String	TAG_DESCRIPTION	= "desc";
+	public static final String	TAG_DUEDATE		= "duedate";
+	public static final String	TAG_DUETIME		= "duetime";
+	public static final String	TAG_REPEAT		= "repeat";
+	public static final String	TAG_NOTES		= "notes";
+	public static final String	TAG_TAGS		= "tags";
+	public static final String	TAG_COMPLETED	= "completed";
+
+	/**
+	 * Cache object for storage.
+	 */
+	private TaskCache			cache;
+
+	/**
+	 * Create a new unbound task object.
+	 */
+	public AppTask() {
+		this.cache = new TaskCache();
+		this.setCompleted(FALSE_STRING);
+	}
+
+	/**
+	 * Created an object at the given StorageAddress
+	 * 
+	 * @param loc
+	 *            StorageAddress where Task already exists
+	 * @throws ObjectNotFoundException
+	 *             thrown if Task not found in cache, i.e. does not already exist
+	 */
+	private AppTask(StorageAddress loc) throws ObjectNotFoundException {
+		this.cache = CacheManager.getTaskCache(loc);
+
+		if (this.cache == null) {
+			throw new ObjectNotFoundException(loc);
+		}
+	}
+
+	/**
+	 * Retrieves a stored Task
+	 * 
+	 * @param addr
+	 *            StorageAddress where Task is stored
+	 * @return null if Task not in storage, the Task otherwise
+	 */
+	protected static AppTask locate(StorageAddress addr) {
+
+		if (!AppTask.exists(addr)) {
+			return null;
+		}
+
+		try {
+			return new AppTask(addr);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Checks if Task exists at given StorageAddress
+	 * 
+	 * @param addr
+	 *            Address to check
+	 * @return true if task there, false otherwise
+	 */
+	protected static boolean exists(StorageAddress addr) {
+		return CacheManager.hasTaskCache(addr);
+	}
+
+	/**
+	 * Binds this task to storage location and not just cache.
+	 * 
+	 * @param ref
+	 *            Reference to bind with.
+	 */
+	protected void bind(TaskReference ref) {
+		this.cache.bind(ref);
+	}
+
+	/**
+	 * Deletes Task from storage.
+	 */
+	protected void delete() {
+		this.cache.delete();
+	}
+
+	/**
+	 * Synces Task with its storage location.
+	 */
+	public void sync() {
+		this.cache.push();
+
+		try {
+			StorageManager.flushAll();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		this.cache.pull();
+	}
+
+	/**
+	 * Setter for how often task due date repeats.
+	 * 
+	 * @param setTo
+	 *            Value of repeating pattern - needs to be A defined parcable string
+	 */
+	public void setRepeats(String setTo) {
+		setTag(TAG_REPEAT, setTo);
+	}
+
+	/**
+	 * Setter for how often task due date repeats.
+	 * 
+	 * @param pattern
+	 *            defined pattern for how the task should repeat
+	 */
+	public void setRepeats(TaskRepeat pattern) {
+		setTag(TAG_REPEAT, pattern.toString());
+	}
+
+	/**
+	 * Setter for Notes property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setNotes(String setTo) {
+		setTag(TAG_NOTES, setTo);
+	}
+
+	/**
+	 * Setter for Tags property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setTags(String setTo) {
+		setTag(TAG_TAGS, setTo);
+	}
+
+	/**
+	 * Setter for Name property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setName(String setTo) {
+		setTag(TAG_NAME, setTo);
+	}
+
+	/**
+	 * Setter for Description property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setDescription(String setTo) {
+		setTag(TAG_DESCRIPTION, setTo);
+	}
+
+	/**
+	 * Setter for Date property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setDate(String setTo) {
+		setTag(TAG_DUEDATE, setTo);
+	}
+
+	/**
+	 * Setter for Time property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setTime(String setTo) {
+		setTag(TAG_DUETIME, setTo);
+	}
+
+	/**
+	 * Setter for Completed property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setCompleted(String setTo) {
+		setTag(TAG_COMPLETED, setTo);
+	}
+
+	/**
+	 * Setter for Completed property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setCompleted(boolean completed) {
+		if (completed)
+			setTag(TAG_COMPLETED, TRUE_STRING);
+		else
+			setTag(TAG_COMPLETED, FALSE_STRING);
+	}
+
+	/**
+	 * @return repeats for this task as string
+	 */
+	public String getRepeats() {
+		return getTag(TAG_REPEAT, "Never");
+	}
+
+	/**
+	 * @return notes for this task
+	 */
+	public String getNotes() {
+		return getTag(TAG_NOTES, "");
+	}
+
+	/**
+	 * @return tags for this task
+	 */
+	public String getTags() {
+		return getTag(TAG_TAGS, "");
+	}
+
+	/**
+	 * @return name of this task
+	 */
+	public String getName() {
+		return getTag(TAG_NAME, "");
+	}
+
+	/**
+	 * @return description of this task
+	 */
+	public String getDescription() {
+		return getTag(TAG_DESCRIPTION, "");
+	}
+
+	/**
+	 * @return date of this task
+	 */
+	public String getDate() {
+		return getTag(TAG_DUEDATE, "");
+	}
+
+	/**
+	 * @return time of this task
+	 */
+	public String getTime() {
+		return getTag(TAG_DUETIME, "");
+	}
+
+	/**
+	 * @return completion property of this Task
+	 */
+	public String getCompleted() {
+		return getTag(TAG_COMPLETED, "false");
+	}
+
+	/**
+	 * General get method for a non-specific property of the Task
+	 * 
+	 * @return the key for the given property
+	 */
+	public String getTag(String tag) {
+		return cache.getTag(tag);
+	}
+
+	/**
+	 * General method for a non-specific property of the Task
+	 * 
+	 * @param tag
+	 *            - the property to get
+	 * @param defValue
+	 *            - the default value (if value is null)
+	 * @return
+	 */
+	public String getTag(String tag, Object defValue) {
+		String value = cache.getTag(tag);
+		if (value == null)
+			value = defValue.toString();
+		return value;
+	}
+
+	/**
+	 * General set method for a non-specific property of the Task
+	 * 
+	 * @param tag
+	 *            the key for the given property
+	 * @param value
+	 *            what to set the property to
+	 */
+	public void setTag(String tag, String value) {
+		cache.setTag(tag, value);
+	}
+
+	/**
+	 * Returns Task String representation of booleans
+	 * 
+	 * @param bool
+	 *            the boolean to return the equivalent for
+	 * @return the String representation of the boolean
+	 */
+	public static String completedBoolToString(boolean bool) {
+		return String.valueOf(bool);
+	}
+
+	/**
+	 * @return storage address of this Task
+	 */
+	public StorageAddress getAddress() {
+		return cache.getAddress();
+	}
+
+	public AppTask clone(Task from) {
+		AppTask toReturn = new AppTask();
+		toReturn.setCompleted(from.getCompleted());
+		toReturn.setDate(from.getDate());
+		toReturn.setName(from.getName());
+		toReturn.setDescription(from.getDescription());
+		toReturn.setRepeats(from.getRepeats());
+		toReturn.setTags(from.getTags());
+		toReturn.setNotes(from.getNotes());
+		toReturn.setTime(from.getTime());
+	}
+
+}

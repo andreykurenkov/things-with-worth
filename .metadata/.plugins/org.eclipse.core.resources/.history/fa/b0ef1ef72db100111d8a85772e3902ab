@@ -1,0 +1,5 @@
+package edu.gatech.RecAwesome.GUI.Components;
+
+public class TextLabelPanel extends JPanel{
+
+}

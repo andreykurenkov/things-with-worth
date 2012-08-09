@@ -1,0 +1,42 @@
+package com.thingswithworth.genregetter.wikiio;
+
+import info.bliki.api.Page;
+
+import java.awt.Image;
+import java.util.ArrayList;
+
+public abstract class WikiParser {
+
+	public abstract String[] infoboxSupport();
+
+	public abstract boolean imageSupport();
+
+	public abstract Image retrieveMainImage();
+	
+	public abstract String[] retrieveImageNames();
+	
+	public abstract Image[] retrieveImages();
+	
+	public String[] getHeadings(Page toRender) {
+		String pageContent = toRender.toString();
+		ArrayList<String> headings = new ArrayList<String>();
+		String currentMatch = "==";
+		headings.addAll(getInsideHeadings("", currentMatch, pageContent, 0));
+		return headings.toArray(new String[headings.size()]);
+	}
+
+	private ArrayList<String> getInsideHeadings(String nestingHeading, String currentMatch, String pageContent,
+			int headingOpen) {
+		ArrayList<String> headings = new ArrayList<String>();
+		headingOpen = pageContent.indexOf(currentMatch, headingOpen);
+		while (headingOpen < pageContent.length() && headingOpen > 0) {
+			int headingClose = pageContent.indexOf(currentMatch, headingOpen + 1);
+			String currentHeading = pageContent.substring(headingOpen + 2, headingClose);
+			if (nestingHeading.length() > 0)
+				currentHeading = nestingHeading + ";" + currentHeading;
+			headings.add(currentHeading);
+			headings.addAll(getInsideHeadings(currentHeading, currentMatch + "=", pageContent, headingClose + 2));
+		}
+		return headings;
+	}
+}

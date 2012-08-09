@@ -1,0 +1,128 @@
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
+
+import javax.swing.DropMode;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+public class MainFrame {
+	public final static Dimension frameDim = new Dimension(1200, 1000);
+	private static final double horizontalRatio = 0.5;
+	private static final double verticalRatio = 0.001;
+	public static final String frameName = "main";
+
+	public static void main(String[] args) {
+
+		StudentSet mySet = new StudentSet(new File("Res/Students.txt"));
+		final JFrame myFrame = new JFrame("CS1331 HW grader");
+		myFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		myFrame.setName(frameName);
+		myFrame.setLayout(new GridBagLayout());
+		myFrame.setPreferredSize(frameDim);
+		JPanel dirPanel = new JPanel();
+		dirPanel.setPreferredSize(new Dimension((int) frameDim.getWidth(),
+				(int) (frameDim.getHeight() * (1 - verticalRatio))));
+		final JTabbedPane tabsPane = new JTabbedPane();
+
+		final FileBrowser browser = new FileBrowser(new Dimension((int) (frameDim.getWidth() * horizontalRatio),
+				(int) (frameDim.getHeight() * 1 - verticalRatio)), tabsPane);
+		browser.setStudents(mySet.getSet());
+		final File startDir = new File("/home/andrey/School/2011-2012/Summer/TA");
+		final JLabel folderLabel = new JLabel("Current dir is: " + startDir.getAbsolutePath());
+		JButton folderChooseButton = new JButton("set folder");
+		folderChooseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setCurrentDirectory(startDir);
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int returnVal = chooser.showOpenDialog(myFrame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						File chosen = chooser.getSelectedFile();
+						browser.setBaseDir(chosen.getAbsolutePath());
+						folderLabel.setText("Current dir is: " + chosen.getAbsoluteFile());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		dirPanel.add(folderLabel);
+		dirPanel.add(folderChooseButton);
+		// int x, int y, int fill, double weightx, double weighty, int width,
+		// int height, int anchor
+		GridBagConstraints c = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.HORIZONTAL, 0.0, verticalRatio,
+				GridBagConstraints.REMAINDER, 1, GridBagConstraints.NORTH);
+		myFrame.add(dirPanel, c);
+		c = ConstraintsHelper.makeConstraints(0, 1, GridBagConstraints.HORIZONTAL, 0.0, verticalRatio / 10,
+				GridBagConstraints.REMAINDER, 1, GridBagConstraints.NORTH);
+		myFrame.add(new JSeparator(), c);
+		c = ConstraintsHelper.makeConstraints(0, 2, GridBagConstraints.BOTH, horizontalRatio, 1 - verticalRatio,
+				GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+		myFrame.add(browser, c);
+		JButton tabClose = browser.getTabCloseButton();
+		dirPanel.add(tabClose);
+		TextStdIOPane readArea = TextStdIOPane.getInstance();
+		tabsPane.add("IO/Status", readArea);
+		tabsPane.setMnemonicAt(0, KeyEvent.VK_1);
+		final JTextArea notes = new JTextArea();
+		notes.setEditable(true);
+		notes.setDragEnabled(true);
+		notes.setDropMode(DropMode.INSERT);
+		// tabsPane.add("Notes", new ToolbaredTextArea(notes));
+		JPanel testPanel = new JPanel();
+		testPanel.setLayout(new GridLayout(20, 1));
+		for (int i = 0; i < 20; i++) {
+			JPanel add = new JPanel();
+			add.setLayout(new GridBagLayout());
+			JLabel test = new JLabel("testy namesimson");
+			JTextField grade = new JTextField("(score)");
+			JTextArea comments = new JTextArea();
+			comments.setEditable(true);
+			JScrollPane commentScroll = new JScrollPane(comments);
+			GridBagConstraints constraint = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.NONE, 0.3, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+			add.add(test, constraint);
+			JSeparator seperate = new JSeparator(JSeparator.VERTICAL);
+			constraint = ConstraintsHelper.makeConstraints(1, 0, GridBagConstraints.NONE, 0.05, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.NONE);
+			// add.add(seperate, constraint);
+			constraint = ConstraintsHelper.makeConstraints(2, 0, GridBagConstraints.NONE, 0.1, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.NONE);
+			add.add(grade, constraint);
+			constraint = ConstraintsHelper.makeConstraints(3, 0, GridBagConstraints.NONE, 0.05, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.NONE);
+			seperate = new JSeparator(JSeparator.VERTICAL);
+			// add.add(seperate, constraint);
+			constraint = ConstraintsHelper.makeConstraints(4, 0, GridBagConstraints.BOTH, 0.5, 1,
+					GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+		//	add.add(commentScroll, constraint);
+			testPanel.add(add);
+		}
+		JScrollPane gradeEnter = new JScrollPane(testPanel);
+		tabsPane.add("Grades", gradeEnter);
+		tabsPane.setMnemonicAt(1, KeyEvent.VK_2);
+		tabsPane.setSelectedIndex(0);
+		c = ConstraintsHelper.makeConstraints(1, 2, GridBagConstraints.BOTH, 1 - horizontalRatio, 1 - verticalRatio,
+				GridBagConstraints.REMAINDER, GridBagConstraints.RELATIVE, GridBagConstraints.EAST);
+
+		myFrame.add(tabsPane, c);
+		myFrame.pack();
+		myFrame.setVisible(true);
+
+	}
+}

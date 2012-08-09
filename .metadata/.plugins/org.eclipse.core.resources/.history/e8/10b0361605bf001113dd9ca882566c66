@@ -1,0 +1,94 @@
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.util.*;
+import javax.swing.*;
+
+public class Ship {
+	public static final int MAX_VEL = 6;
+	private int x, y;
+	private double rotation, vel;
+	private final double dR = Math.PI/10;
+	
+	public Ship(int x, int y){
+		this.x = x;
+		this.y = y;
+	}
+		
+	public void increaseVel(int v){
+		if(vel < MAX_VEL && vel > -MAX_VEL){
+			vel+= v;
+		}
+	}
+	
+	public void rotate(boolean right){
+		if(right)
+			rotation -= dR;
+		else
+			rotation += dR;
+	}
+	
+	public void move(){
+		x += Math.cos(rotation)*vel;
+		y += vel*Math.sin(rotation);
+		
+		if(vel>0.09)
+			vel-=.1;
+		else if(vel<0.09)
+			vel+=.1;
+		else
+			vel = 0;
+		
+		if(x>GamePanel.WIDTH)
+			x -= GamePanel.WIDTH;
+		if(x<0)
+			x += GamePanel.WIDTH;
+		if(y>GamePanel.HEIGHT)
+			y -= GamePanel.HEIGHT;
+		if(y<0)
+			y += GamePanel.HEIGHT;
+	}
+	
+	public Bullet shoot(){
+		int x1 =(int)(8*Math.cos(rotation) - (0)*Math.sin(rotation))+x;
+		int y1 = (int)(8*Math.sin(rotation) + (0)*Math.cos(rotation))+y;
+		
+		return new Bullet(x,y,rotation);
+	}
+	
+	public boolean crash(Asteroid a){
+		return a.collide(new Rectangle(x,y,2,2));
+	}
+	
+	public void draw(Graphics g){
+		g.drawPolygon(makeTriangle());
+		
+		int x1 =(int)((10)*Math.cos(rotation) - (0)*Math.sin(rotation))+x;
+		int y1 = (int)((10)*Math.sin(rotation) + (0)*Math.cos(rotation))+y;
+		int x2 =(int)((6)*Math.cos(rotation) - (0)*Math.sin(rotation))+x;
+		int y2 = (int)((6)*Math.sin(rotation) + (0)*Math.cos(rotation))+y;
+		
+		g.setColor(Color.red);
+		g.drawLine(x1, y1, x2, y2);
+		g.setColor(Color.black);
+	}
+	
+	private Polygon makeTriangle(){
+		int x1 =(int)((8)*Math.cos(rotation) - (0)*Math.sin(rotation))+x;
+		int y1 = (int)((8)*Math.sin(rotation) + (0)*Math.cos(rotation))+y;
+		
+		int x2 = (int)((-4)*Math.cos(rotation) - (-7)*Math.sin(rotation))+x;
+		int y2 = (int)((-4)*Math.sin(rotation) + (-7)*Math.cos(rotation))+y;
+		
+		int x3 = (int)((-4)*Math.cos(rotation) - 7*Math.sin(rotation))+x;
+		int y3 = (int)((-4)*Math.sin(rotation) + 7*Math.cos(rotation))+y;
+		
+		//int xRot = (int)(x*Math.cos(rotation) - y*Math.sin(rotation));
+		//int yRot = (int)(x*Math.sin(rotation) + y*Math.cos(rotation));
+		
+		Polygon p = new Polygon(new int[]{x1,x2,x3}, new int[]{y1,y2,y3}, 3);
+		
+		return p;
+	}
+	
+	
+}

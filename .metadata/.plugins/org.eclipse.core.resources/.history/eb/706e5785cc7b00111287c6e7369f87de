@@ -1,0 +1,64 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.ArrayList;
+
+public interface AccountLists {
+	public final String ERROR_COULD_NOT_ADD_TASKLIST="Could not add this list";
+
+	/**
+	 * Add a TaskList to this AccountLists
+	 * @param list the list to add
+	 * @param name the name of the list
+	 * @return null on success, otherwise error code
+	 */
+	public String addTaskList(TaskList list, String name);
+
+	/**
+	 * Adds a new list with the given name to this collection
+	 * @param nameOfNewList the name of the new list to add
+	 * @return null on success, otherwise error code
+	 */
+	public String addTaskList(String nameOfNewList);
+
+	/**
+	 * Returns a TaskList with a specific name
+	 * 
+	 * @param name
+	 *            the name of the lisTaskList to get
+	 * @return the TaskList with the specifed name
+	 */
+	public TaskList getTaskList(String name);
+
+	/**
+	 * Retrieves from storage and returns all the Ts owned or associated with the account
+	 * 
+	 * @return an ArrayLisTaskList containing all the Ts belonging to this account
+	 */
+	public ArrayList<TaskList> getTaskLists();
+
+	/**
+	 * Returns the names of all the Ts thaTaskList belong to this account
+	 * 
+	 * @return a string array with the lists' names
+	 */
+	public String[] getListNames();
+
+	/**
+	 * Returns the number of lists currently in storage
+	 * 
+	 * @return 0 if no lists stored previously, number of lists otherwise
+	 */
+	public int getNumLists();
+
+	/**
+	 * Deletes the TaskList with the given name
+	 * 
+	 * @param name
+	 *            The name of the TaskList to delete
+	 * @return the deleted T
+	 */
+	public TaskList deleteTaskList(String name);
+
+	public TaskList makeTaskList();
+
+}

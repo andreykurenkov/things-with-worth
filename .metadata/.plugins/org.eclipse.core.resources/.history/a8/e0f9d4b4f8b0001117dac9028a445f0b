@@ -1,0 +1,56 @@
+package edu.gatech.RecAwesome.IO;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import edu.gatech.RecAwesome.Model.Question.Question;
+
+public abstract class QuestionParser {
+	private static final DefaultParser defaultCase = new DefaultParser();
+	private static final String questionDelimiter = "\n\n";
+
+	protected abstract Question parseQuestion(String createFrom);
+
+	/**
+	 * Extracts an array of Questions from a given .qsf file
+	 * 
+	 * Its possible to define completely different parsing methods for each
+	 * question by starting the question with Parser: followed by the name of a
+	 * class that extends this one. However, in most cases the default parsing
+	 * method of creating a HashMap should be sufficient and different question
+	 * types should be implemented through different interpreters.
+	 * 
+	 * @param getFrom
+	 *            File from which to extract questions
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+	public static Question[] parseQuestions(File getFrom) throws FileNotFoundException {
+		ArrayList<Question> builtQuestions = new ArrayList<Question>();
+		Scanner scan = new Scanner(getFrom);
+		scan.useDelimiter(questionDelimiter);
+		while (scan.hasNext()) {
+			String createFrom = scan.next();
+			int firstLineEnd = createFrom.indexOf('\n');
+			if (createFrom.startsWith("Parser:")) {
+				int nameStart = createFrom.indexOf(':') + 1;
+				String parserName = createFrom.substring(nameStart, firstLineEnd);
+				try {
+					Class<?> parser = Class.forName(parserName);
+					Object parserInstance = parser.newInstance();
+					if (parserInstance instanceof QuestionParser) {
+						String content = createFrom.substring(firstLineEnd + 1);
+						builtQuestions.add(((QuestionParser) parserInstance).parseQuestion(content));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			builtQuestions.add(defaultCase.parseQuestion(createFrom));
+		}
+		return builtQuestions.toArray(new Question[1]);
+	}
+
+}

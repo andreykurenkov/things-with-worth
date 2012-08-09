@@ -1,0 +1,67 @@
+package edu.gatech.geochat.model;
+
+import edu.gatech.geochat.GeoChatActivity;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.widget.Toast;
+
+public class User {
+	private String username;
+	private String password;
+	private String email;
+	private static Location currentLocation;
+	private LocationManager locManager;
+
+	
+	public User(String username, String password, String email) {
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		
+locManager=(LocationManager)GeoChatActivity.getActiveContext().getSystemService(Context.LOCATION_SERVICE);
+		
+		LocationListener listener=new LocationListener(){
+
+			@Override
+			public void onLocationChanged(Location location) {
+				currentLocation=location;
+				
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				Toast.makeText(GeoChatActivity.getActiveContext(), "Provider has been disabled", Toast.LENGTH_SHORT);	
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				Toast.makeText(GeoChatActivity.getActiveContext(), "Provider has been enabled", Toast.LENGTH_SHORT);	
+				
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				
+			}
+		};
+		locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,100,10,listener);
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public String getEmail() {
+		return email;
+	}
+	
+	public static Location getLocation(){
+		return currentLocation;
+	}
+}

@@ -1,0 +1,63 @@
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class Asteroid {
+	private Point position;
+	private Vector2D velocity;
+	private Rectangle bounds;
+	private int size;
+	private static Random rand = new Random();// TODO: cant we really not used Math.random()?... cleaner
+
+	public Asteroid(Rectangle bounds, double maxVel) {
+		this(rand.nextDouble() * bounds.getWidth(), rand.nextDouble() * bounds.getHeight(), 12, maxVel);
+		this.bounds = bounds;
+	}
+
+	public Asteroid(double x, double y, int size, double maxVel) {
+		position = new Point();
+		position.setLocation(x, y);
+		velocity = new Vector2D(rand.nextDouble() * maxVel - maxVel / 2, rand.nextDouble() * maxVel - maxVel / 2);
+		this.size = size;
+	}
+
+	public void move() {
+		x += vX;
+		y += vY;
+		if (x > GamePanel.WIDTH)
+			x -= GamePanel.WIDTH;
+		if (x < 0)
+			x += GamePanel.WIDTH;
+		if (y > GamePanel.HEIGHT)
+			y -= GamePanel.HEIGHT;
+		if (y < 0)
+			y += GamePanel.HEIGHT;
+	}
+
+	public void draw(Graphics g) {
+		g.drawOval(x, y, size, size);
+	}
+
+	public boolean collide(int x, int y) {
+		boolean withinX = (x <= this.x + size && x >= this.x);
+		boolean withinY = (y <= this.y + size && y >= this.y);
+		return withinX && withinY;
+	}
+
+	public ArrayList<Asteroid> split() {
+		ArrayList<Asteroid> children = new ArrayList<Asteroid>();
+		if (size == 8) {
+			children.add(new Asteroid(x, y, 4));
+			children.add(new Asteroid(x, y, 4));
+		}
+		if (size == 12) {
+			children.add(new Asteroid(x, y, 8));
+			children.add(new Asteroid(x, y, 8));
+		}
+
+		return children;
+
+	}
+}

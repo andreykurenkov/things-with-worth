@@ -1,0 +1,32 @@
+import java.util.Collection;
+import java.util.Set;
+
+public class Graph {
+
+	private Set<Vertex> vertices;
+	private Collection<Edge> edges;
+
+	/**
+	 * Builds a Graph from a string fully describing the edges in the graph as
+	 * follows: N v1_1 v1_2 c1 v2_1 v2_2 c2 ... Where vX_1 vX_2 cX represents an
+	 * edge from vX_1 to vX_2 with capacity cX, and N is the total number of
+	 * vertices (including source and sink). Vertices can have any name, but you
+	 * are guaranteed that the source will be name "S", and the sink will be
+	 * named "T".
+	 * 
+	 * Example input: "4 S B .1 S C .1 B C .00001 B T .1 C T .1"
+	 * 
+	 * This describes 4 total nodes (NOT the number of edges). There is an edge
+	 * from S to B with capacity .1, an edge from B to C with capacity .00001,
+	 * etc.
+	 * 
+	 * You may assume that both a source and a sink will ALWAYS be included.
+	 * 
+	 * @param str
+	 *            the description of the graph, in the format as described
+	 *            above.
+	 */
+	public Graph(String str) {
+
+	}
+}

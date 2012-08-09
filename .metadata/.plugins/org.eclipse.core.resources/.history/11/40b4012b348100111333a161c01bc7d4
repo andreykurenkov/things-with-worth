@@ -1,0 +1,55 @@
+package edu.gatech.fiveminutesleft.mock;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.TaskList;
+
+public class MockAccountLists implements AccountLists {
+
+	HashMap<String,TaskList> lists;
+	public MockAccountLists(){
+		lists=new HashMap<String, TaskList>();
+	}
+	public String addTaskList(TaskList list, String name) {
+		if(lists.containsKey(name))
+			return AccountLists.ERROR_COULD_NOT_ADD_TASKLIST;
+		else 
+			lists.put(name, list);
+		return null;
+		
+	}
+
+	public String addTaskList(String nameOfNewList) {
+		MockTaskList newList=new MockTaskList(nameOfNewList);
+		return addTaskList(newList, nameOfNewList);
+	}
+
+	public TaskList getTaskList(String name) {
+		return lists.get(name);
+	}
+
+	public ArrayList<TaskList> getTaskLists() {
+		ArrayList<TaskList> arr=new ArrayList<TaskList>();
+		arr.addAll(lists.values());
+		return arr;
+	}
+
+	public String[] getListNames() {
+		return lists.keySet().toArray(null);
+	}
+
+	public int getNumLists() {
+		return lists.size();
+	}
+
+	public TaskList deleteTaskList(String name) {
+		return lists.remove(name);
+	}
+
+	public TaskList makeTaskList() {
+		return new MockTaskList();;
+	}
+
+}

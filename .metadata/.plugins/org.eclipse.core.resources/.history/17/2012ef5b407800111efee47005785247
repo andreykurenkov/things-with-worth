@@ -1,0 +1,258 @@
+package edu.gatech.fiveminutesleft;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+
+/**
+ * This is the class which manages Task filtering for TaskLists.
+ * 
+ * @author g
+ */
+public class FilteringActivity extends Activity {
+
+	/**
+	 * Launches this Activity
+	 * 
+	 * @param source
+	 * @param categories
+	 *            - list of categories to provide as options for the category filter
+	 * @param wrapper
+	 *            - master filter to work on
+	 */
+	public static void launch(Activity source, String[] categories, FilterWrapper wrapper) {
+		Intent n = new Intent(source, FilteringActivity.class);
+		GUISpace.put(FilteringActivity.class, "categories", categories);
+		GUISpace.put(FilteringActivity.class, "wrapper", wrapper);
+		source.startActivity(n);
+	}
+
+	private ListView	filterList;
+	private BaseAdapter	filterAdapter;
+	private Spinner		typeSpin;
+
+	@Override
+	/**
+	 * Set the layout and create instance variables
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+
+		setContentView(R.layout.filtering_layout);
+
+		typeSpin = (Spinner) findViewById(R.id.FilterTypeSpinner);
+
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, new String[] {
+				"Date & Time", "Category" });
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		typeSpin.setAdapter(adapter);
+
+		filterList = (ListView) findViewById(R.id.FilterConditionList);
+		filterAdapter = new FilterAdapter();
+		filterList.setAdapter(filterAdapter);
+
+	}
+
+	private void debugMsg(String text) {
+
+	}
+
+	/**
+	 * Called when the user presses Cancel, closes this Activity
+	 * 
+	 * @param v
+	 */
+	public void cancel(View v) {
+		finish();
+	}
+
+	/**
+	 * Called when the user presses "Done" (or "Save"), applies filter and closes this Activity.
+	 * 
+	 * @param v
+	 */
+	public void done(View v) {
+		FilterWrapper wrapper = (FilterWrapper) GUISpace.get(getClass(), "wrapper");
+		List<FilterWrapper> wraps = getFilterList();
+		TaskFilter[] filts = new TaskFilter[wraps.size()];
+		for (int i = 0; i < filts.length; i++)
+			filts[i] = wraps.get(i).getFilter();
+		wrapper.setFilter(TaskFilter.createComboFilter(filts, TaskFilter.COMBO_MODE_AND));
+		finish();
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		debugMsg("onStart - " + getFilterList().size());
+	}
+
+	@Override
+	/**
+	 * Restores data stored after rotation.
+	 */
+	public void onResume() {
+		super.onResume();
+		debugMsg("onResume - " + getFilterList().size());
+
+		if (GUISpace.has(getClass(), "working_filter")) {
+			FilterWrapper filt = (FilterWrapper) GUISpace.get(getClass(), "working_filter");
+			if (filt.getFilter() != null) {
+				getFilterList().add(0, filt);
+			}
+			GUISpace.clear(getClass(), "working_filter");
+		}
+
+		filterAdapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * Clear out any remaining persistent data when this task is done.
+	 */
+	@Override
+	/**
+	 * Deletes any data in GUISpace if we're closing the Activity now 
+	 * (rather than just rotating)
+	 */
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			// Commented out so that we keep filters somewhat persistent until we figure
+			// out how to serialize them.
+			// GUISpace.clearPrefix(getClass());
+		}
+	}
+
+	/**
+	 * Adds a filter to the list of filters to be ANDed together.
+	 * 
+	 * @param v
+	 */
+	public void addFilter(View v) {
+		int pos = typeSpin.getSelectedItemPosition();
+		if (pos == 0) {
+			FilterWrapper filt = new FilterWrapper(0);
+			GUISpace.put(getClass(), "working_filter", filt);
+			FilteringByTimeActivity.launch(this, filt);
+		} else if (pos == 1) {
+			FilterWrapper filt = new FilterWrapper(1);
+			GUISpace.put(getClass(), "working_filter", filt);
+
+			String[] options = getCategories();
+
+			FilteringCategoryActivity.launch(this, filt, options);
+		}
+	}
+
+	private String[] getCategories() {
+		return (String[]) GUISpace.get(getClass(), "categories");
+	}
+
+	private List<FilterWrapper> getFilterList() {
+		if (GUISpace.has(getClass(), "filters"))
+			return (List<FilterWrapper>) GUISpace.get(getClass(), "filters");
+		List<FilterWrapper> list = new ArrayList<FilterWrapper>();
+		GUISpace.put(getClass(), "filters", list);
+		return list;
+	}
+
+	private void deleteFilter(FilterWrapper filter) {
+		getFilterList().remove(filter);
+		filterAdapter.notifyDataSetChanged();
+	}
+
+	private void editFilter(FilterWrapper filter) {
+		switch (filter.getType()) {
+			case 0:
+				FilteringByTimeActivity.launch(this, filter);
+				break;
+			case 1:
+				FilteringCategoryActivity.launch(this, filter, getCategories());
+				break;
+		}
+	}
+
+	private Activity self() {
+		return this;
+	}
+
+	private class FilterAdapter extends BaseAdapter {
+		private LayoutInflater	inflater;
+
+		public FilterAdapter() {
+			inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		}
+
+		public int getCount() {
+
+			return getFilterList().size();
+		}
+
+		public FilterWrapper getItem(int i) {
+			return getFilterList().get(i);
+		}
+
+		public long getItemId(int i) {
+			return getFilterList().get(i).hashCode();
+		}
+
+		public View getView(int position, View convert, ViewGroup parent) {
+			final FilterWrapper filter = getFilterList().get(position);
+
+			View view = inflater.inflate(R.layout.filtering_item_layout, null);
+
+			TextView tv = (TextView) view.findViewById(R.id.FilterItemText);
+			tv.setText(filter.toString());
+
+			View edit = view.findViewById(R.id.FilterItemText);
+			View delete = view.findViewById(R.id.FilterItemDelete);
+
+			edit.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					editFilter(filter);
+				}
+			});
+			delete.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+
+					final AlertDialog.Builder b = new AlertDialog.Builder(self());
+					b.setTitle("Confirm Delete");
+					b.setMessage("Area you sure you want to delete this filter?\n" + filter.toString());
+
+					b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							deleteFilter(filter);
+						}
+					});
+
+					b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+
+						}
+					});
+
+					b.show();
+				}
+			});
+
+			return view;
+		}
+	}
+}

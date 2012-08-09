@@ -1,0 +1,12 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.io.File;
+
+import javax.swing.JList;
+import java.io.FileFilter;
+
+public class JFileList extends JList {
+	private FileFilter filter;
+	private File currentDir;
+	
+}

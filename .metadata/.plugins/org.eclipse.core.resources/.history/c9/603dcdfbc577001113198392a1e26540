@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="edu.gatech.fiveminutesleft"
+      android:versionCode="1"
+      android:versionName="1.0">
+<uses-permission android:name="android.permission.INTERNET"/>
+<application android:label="@string/app_name" android:theme="@style/YellowTheme" android:icon="@drawable/launch_icon" android:name="DoItApplication">
+        
+        <activity android:name="LoginActivity" android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>    
+        </activity>
+        <activity android:name="PasswordRecoveryActivity" android:theme="@android:style/Theme.Dialog" android:label="Password Recovery"></activity>
+        <activity android:name="RegisterActivity" android:label="Register"></activity>
+        <activity android:name="TaskViewActivity" android:label="View Task"></activity>
+        <activity android:name="TaskEditActivity" android:label="Edit Task"></activity>
+        <activity android:name="SettingsActivity" android:label="Account Settings"></activity>
+        <activity android:name=".FilteringDueActivity" android:label="Filter by Date"></activity>
+        <activity android:name="TaskListActivity" android:label="Tasks" android:windowSoftInputMode="adjustPan"></activity>
+        <activity android:name="ListsActivity" android:label="Account" android:windowSoftInputMode="adjustPan"></activity>
+        <activity android:name="EditRepeatActivity" android:theme="@android:style/Theme.Dialog" android:label="Repeat"></activity>
+        <activity android:name="FilteringCategoryActivity" android:theme="@android:style/Theme.Dialog" android:label="Filter by Category"></activity>
+        <activity android:name="ChangePasswordActivity" android:theme="@android:style/Theme.Dialog" android:label="Change Password"></activity>
+        <activity android:name="EditListActivity" android:theme="@android:style/Theme.Dialog" android:label="Edit List"></activity>
+        <activity android:name="FilteringActivity" android:label="Filtering" android:windowSoftInputMode="adjustPan"></activity>
+    
+        
+        <activity android:name="MainActivity" android:label="@string/app_name">
+        </activity>
+    </application>
+</manifest> 

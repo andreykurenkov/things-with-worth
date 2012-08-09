@@ -1,0 +1,102 @@
+package edu.gatech.fiveminutesleft.test;
+
+import java.util.ArrayList;
+
+import edu.gatech.fiveminutesleft.FilterWrapper;
+import edu.gatech.fiveminutesleft.GUISpace;
+import edu.gatech.fiveminutesleft.GUITask;
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.SettingsActivity;
+import edu.gatech.fiveminutesleft.TaskEditActivity;
+import edu.gatech.fiveminutesleft.TaskListActivity;
+import android.content.pm.ActivityInfo;
+import android.test.ActivityInstrumentationTestCase2;
+import android.test.UiThreadTest;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.mock.MockAccount;
+import edu.gatech.fiveminutesleft.model.Account;
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.AppAccount;
+import edu.gatech.fiveminutesleft.model.AppTask;
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+import edu.gatech.fiveminutesleft.model.TaskList;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.jsonfile.LocalJSONFileStorage;
+/**
+ * 
+ * @author Andrey Kurenkov
+ *
+ */
+public class SettingsActivityTest extends  
+ActivityInstrumentationTestCase2<SettingsActivity>  {
+
+	private Account account;
+	private SettingsActivity myActivity;
+	private Button doneButton;
+	private Button cancelButton;
+	private final String testUser="testUse";
+	private final String testPassword="testPass";
+	private final String testEmail="testEmail@test.com";
+	private final String testName="test Test";
+	private TextView emailView, nameView, statusView;
+	private boolean finished;
+
+	public SettingsActivityTest() {
+	      super("edu.gatech.fiveminutesleft.test.SettingsActivityTests", SettingsActivity.class);
+	    }
+	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		account=new MockAccount(testName, testUser, testPassword, testEmail);
+		GUISpace.put(SettingsActivity.class, "account", account);
+		GUISpace.put(SettingsActivity.class, "fullname", account.getRealName());
+		GUISpace.put(SettingsActivity.class, "username", account.getUsername());
+		GUISpace.put(SettingsActivity.class, "email", account.getEmail());
+		
+		myActivity=getActivity();
+		emailView = (TextView) myActivity.findViewById(R.id.SettingsEmail);
+		nameView = (TextView) myActivity.findViewById(R.id.SettingsName);
+		statusView = (TextView) myActivity.findViewById(R.id.SettingsStatus);
+		cancelButton=(Button) myActivity.findViewById(R.id.SettingsCancel);
+		doneButton=(Button) myActivity.findViewById(R.id.SettingsDone);
+		
+		}
+	
+	public void testPreconditions(){
+		assertEquals(testName,nameView.getEditableText().toString());
+		assertEquals(testEmail,emailView.getEditableText().toString());
+		assertEquals("",statusView.getText().toString());
+		assertFalse(GUISpace.get(SettingsActivity.class, "account")==null);
+	}
+	
+	
+	public void testChangeName(){
+		sendKeys("T ENTER ENTER DPAD_DOWN DPAD_RIGHT ENTER");
+		assertEquals("t"+testName,account.getRealName());
+
+	}
+	
+	public void testChangeEmail(){
+		sendKeys("ENTER S ENTER DPAD_DOWN DPAD_RIGHT ENTER");
+		assertEquals("s"+testEmail,account.getEmail());
+	}
+	
+	public void testInvalidChangeEmail(){
+		sendKeys("ENTER");
+		this.sendRepeatedKeys(15,KeyEvent.KEYCODE_DPAD_RIGHT);
+		this.sendRepeatedKeys(10,KeyEvent.KEYCODE_DEL);
+		sendKeys("ENTER DPAD_DOWN DPAD_RIGHT ENTER");
+		assertEquals(testEmail,account.getEmail());
+		assertEquals(AccountManager.ERROR_INVALID_EMAIL,statusView.getText().toString());
+	}
+	
+}
+

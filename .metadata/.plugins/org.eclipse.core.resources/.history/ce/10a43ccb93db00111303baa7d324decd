@@ -1,0 +1,60 @@
+import gmusic.api.impl.GoogleMusicAPI;
+import gmusic.api.model.Song;
+
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Collection;
+
+import javax.swing.JApplet;
+import javax.swing.JProgressBar;
+
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.data.general.DefaultPieDataset;
+
+public class MetaMusic extends JApplet {
+	private PiePlot plot;
+	private JProgressBar bar;
+
+	public void init() {
+		bar = new JProgressBar();
+		bar.setIndeterminate(true);
+		this.add(bar);
+		GoogleMusicAPI api = new GoogleMusicAPI();
+		try {
+			api.login("andrey.sendme@gmail.com", "16253461");
+			final Collection<Song> songs = api.getAllSongs();
+			final DefaultPieDataset data = new DefaultPieDataset();
+			Runnable run = new Runnable() {
+				@Override
+				public void run() {
+					for (Song s : songs) {
+						try {
+							data.setValue(s.getGenre(), data.getValue(s.getGenre()).intValue() + 1);
+						} catch (UnknownKeyException ex) {
+							data.setValue(s.getGenre(), 1);
+							ex.printStackTrace();
+						}
+					}
+					plot = new PiePlot(data);
+				}
+			};
+			run.run();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void paint(Graphics g) {
+		if (plot == null) {
+			plot.draw((Graphics2D) g,
+					new Rectangle(0, 0, (int) this.getSize().getWidth(), (int) this.getSize().getHeight()), new Point(0, 0),
+					null, null);
+		} else {
+			bar.paint(g);
+		}
+
+	}
+}

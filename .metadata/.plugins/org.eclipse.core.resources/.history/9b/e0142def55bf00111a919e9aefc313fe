@@ -1,0 +1,91 @@
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Random;
+
+/**
+ * Its a class that represents a giant rock in space
+ * 
+ * @author Elizabeth Johnson, Andrey K.
+ * @version 1.1
+ */
+public class Asteroid {
+	private Vector2D velocity, position;
+	private Dimension bounds;
+	private int size;
+	private double maxVel;
+	private static Random rand = new Random();// TODO: cant we really not used Math.random()?... cleaner
+
+	/**
+	 * Convenience constructor that has default size and vel and a random pos.
+	 * 
+	 * @param bounds
+	 * @param maxVel
+	 */
+	public Asteroid(Dimension bounds, double maxVel) {
+		this(rand.nextDouble() * bounds.getWidth(), rand.nextDouble() * bounds.getHeight(), 12, maxVel);
+		this.bounds = bounds;
+	}
+
+	/**
+	 * Convenience constructor that takes in a vector2D.
+	 * 
+	 * @param pos
+	 * @param size
+	 * @param maxVel
+	 * @param bounds
+	 */
+	public Asteroid(Vector2D pos, int size, double maxVel, Dimension bounds) {
+		this(pos.getX(), pos.getY(), size, maxVel, bounds);
+	}
+
+	public Asteroid(double x, double y, int size, double maxVel, Dimension bounds) {
+		position = new Vector2D(x, y);
+		velocity = new Vector2D(rand.nextDouble() * maxVel - maxVel / 2, rand.nextDouble() * maxVel - maxVel / 2);
+		this.size = size;
+		this.maxVel = maxVel;
+		this.bounds = bounds;
+	}
+
+	public void move() {
+		position = this.velocity.add(position);
+		double boundX = (bounds.getWidth() + position.getX() % bounds.getWidth()) % bounds.getWidth();
+		double boundY = (bounds.getHeight() + position.getY() % bounds.getHeight()) % bounds.getHeight();
+		position.setLocation(boundX, boundY);
+	}
+
+	public void draw(Graphics g) {
+		g.drawOval((int) position.getX(), (int) position.getY(), size, size);
+	}
+
+	public boolean collide(Rectangle with) {
+		Rectangle pos = new Rectangle((int) position.getX(), (int) position.getY(), size, size);
+		return pos.intersects(with);
+	}
+
+	public boolean collide(Point with) {
+		Rectangle pos = new Rectangle((int) position.getX(), (int) position.getY(), size, size);
+		return pos.intersects(with.getX(), with.getY(), 0.5, 0.5);// radius 1/4, cause I can
+	}
+
+	public void setBounds(Dimension set) {
+		this.bounds = set;
+	}
+
+	public ArrayList<Asteroid> split() {
+		ArrayList<Asteroid> children = new ArrayList<Asteroid>();
+		if (size == 8) {
+			children.add(new Asteroid(position, 4, maxVel));
+			children.add(new Asteroid(position, 4, maxVel));
+		}
+		if (size == 12) {
+			children.add(new Asteroid(position, 8, maxVel));
+			children.add(new Asteroid(position, 8, maxVel));
+		}
+
+		return children;
+
+	}
+}

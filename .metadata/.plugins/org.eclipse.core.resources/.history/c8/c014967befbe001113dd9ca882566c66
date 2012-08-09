@@ -1,0 +1,64 @@
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class Asteroid {
+	private Point position;
+	private Vector2D velocity;
+	private Rectangle2D bounds;
+	private int size;
+	private static Random rand = new Random();
+
+	public Asteroid(Rectangle2D bounds) {
+		this.bounds = bounds;
+		this(rand.nextInt(bounds.getWidth()), rand.nextInt(bounds.getHeight()), 12);
+	}
+
+	public Asteroid(int x, int y, int size) {
+		this.x = x;
+		this.y = y;
+		this.size = size;
+		vX = rand.nextInt(10) - 5;
+		vY = rand.nextInt(10) - 5;
+	}
+
+	public void move() {
+		x += vX;
+		y += vY;
+		if (x > GamePanel.WIDTH)
+			x -= GamePanel.WIDTH;
+		if (x < 0)
+			x += GamePanel.WIDTH;
+		if (y > GamePanel.HEIGHT)
+			y -= GamePanel.HEIGHT;
+		if (y < 0)
+			y += GamePanel.HEIGHT;
+	}
+
+	public void draw(Graphics g) {
+		g.drawOval(x, y, size, size);
+	}
+
+	public boolean collide(int x, int y) {
+		boolean withinX = (x <= this.x + size && x >= this.x);
+		boolean withinY = (y <= this.y + size && y >= this.y);
+		return withinX && withinY;
+	}
+
+	public ArrayList<Asteroid> split() {
+		ArrayList<Asteroid> children = new ArrayList<Asteroid>();
+		if (size == 8) {
+			children.add(new Asteroid(x, y, 4));
+			children.add(new Asteroid(x, y, 4));
+		}
+		if (size == 12) {
+			children.add(new Asteroid(x, y, 8));
+			children.add(new Asteroid(x, y, 8));
+		}
+
+		return children;
+
+	}
+}

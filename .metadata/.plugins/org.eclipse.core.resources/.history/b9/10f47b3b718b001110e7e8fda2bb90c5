@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+   <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="left"
+            android:text="sample not really note but something like this maybe but
+            			will really probbalby be way longer nad also misspelled so this i
+            			s an example of that"
+            android:textSize="18dp"
+             />
+   
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="left"
+            android:text="-Sample signature"
+            android:textSize="20dp"
+             />
+
+        <EditText
+            android:layout_marginTop="15dp"
+            android:id="@+id/commentOnNote"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/commentNoteHint" />
+        
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+            
+        </Button>
+        
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+        
+		</ListView>
+
+
+</LinearLayout>

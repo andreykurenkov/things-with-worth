@@ -1,0 +1,85 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+
+public class Bullet {
+	private Vector2D pos, vel;
+	private static final int SIZE = 3;
+	private Dimension bounds;
+
+	/**
+	 * Convenience constructor. Uses chaining.
+	 * 
+	 * @param pos
+	 * @param vel
+	 * @param bounds
+	 */
+	public Bullet(Vector2D pos, Vector2D vel, Dimension bounds) {
+		this(pos, vel.getX(), vel.getY(), bounds);
+	}
+
+	/**
+	 * Convenience constructor. Uses chaining.
+	 * 
+	 * @param pos
+	 * @param velX
+	 * @param velY
+	 * @param bounds
+	 */
+	public Bullet(Vector2D pos, double velX, double velY, Dimension bounds) {
+		this(pos.getX(), pos.getY(), velX, velY, bounds);
+	}
+
+	/**
+	 * Base constructor that does not rely on data structure.
+	 * 
+	 * @param x
+	 * @param y
+	 * @param velX
+	 * @param velY
+	 * @param bounds
+	 */
+	public Bullet(double x, double y, double velX, double velY, Dimension bounds) {
+		pos = new Vector2D(x, y);
+		vel = new Vector2D(velX, velY);
+		this.bounds = bounds;
+	}
+
+	/**
+	 * Checks if the bullet hits the clumsy asteroid.
+	 * 
+	 * @param clumsy
+	 *            the asteroid that may have gotten hit
+	 * @return true if asteroid hit
+	 */
+	public boolean hit(Asteroid clumsy) {
+		return clumsy.collide(pos.toPoint());
+	}
+
+	/**
+	 * Draw method for Bullet
+	 * 
+	 * @param g
+	 *            Graphics thing to draw with
+	 */
+	public void draw(Graphics g) {
+		g.setColor(Color.red);
+		g.fillOval((int) pos.getX(), (int) pos.getY(), SIZE, SIZE);// TODO: take in size? Lazy :(
+		g.setColor(Color.black);
+	}
+
+	/**
+	 * Moves the bullet/
+	 */
+	public void move() {
+		pos = pos.add(vel);
+	}
+
+	/**
+	 * Tells you if you are offscreen
+	 * @return boolean that tells you if you are offscreen
+	 */
+	public boolean isOffScreen() {
+		return pos.getX() < 0 || pos.getY() < 0 || pos.getX() > bounds.getWidth() || pos.getY() > bounds.getHeight();
+	}
+}

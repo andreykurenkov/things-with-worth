@@ -1,0 +1,21 @@
+import gmusic.api.impl.GoogleMusicAPI;
+import gmusic.api.model.Song;
+
+import java.util.Collection;
+
+import org.jfree.data.general.DefaultPieDataset;
+
+public class MetaMusic {
+	public static void main(String[] args) {
+		GoogleMusicAPI api = new GoogleMusicAPI();
+		try {
+			api.login("andrey.sendme@gmail.com", "16253461");
+			Collection<Song> songs = api.getAllSongs();
+			DefaultPieDataset data = new DefaultPieDataset();
+			for (Song s : songs)
+				data.setValue(s.getGenre(), data.getValue(s.getGenre()) + 1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}

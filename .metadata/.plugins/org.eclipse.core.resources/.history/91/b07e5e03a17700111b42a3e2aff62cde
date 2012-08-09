@@ -1,0 +1,48 @@
+package edu.gatech.fiveminutesleft.test;
+
+import org.junit.Test;
+
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.model.Account;
+import junit.framework.TestCase;
+
+public class RegisterTest extends TestCase {
+	private Account testAccount;
+	
+	@Override
+	protected void setUp() throws Exception{
+		super.setUp();
+		AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPassword", "testemail@test.test");
+		Account.locate("testUsername");
+	}
+	@Test
+	public void emptyFieldTest(){
+		String result=AccountManager.getInstance().register("", "testUsername", "testPassword", "testPassword", "testemail@test.test");
+		assertEquals(result,AccountManager.ERROR_FIELDS_NOT_FILLED);
+	}
+	
+	@Test
+	public void invalidPasswordTest(){
+		String result=AccountManager.getInstance().register("testName", "testUsername", "testP", "testP", "testemail@test.test");
+		assertEquals(result,AccountManager.ERROR_INVALID_PASSWORD);
+	}
+	
+	@Test
+	public void invalidEmailTest(){
+		String result=AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPassword", "invalidEmail");
+		assertEquals(result,AccountManager.ERROR_INVALID_EMAIL);
+	}
+	
+	@Test
+	public void passwordsNotMatchingTest(){
+		String result=AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPasswordWrong", "testemail@test.test");
+		assertEquals(result,AccountManager.ERROR_PASSWORD_DOES_NOT_MATCH_CONFIRM);
+	}
+	
+	@Test
+	public void passwordsNotMatchingTest(){
+		String result=AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPasswordWrong", "testemail@test.test");
+		assertEquals(result,AccountManager.ERROR_PASSWORD_DOES_NOT_MATCH_CONFIRM);
+	}
+
+}

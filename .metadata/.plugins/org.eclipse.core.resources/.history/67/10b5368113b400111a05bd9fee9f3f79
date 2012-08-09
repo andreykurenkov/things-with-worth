@@ -1,0 +1,83 @@
+package edu.gatech.RecAwesome.Model;
+
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.Format;
+import java.text.NumberFormat;
+import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import edu.gatech.RecAwesome.GUI.QuestionsPanel;
+import edu.gatech.RecAwesome.GUI.Components.TextLabelPanel;
+
+public class ClassInterpreter implements QuestionInterpreter {
+	private final Format allowedInput = NumberFormat.getIntegerInstance();
+
+	@Override
+	public JPanel visualizeQuestion(final Question toInterpret) {
+		final HashMap<String, String> contents = toInterpret.getContents();
+		JPanel myPanel = new JPanel();
+		GridLayout layout;
+		// TODO: a bunch of safety stuff to not throw errors but rather catch
+		// invalid question definitions
+		if (contents.containsKey("NumOptions")) {
+			int numOptions = Integer.parseInt(contents.get("NumOptions").trim());
+			boolean hasColumns = false;
+			if (numOptions > 4) {
+				layout = new GridLayout(3 + (numOptions - 1) / 3, 3);
+				hasColumns = true;
+			} else
+				layout = new GridLayout(4 + numOptions, 1);
+
+			myPanel.setLayout(layout);
+			final TextLabelPanel count = new TextLabelPanel("Class size:", false, allowedInput);
+
+			myPanel.add(count);
+			myPanel.add(new JLabel(toInterpret.getQuestionText()));
+
+			if (hasColumns)
+				myPanel.add(new JLabel(""));
+
+			final HashMap<String, TextLabelPanel> options = new HashMap<String, TextLabelPanel>();
+			for (int i = 0; i < numOptions; i++) {
+				TextLabelPanel option = new TextLabelPanel(contents.get("Option" + i), allowedInput);
+				option.setPreferredSize(new Dimension(myPanel.getWidth(), 50));
+				options.put("Option" + i, option);
+				myPanel.add(option);
+			}
+			if (hasColumns)
+				for (int i = numOptions; i < (1 + numOptions + numOptions % 3); i++)
+					myPanel.add(new JLabel(""));
+			JButton submit = new JButton("submit");
+			myPanel.add(myPanel.add(submit));
+			final JLabel label = new JLabel("");
+			myPanel.add(label);
+			submit.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent event) {
+					// TODO: remove debugging label
+					String answer = contents.get("Answer");
+					int numCorrect = Integer.parseInt(options.get(answer).getFieldText());
+					double grade = (double) numCorrect / Integer.parseInt(count.getFieldText())*100;
+					toInterpret.setGrade(grade);
+					label.setText("" + grade);
+				}
+
+			});
+		} else
+			myPanel.add(new JLabel("Error parsing: NumOptions not set"));
+		return myPanel;
+	}
+
+	@Override
+	public QuestionBuilder formQuestionBuilder() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,290 @@
+package edu.gatech.fiveminutesleft.util;
+
+import java.util.Date;
+import java.util.Properties;
+
+import javax.activation.*;
+import javax.mail.*;
+import javax.mail.internet.*;
+
+import javax.mail.Authenticator;
+
+/**
+ * <p>
+ * A simple interface for sending SMTP/MIME emails via STARTTLS.
+ * </p>
+ * <p>
+ * Normally, email operates with a client-server architecture. Clients connect to a mail server
+ * using their credentials, and the server sends and receives mail.
+ * </p>
+ * <p>
+ * To this end, I've set up a Gmail address for the project, since we probably won't have our own
+ * domain-branded mail server in the scope of this project.<br>
+ * username: <code>doitnotifier@gmail.com</code> <br>
+ * password: <code>7_k:c|kQHf|Znx|)r!5oryKuRcS[r}c'}T&3Tq2@pPgn\UDRo<&~C4&Bak>.z.k</code><br>
+ * </p>
+ * Gmail's SMTP server is located at smtp.gmail.com, and is accessible via port 587 with STARTTLS
+ * encryption.
+ * <p>
+ * A connection to the email server is not made until the send() method is called.<br>
+ * <br>
+ * In general, calling will look something like: <br>
+ * <code>
+ * Mail m = new Mail("username", "password");<br>
+ * m.setSubject("hello, world!");<br>
+ * m.setFrom("username@domain.com");<br>
+ * m.setTo(new String[] { "recepient@otherdomain.com" });<br>
+ * m.send();<br>
+ * <br> 
+ * </code> Other information in the email can be set with available getters and setters.
+ * </p>
+ * 
+ * @author Daniel Keyes
+ */
+public class Mail {
+	private String		username;
+	private String		password;
+
+	private String[]	toAddresses;
+	private String		fromAddress;
+
+	private String		port;
+
+	private String		host;
+
+	private String		subject;
+	private String		body;
+
+	private boolean		authenticated;
+
+	private boolean		debuggable;
+
+	/** container for data in MIME messages */
+	private Multipart	multipart;
+
+	/**
+	 * Initializes the Mail as a blank message.
+	 */
+	public Mail() {
+		// TODO: don't default to gmail
+		host = "smtp.gmail.com"; // default smtp server
+		port = "587"; // default smtp port for TLS encryption
+
+		username = "";
+		password = "";
+		fromAddress = "";
+		subject = "";
+		body = "";
+
+		debuggable = false;
+
+		authenticated = true;
+
+		multipart = new MimeMultipart();
+
+		// There is something wrong with MailCap, javamail can not find a
+		// handler for the multipart/mixed part, so this bit needs to be added.
+		MailcapCommandMap mc = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
+		mc.addMailcap("text/html;; x-java-content-handler=com.sun.mail.handlers.text_html");
+		mc.addMailcap("text/xml;; x-java-content-handler=com.sun.mail.handlers.text_xml");
+		mc.addMailcap("text/plain;; x-java-content-handler=com.sun.mail.handlers.text_plain");
+		mc.addMailcap("multipart/*;; x-java-content-handler=com.sun.mail.handlers.multipart_mixed");
+		mc.addMailcap("message/rfc822;; x-java-content-handler=com.sun.mail.handlers.message_rfc822");
+		CommandMap.setDefaultCommandMap(mc);
+	}
+
+	/**
+	 * Initializes the Mail as a blank message with a username and password.
+	 * 
+	 * @param username
+	 *            the email account username
+	 * @param password
+	 *            the password associated with the username
+	 */
+	public Mail(String username, String password) {
+		this();
+
+		this.username = username;
+		this.password = password;
+	}
+
+	/**
+	 * Attempts to send the email message. This checks that the username and password are set, and
+	 * the from address and toAddresses are set as a non-empty string and non-empty array of
+	 * strings, respectively, else returns false. The subject and body text may be absent.
+	 * 
+	 * @return false if username, password, from, or To contains no text
+	 * @throws AddressException
+	 *             if the fromAddress was invalid
+	 * @throws MessagingException
+	 *             if a problem occurred starting the server connection or sending the message
+	 */
+	public boolean send() throws AddressException, MessagingException {
+		Properties props = createProperties();
+
+		if (!username.equals("") && !password.equals("") && toAddresses.length > 0
+				&& !fromAddress.equals("")) {
+
+			// create a server connection using the desired properties, and an
+			// interface for the username and password
+			Session session = Session.getInstance(props, new Authenticator() {
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(username, password);
+				}
+			});
+
+			MimeMessage msg = new MimeMessage(session);
+
+			msg.setFrom(new InternetAddress(fromAddress));
+
+			InternetAddress[] addressTo = new InternetAddress[toAddresses.length];
+			for (int i = 0; i < toAddresses.length; i++) {
+				addressTo[i] = new InternetAddress(toAddresses[i]);
+			}
+			msg.setRecipients(MimeMessage.RecipientType.TO, addressTo);
+
+			msg.setSubject(subject);
+			msg.setSentDate(new Date());
+
+			// setup message body
+			BodyPart messageBodyPart = new MimeBodyPart();
+			messageBodyPart.setText(body);
+			multipart.addBodyPart(messageBodyPart);
+
+			// Put parts in message
+			msg.setContent(multipart);
+
+			// send email
+			Transport.send(msg);
+
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Adds and attachment, if desired.
+	 * 
+	 * @param filename
+	 *            absolute or relative pathname of the file
+	 * @throws MessagingException
+	 *             If the
+	 */
+	public void addAttachment(String filename) throws MessagingException {
+		BodyPart messageBodyPart = new MimeBodyPart();
+		DataSource source = new FileDataSource(filename);
+		messageBodyPart.setDataHandler(new DataHandler(source));
+		messageBodyPart.setFileName(filename);
+
+		multipart.addBodyPart(messageBodyPart);
+	}
+
+	/**
+	 * Assembles a set of properties, for creating a mail session
+	 * 
+	 * @return an instance of Properties containing host, debug, auth, port, and socketFactory
+	 *         information
+	 */
+	private Properties createProperties() {
+		Properties props = new Properties();
+
+		props.put("mail.smtp.host", host);
+
+		if (debuggable) {
+			props.put("mail.debug", "true");
+		}
+
+		if (authenticated) {
+			props.put("mail.smtp.auth", "true");
+		}
+
+		props.put("mail.smtp.port", port);
+		// props.put("mail.smtp.socketFactory.port", socketFactoryPort);
+		// props.put("mail.smtp.socketFactory.class",
+		// "javax.net.ssl.SSLSocketFactory");
+		// props.put("mail.smtp.socketFactory.fallback", "false");
+
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+
+		return props;
+	}
+
+	/**
+	 * @return the body text
+	 */
+	public String getBody() {
+		return body;
+	}
+
+	/**
+	 * @param body
+	 *            the new body text
+	 */
+	public void setBody(String body) {
+		this.body = body;
+	}
+
+	/**
+	 * @return the subject text
+	 */
+	public String getSubject() {
+		return subject;
+	}
+
+	/**
+	 * @param subject
+	 *            the subject text
+	 */
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	/**
+	 * @return the from address
+	 */
+	public String getFrom() {
+		return fromAddress;
+	}
+
+	/**
+	 * @param from
+	 *            the from address
+	 */
+	public void setFrom(String from) {
+		this.fromAddress = from;
+	}
+
+	/**
+	 * @param password
+	 *            the password
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	/**
+	 * @param username
+	 *            the username
+	 */
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	/**
+	 * @param to
+	 *            the set of To addresses
+	 */
+	public void setTo(String[] to) {
+		this.toAddresses = to;
+	}
+
+	/**
+	 * @param host
+	 *            the url of the host mailserver
+	 */
+	public void setHost(String host) {
+		this.host = host;
+	}
+}

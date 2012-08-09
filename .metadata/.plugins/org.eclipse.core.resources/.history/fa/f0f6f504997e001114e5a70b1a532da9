@@ -1,0 +1,37 @@
+package edu.gatech.fiveminutesleft.storage.exception;
+
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+
+/**
+ * Signals that some resource was not found.
+ *
+ * @author Nick Johnson
+ */
+public class ObjectNotFoundException extends Exception {
+
+	private static final long serialVersionUID = -6163627834573974498L;
+	
+	/**
+	 * The storage address that did not refer to a backing store.
+	 */
+	private StorageAddress addr;
+	
+	/**
+	 * @param addr The storage address that did not refer to a backing store.
+	 */
+	public ObjectNotFoundException(StorageAddress addr) {
+		this.addr = addr;
+	}
+	
+	public ObjectNotFoundException() {
+		this.addr = null;
+	}
+	
+	/**
+	 * @return The storage address that did not refer to a backing store.
+	 */
+	public StorageAddress getAddress() {
+		return this.addr;
+	}
+	
+}

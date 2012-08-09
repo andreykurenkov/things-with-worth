@@ -1,0 +1,44 @@
+package com.thingswithworth.genregetter.wikiio;
+
+import info.bliki.api.Page;
+
+import java.awt.Image;
+import java.util.Arrays;
+import java.util.List;
+
+public class BandWikiParser extends WikiParserNoImageSupport {
+
+	private final String[] infobox = { "name,image,genre,website" };
+
+	private BandWikiParser(Page toParse) {
+		super(toParse);
+	}
+
+	public static BandWikiParser[] getParser(String bandName) {
+		List<Page> pages = WikiParser.standardInterface.getPages(bandName);
+		if (pages.size() == 0)
+			return null;
+	}
+
+	@Override
+	public String[] infoboxSupport() {
+		return infobox;
+	}
+
+	@Override
+	public Object[] getInfoboxInfo(String forType) {
+		if (Arrays.asList(infobox).contains(forType)) {
+			if (forType.equals("genre"))
+				return getGenres();
+		}
+		return null;
+	}
+
+	public Image getInfoboxImage() {
+		return null;
+	}
+
+	public String[] getGenres() {
+		return null;
+	}
+}

@@ -1,0 +1,58 @@
+package edu.gatech.geochat;
+
+import edu.gatech.geochat.model.GeoMessage;
+import edu.gatech.geochat.model.User;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
+
+public class AddNoteActivity extends BetterActivity {
+	
+	public static void launch(Activity source, User user) {
+		Intent intent = new Intent(source, LoginActivity.class);
+		source.startActivity(intent);
+		
+		GUISpace.put(AddNoteActivity.class, "user", user);
+	}
+	
+	private EditText noteText;
+	private CheckBox displayEmail, displaySignature;
+	
+	@Override
+	public void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
+		setContentView(R.layout.add_note);
+		noteText= (EditText)this.findViewById(R.id.writeNoteField);
+		displaySignature=(CheckBox)this.findViewById(R.id.showNameBox);
+		displayEmail=(CheckBox)this.findViewById(R.id.showEmailBox);
+		
+	}
+	
+	public void addNote(){
+		User user=(User) GUISpace.get(getClass(), "user");
+		String range="15";//will later be selected by spinner
+		String text=noteText.getEditableText().toString();
+		String email="";
+		String username="";
+		GeoMessage message=new GeoMessage(user.getUsername(),
+		    	user.getPassword(),
+		    	user.getEmail(),
+		    	text,
+		    	user.getLatitude()+","+user.getLongitude(), 
+		    	range);
+		if(displaySignature.isChecked()){
+			username=""
+		}
+		if(displayEmail.isChecked()){
+			
+		}
+	}
+	
+	public void cancelAddNote(){
+		this.finish();
+	}
+
+}

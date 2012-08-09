@@ -1,0 +1,29 @@
+package com.thingswithworth.genregetter.io.fileio;
+
+import info.bliki.api.Page;
+import info.bliki.api.User;
+
+import java.util.List;
+
+public class WikiInterface {
+	private User wikiUser;
+	private String wiki;
+	public static final String engWikipedia = "http://en.wikipedia.org/";
+
+	public WikiInterface(String wiki) {
+		this.wiki = wiki;
+		wikiUser = new User("", "", wiki + "w/api.php");
+	}
+
+	public List<Page> getPages(String query) {
+		wikiUser.login();
+		List<Page> listOfPages = wikiUser.queryContent(new String[] { query });
+		return listOfPages;
+	}
+
+	public List<Page> getPages(String[] queries) {
+		wikiUser.login();
+		List<Page> listOfPages = wikiUser.queryContent(queries);
+		return listOfPages;
+	}
+}

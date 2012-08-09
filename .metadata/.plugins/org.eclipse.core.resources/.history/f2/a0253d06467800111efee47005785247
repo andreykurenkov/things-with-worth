@@ -1,0 +1,52 @@
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/TaskLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        
+        <ImageButton 
+            android:id="@+id/TaskDrag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/drag"
+            android:contentDescription="drag"
+            android:layout_gravity="center_vertical"
+            android:background="#00000000"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            />
+
+        <EditText 
+            android:id="@+id/TaskText"
+            android:text="Default Text"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+        	android:singleLine="true"
+        	android:layout_weight="1"
+        	android:inputType="text"
+            />
+        <ImageButton 
+            android:id="@+id/TaskDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/delete"
+            android:contentDescription="delete"
+            android:layout_gravity="center_vertical"
+            android:background="#00000000"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            />
+        <ImageButton 
+            android:id="@+id/TaskArrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/arrow"
+            android:contentDescription="arrow"
+            android:layout_gravity="center_vertical"
+            android:background="#00000000"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            />
+        
+    </LinearLayout>

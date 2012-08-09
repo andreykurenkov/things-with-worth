@@ -1,0 +1,80 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.io.File;
+import java.io.FileFilter;
+
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import edu.gatech.JThing.Observer;
+
+public class FileBrowser extends JSplitPane {
+	private DirectoryBrowser browser;
+	private JFileList fileList;
+	private JScrollPane fileScroll;
+	private final double weightDominant = 10;
+	private final double weightDemanded = 0.1;
+	private final double weightNormal = 1;
+
+	public FileBrowser(FileFilter fileFilter) {
+		this(fileFilter, false);
+	}
+
+	public FileBrowser(FileFilter fileFilter, final boolean autoResize) {
+		super(JSplitPane.VERTICAL_SPLIT);
+		browser = new DirectoryBrowser();
+		fileList = new JFileList(fileFilter, browser.getCurrentDirectory());
+		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		fileList.setLayoutOrientation(JList.VERTICAL);
+		fileScroll = new JScrollPane(fileList);
+
+		browser.getDirectoriesList().addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent event) {
+				JList list = (JList) event.getSource();
+				File newDir = (File) list.getSelectedValue();
+				fileList.changeDirectory(newDir);
+				if (autoResize)
+					resizePane();
+			}
+		});
+		if (autoResize) {
+			browser.getDirectoriesList().acceptObserver(new Observer<JFileList>() {
+
+				@Override
+				public void acceptNotification(JFileList source, Object arg, String code) {
+					if (code.equals(JFileList.CHANGED_DIR_CODE)) {
+						resizePane();
+					}
+				}
+
+			});
+		}
+		fileList.setCellRenderer(new JFileList.FileNameRenderer());
+		this.setOneTouchExpandable(true);
+		this.setContinuousLayout(true);
+		this.setResizeWeight(0.6);
+		this.setTopComponent(browser);
+		this.setBottomComponent(fileScroll);
+	}
+
+	private void resizePane() {
+		JFileList list = browser.getDirectoriesList();
+		FileBrowser.this.setDividerLocation(((double) list.getModel().getSize()
+				/ (list.getModel().getSize() + fileList.getModel().getSize()) + 0.4) * 0.8);
+		FileBrowser.this.repaint();
+	}
+
+	public JFileList getFileList() {
+		return fileList;
+	}
+
+	public DirectoryBrowser getBrowser() {
+		return browser;
+	}
+}

@@ -1,0 +1,35 @@
+import javax.swing.JOptionPane;
+
+/**
+ * Main class with frame and not much else.
+ * 
+ * @author andrey
+ * 
+ */
+public class Life {
+	private final int WIDTH = 600;
+	private final int HEIGHT = 700;
+
+	public static void main(String[] args) {
+		boolean validInput = false;
+		int width = getIntSafely("What width would you like?");
+		int height = getIntSafely("What height would you like?");
+		int numCol = getIntSafely("How many columns in the grid would you like?");
+
+	}
+
+	private static int getIntSafely(String checkMessage) {
+		boolean validInput = false;
+		int input = -1;
+		while (!validInput) {
+			try {
+				input = Integer.parseInt(JOptionPane.showInputDialog("What width would you like?"));
+				validInput = true;
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, ":(. Thats not a valid int input. Try again.");
+				validInput = false;
+			}
+		}
+		return input;
+	}
+}

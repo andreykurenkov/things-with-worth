@@ -1,0 +1,31 @@
+package edu.gatech.geochat.database;
+
+import java.util.List;
+
+import edu.gatech.geochat.model.GeoMessage;
+import edu.gatech.geochat.model.User;
+
+public abstract class Storage {
+	public static final String RESPONSE_SUCCESS = "Success";
+	public static final String RESPONSE_BAD_PASS = "Username and password do not match.";
+	public static final String RESPONSE_BAD_USER = "Username does not exist.";
+	public static final String RESPONSE_CONNECTION_ERROR = "Connection error!";
+	public static final String RESPONSE_INVALID_EMAIL = "Invalid email address.";
+
+
+	public abstract Iterable<GeoMessage> getNearbyLocations(User user, double maxDistance);
+	public abstract String addUser(String username, String password, String email);
+	public abstract String validateUser(String username, String password);
+	public abstract String addMessage(GeoMessage message);
+	public abstract User getUser(String username, String password);
+	public abstract List<GeoMessage> getFound(User user);
+	public abstract List<GeoMessage> getPlaced(User user);
+	public abstract void addFoundMessage(User user, GeoMessage add);
+	
+	private static Storage me;
+	public static Storage getInstance() {
+		if (me == null)
+			me = new PotatoStorage();
+		return me;
+	}
+}

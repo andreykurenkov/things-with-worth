@@ -1,0 +1,187 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.Calendar;
+
+/**
+ * Model representation of a date (i.e. a due date used by a task). Used for parsing strings into
+ * dates and vice versa.
+ * 
+ * @author andrey
+ */
+public class Date implements TimeUnit<Date> {
+	private int						year;
+	private int						month;
+	private int						day;
+
+	public static final String[]	MONTHS	= { "January", "February", "March", "April", "May", "June", "July", "August",
+			"September", "October", "November", "December" };
+
+	/**
+	 * Standard constructor for a date given the appropriate info.
+	 * 
+	 * @param year
+	 * @param month
+	 * @param day
+	 */
+	public Date(int year, int month, int day) {
+		this.year = year;
+		this.month = month;
+		this.day = day;
+	}
+
+	/**
+	 * Adds the appropriate Date string to the given Task
+	 * 
+	 * @param addTo
+	 */
+	public void setInTask(Task addTo) {
+		addTo.setDate(toString());
+	}
+
+	/**
+	 * Extracts a Date object from a Task with a appropriate String parsing
+	 * 
+	 * @param getFrom
+	 *            the Task to get the Date from
+	 * @return the Date represented by the String stored by Task
+	 */
+	public static Date getFromTask(Task getFrom) {
+		if (getFrom.getDate() == null || getFrom.getDate().length() == 0)
+			return null;
+		int day = Date.parseDateDay(getFrom.getDate());
+		int month = Date.parseDateMonth(getFrom.getDate());
+		int year = Date.parseDateYear(getFrom.getDate());
+		return new Date(year, month, day);
+	}
+
+	/**
+	 * Getter for day of Date
+	 * 
+	 * @return day
+	 */
+	public int getDay() {
+		return day;
+	}
+
+	/**
+	 * Getter for year of date
+	 * 
+	 * @return year
+	 */
+	public int getYear() {
+		return year;
+	}
+
+	/**
+	 * Getter for month of date
+	 * 
+	 * @return month
+	 */
+	public int getMonth() {
+		return month;
+	}
+
+	/**
+	 * Setter for day
+	 * 
+	 * @param day
+	 */
+	public void setDay(int day) {
+		this.day = day;
+	}
+
+	/**
+	 * Setter for month
+	 * 
+	 * @param month
+	 */
+	public void setMonth(int month) {
+		this.month = month;
+	}
+
+	/**
+	 * Setter for year
+	 * 
+	 * @param year
+	 */
+	public void setYear(int year) {
+		this.year = year;
+	}
+
+	/**
+	 * Parses a day int from a String representation of a Date
+	 * 
+	 * @param date
+	 *            the String representation of a Date
+	 * @return the int value of day
+	 */
+	private static int parseDateDay(String date) {
+		if (date == null || date.length() == 0)
+			return Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+		return Integer.parseInt(date.substring(0, date.indexOf(' ')));
+	}
+
+	/**
+	 * Parses a month int from a String representation of a Date
+	 * 
+	 * @param date
+	 *            the String representation of a Date
+	 * @return the int value of month
+	 */
+	private static int parseDateYear(String date) {
+		if (date == null || date.length() == 0)
+			return Calendar.getInstance().get(Calendar.YEAR);
+		return Integer.parseInt(date.substring(date.lastIndexOf(' ') + 1));
+	}
+
+	/**
+	 * Parses a year int from a String representation of a Date
+	 * 
+	 * @param date
+	 *            the String representation of a Date
+	 * @return the int value of year
+	 */
+	private static int parseDateMonth(String date) {
+		if (date == null || date.length() == 0)
+			return Calendar.getInstance().get(Calendar.MONTH);
+		String[] parts = date.split(" ");
+		for (int m = 0; m < MONTHS.length; m++) {
+			if (parts[1].equals(MONTHS[m])) {
+				return m;
+			}
+		}
+		return 0;
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer(8 + MONTHS[month].length());
+		sb.append(day);
+		sb.append(" ");
+		sb.append(MONTHS[month]);
+		sb.append(" ");
+		sb.append(year);
+		return sb.toString();
+	}
+
+	/**
+	 * Returns a positive integer if this Date is after the given date, zero if they are the same,
+	 * and negative otherwise
+	 */
+	public int compareTo(Date another) {
+		if (year > another.getYear())
+			return 1;
+		else if (year < another.getYear())
+			return -1;
+		else if (month > another.getMonth())
+			return 1;
+		else if (month < another.getMonth())
+			return -1;
+		else if (day > another.getDay())
+			return 1;
+		else if (day < another.getDay())
+			return -1;
+		else
+			return 0;
+	}
+}

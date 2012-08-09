@@ -1,0 +1,72 @@
+public class TextSearch {
+	public static int comparision; // Increment this every time a comparision is made
+
+	public static int[] last(String p) {
+		int[] lastArr=new int[26];
+		p=p.toLowerCase();
+		for(int i=0;i<p.length();i++){
+			char c=p.charAt(i);
+			if(lastArr[c-'a']==0){
+				lastArr[c-'a']=i;
+			}
+		}
+		for(int i=0;i<lastArr.length;i++)
+			if(lastArr[i]==0)
+				lastArr[i]=p.length();
+		return lastArr;
+	}
+
+	public static int[] failure(String p) {
+		// TODO
+		return null;
+	}
+
+	public static int runBruteForce(String t, String p) {
+		int matchAt=-1;
+		for(int i=0;i<t.length()-p.length();i++){
+			boolean match=true;
+				for(int j=0;j<p.length();j++){
+					comparision++;
+					if(p.charAt(i)!=t.charAt(j)){
+						match=false;
+						break;
+					}
+				}
+				if(match){
+					matchAt=i;
+					break;
+				}
+		}
+		return matchAt;
+	}
+
+	public static int runBoyerMoore(String t, String p) {
+		int matchAt=-1;
+		int i=p.length()-1;
+		while(i<t.length()){
+		if(p.charAt(p.length()-1)==t.charAt(i)){
+			
+		}
+		else{
+			
+		}
+		}
+		return matchAt;
+	}
+
+	public static int runKMP(String t, String p) {
+		// TODO
+		return 0;
+	}
+
+	// DO NOT edit code below this line
+
+	public static void resetComp() {
+		comparision = 0;
+	}
+
+	public static int getComp() {
+		return comparision;
+	}
+
+}

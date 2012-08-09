@@ -1,0 +1,119 @@
+package edu.gatech.RecAwesome.Model;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+
+public class Question implements ParsedObject<Question>, Observable<Question> {
+	public static final boolean WRONG_STATE = false;
+	public static final boolean CORRECT_STATE = true;
+	private String id;
+	private String question;
+	private String answer;
+	private HashMap<String, String> contents;
+	private Interpreter<Question> interpreter;
+	private boolean state;
+	private double grade;
+	private boolean answered;
+	private ArrayList<Observer<Question>> observers;
+
+	public Question(String id, String question, String answer, HashMap<String, String> contents,
+			Interpreter<Question> interpreter) {
+		observers=ArrayList<Observer<Question>>();
+		this.id = id;
+		this.question = question;
+		this.answer = answer;
+		this.contents = contents;
+		this.interpreter = interpreter;
+		this.reset();
+	}
+
+	public Question(HashMap<String, String> contents, Interpreter<Question> interpreter) {
+		this(contents.get("ID"), contents.get("Question"), contents.get(contents.get("Answer")), contents, interpreter);
+	}
+
+	public String getQuestionText() {
+		return question;
+	}
+
+	/**
+	 * Main way to check answes. The string themselves are formed by the
+	 * interpreter, but are checked with this. Works with regex.
+	 * 
+	 * @param check
+	 * @return
+	 */
+	public boolean checkAnswer(String check) {
+		return answer.matches(check);
+	}
+
+	public void save(File saveTo) {
+		// TODO
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public double getGrade() {
+		return grade;
+	}
+
+	public boolean isAnswered() {
+		return answered;
+	}
+
+	public String toString() {
+		return id;
+	}
+
+	public boolean equals(Question other) {
+		return this.id.equals(other.id);
+	}
+
+	protected void setState(boolean setTo) {
+		this.state = setTo;
+		this.setGrade(setTo ? 100 : 0);
+	}
+
+	protected void setGrade(double setTo) {
+		grade = setTo;
+		answered = true;
+		notifyChanged();
+	}
+
+	protected void reset() {
+		answered = false;
+		grade = 0;
+		notifyChanged();
+	}
+
+	protected HashMap<String, String> getContents() {
+		return contents;
+	}
+
+	@Override
+	public JComponent getContainer() {
+		return interpreter.visualizeParsedObject(this);
+	}
+
+	@Override
+	public void setInterpreter(Interpreter<Question> set) {
+		this.interpreter = set;
+
+	}
+
+	@Override
+	public void acceptObserver(Observer<Question> add) {
+		observers.add(add);
+	}
+
+	private void notifyChanged() {
+		for (Observer<Question> o : observers)
+			o.acceptNotification(this);
+	}
+
+}

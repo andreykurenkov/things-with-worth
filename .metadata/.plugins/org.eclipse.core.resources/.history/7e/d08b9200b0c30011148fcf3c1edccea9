@@ -1,0 +1,117 @@
+package edu.gatech.RecAwesome.FileIO;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+import edu.gatech.RecAwesome.Interpreters.*;
+import edu.gatech.RecAwesome.Model.*;
+
+/**
+ * This class defines the default parsing method for .qsf documents.
+ * 
+ * Parses a single question for a block containing key:value pairs. The format for defining questions: definitions can
+ * optionally start with "Interpreter:<class name>" to define a custom or non-default interpreter for the question. After
+ * that, every successive row contains "<key\>:<value\>" that will be utilized by the interpreter when making the jpanel.
+ * Question, Answer, ID must be defined as keys with given values. If used as MC, then key numOptions must be defined with an
+ * integer value(max 6) and each option is Option<i\>:option.
+ * 
+ * 
+ * @author Andrey K.
+ * @verion 1.0
+ */
+public class QuestionParser extends Parser<QuestionSet, Question> {
+	private final boolean DEBUG = false;
+	public final String ANSWER_KEY = "Answer";
+	public final String ID_KEY = "ID";
+	public final String QUESTION_KEY = "Question";
+	private static final String questionDelimiter = "\n\n";
+	private static final String setDelimiter = "--";
+	private ArrayList<Interpreter<Question>> interpreters;
+
+	@Override
+	public Question parseChunk(String parseFrom) throws InvalidFormatException {
+		Interpreter<Question> questionInterpreter = new QuestionInterpreter();
+		Scanner questionScanner = new Scanner(parseFrom);
+		String question, id, text;
+		HashMap<String, String> content = new HashMap<String, String>();
+		while (questionScanner.hasNextLine()) {
+			String line = questionScanner.nextLine();
+			if (DEBUG) {
+				System.out.println(line);
+			}
+			int seperator = line.indexOf(':');
+			if (seperator > 0) {
+				if (line.startsWith("Interpreter")) {
+					int nameStart = line.indexOf(':') + 1;
+					String interpretName = line.substring(nameStart);
+					try {
+						Class<?> interpreter = Class.forName(interpretName);
+						Object interpreterInstance = interpreter.newInstance();
+						if (interpreterInstance instanceof Interpreter) {
+							questionInterpreter = (Interpreter<Question>) interpreterInstance;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				} else {
+					String key = line.substring(0, seperator);
+					String value = line.substring(seperator + 1);
+					content.put(key, value);
+				}
+			}
+		}
+		if (!content.containsKey("Answer") || !content.containsKey(content.get("Answer"))
+				|| !content.containsKey("Question") || !content.containsKey("ID"))
+			return null;
+		Question finishedQuestion = new Question(content);
+		questionInterpreter.setToInterpret(finishedQuestion);
+		interpreters.add(questionInterpreter);
+		return new Question(content);
+	}
+
+	@Override
+	public QuestionSet fullParse(File getFrom) {
+		interpreters = new ArrayList<Interpreter<Question>>();
+		Scanner scan = null;
+		try {
+			scan = new Scanner(getFrom);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		scan.useDelimiter(setDelimiter);
+		String setProperties = scan.next();
+		String questionProperties = scan.next();
+		scan = new Scanner(setProperties);
+		scan.useDelimiter("\n");
+		QuestionSet set;
+		HashMap<String, String> content = new HashMap<String, String>();
+		while (scan.hasNext()) {
+			String current = scan.next();
+			content.put(current.substring(0, current.indexOf(':')), current.substring(current.indexOf(':') + 1));
+		}
+		set = new QuestionSet(content);
+
+		scan = new Scanner(questionProperties);
+		scan.useDelimiter(questionDelimiter);
+		Question next = null;
+		while (scan.hasNext()) {
+			String createFrom = scan.next();
+			try {
+				next = this.parseChunk(createFrom);
+			} catch (InvalidFormatException e) {
+				// TODO: maybe use Logger/ErrorLogger thourought code for this
+				// sort of thing
+				System.err.println("QuestionParser:parseQuestion had formatting error");
+				e.printStackTrace();
+			}
+			if (next != null)
+				set.add(next);
+		}
+		set.storeInterpreters(interpreters.toArray(new Interpreter[1]));
+		return set;
+	}
+}

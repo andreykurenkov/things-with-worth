@@ -1,0 +1,228 @@
+package edu.gatech.GradeAwesome;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileFilter;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import edu.gatech.GradeAwesome.FileIO.ConfigManager;
+import edu.gatech.GradeAwesome.FileIO.SmartFile;
+import edu.gatech.GradeAwesome.GUI.FileBrowser;
+import edu.gatech.GradeAwesome.GUI.GradingPanel;
+import edu.gatech.GradeAwesome.GUI.Menus;
+import edu.gatech.GradeAwesome.GUI.NewUserDisplay;
+import edu.gatech.GradeAwesome.GUI.Components.TextStdIOPane;
+import edu.gatech.GradeAwesome.GUI.Helpers.Dialogs;
+import edu.gatech.GradeAwesome.GUI.Helpers.GBHelp;
+import edu.gatech.GradeAwesome.Model.Configuration;
+import edu.gatech.GradeAwesome.Model.StudentSet;
+
+public class MainFrame {
+	public final static Dimension INIT_FRAME_DIM = new Dimension(1200, 1000);// TODO:make based on screen size?
+	private static final double horizontalRatio = 0.5;
+	private static final double verticalRatio = 0.001;
+	public static final String frameName = "main";
+
+	public static void main(String[] args) {
+		/* Configuration init */
+		ConfigManager loader = ConfigManager.getInstance();
+		Configuration config = loader.load();
+
+		/* Frame init */
+		final JFrame myFrame = new JFrame("CS1331 HW grader");
+		myFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		myFrame.setName(frameName);
+		myFrame.setLayout(new GridBagLayout());
+		myFrame.setPreferredSize(INIT_FRAME_DIM);
+		/* New user/config hangling */
+		File tempBaseDir = null;
+		if (config == null) {
+			config = new Configuration();
+			tempBaseDir = NewUserDisplay.introduceAndGetFiles(INIT_FRAME_DIM, config);
+		} else {
+			tempBaseDir = config.getBaseDir();
+			if (config.getShowIntro())
+				NewUserDisplay.introduce(myFrame, true, false, config);
+			if (tempBaseDir == null)// For whatever weird reason
+				tempBaseDir = NewUserDisplay.getDirFile(myFrame);
+		}
+		StudentSet mySet = config.getStudentSet();
+		if (mySet == null)
+			NewUserDisplay.getStudentsFile(myFrame, mySet, config);
+		mySet = config.getStudentSet();
+		config.setBaseDir(tempBaseDir);
+		loader.save(config);// To be safe.
+		myFrame.addWindowListener(new ConfigSave(myFrame, config));
+		final File startDir = tempBaseDir;
+
+		/* Load menus */
+		myFrame.setJMenuBar(new Menus(myFrame, config));
+
+		/* Setup of main file browser/tabbed view */
+		final JTabbedPane tabsPane = new JTabbedPane();
+		final FileBrowser browser = new FileBrowser(new FileFilter() {
+
+			@Override
+			public boolean accept(File acceptFile) {
+				return false;
+			}
+
+		});
+		final JLabel folderLabel = new JLabel("Current:" + startDir.getAbsolutePath());
+		JButton folderChooseButton = new JButton("Set grading directory");
+		final GradingPanel grading = new GradingPanel(mySet.getSet());
+		grading.setSaveDir(startDir);// TODO: make configurable
+		grading.setLoadDir(startDir);
+		grading.setSaveLoadName("_Grades.txt");
+		final JScrollPane scrollGrading = new JScrollPane(grading);
+
+		/* Button for dir panel to set current dir */
+		folderChooseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				JFileChooser chooser = new JFileChooser();
+				chooser.setCurrentDirectory(startDir);
+				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				int returnVal = chooser.showOpenDialog(myFrame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					try {
+						File chosen = chooser.getSelectedFile();
+						grading.setSaveDir(chosen);
+						grading.setLoadDir(chosen);
+						browser.setBaseDir(chosen.getAbsolutePath());
+						folderLabel.setText("Current: " + chosen.getAbsoluteFile());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
+		/* Button to seperate grading panel */
+		final JButton seperateGrading = new JButton("Seperate grading view");
+		seperateGrading.addActionListener(new ActionListener() {
+			JFrame current;
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (seperateGrading.getText().equals("Seperate grading view")) {
+					seperateGrading.setText("Tab grading view");
+					JFrame gradingFrame = new JFrame("Grading window");
+					gradingFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+					gradingFrame.add(scrollGrading);
+					current = gradingFrame;
+					current.pack();
+					current.setVisible(true);
+				} else {
+					tabsPane.add(scrollGrading, "Grades", 2);
+					current.dispose();
+					seperateGrading.setText("Seperate grading view");
+				}
+
+			}
+
+		});
+		/* Directory panel setup */
+		JPanel dirPanel = new JPanel();// TODO: make a seperate class?
+		dirPanel.setLayout(new BorderLayout());
+
+		dirPanel.setPreferredSize(new Dimension((int) INIT_FRAME_DIM.getWidth(),
+				(int) (INIT_FRAME_DIM.getHeight() * (1 - verticalRatio))));
+		JToolBar dirToolbar = new JToolBar();
+		dirToolbar.setFloatable(false);
+		folderChooseButton.setToolTipText(folderLabel.getText());
+		dirToolbar.add(folderChooseButton);
+		dirToolbar.add(folderLabel);
+		dirToolbar.add(new JSeparator(JSeparator.VERTICAL));
+		dirToolbar.addSeparator();
+		dirToolbar.add(seperateGrading);
+		JButton tabClose = browser.getTabCloseButton();
+		dirToolbar.add(tabClose);
+		// dirPanel.add(folderLabel, BorderLayout.WEST);
+		dirPanel.add(dirToolbar, BorderLayout.WEST);
+
+		// int x, int y, int fill, double weightx, double weighty, int width,
+		// int height, int anchor
+		/* Additian of components to frame */
+		GridBagConstraints c = GBHelp.makeConstraints(0, 0, GridBagConstraints.HORIZONTAL, 0.0, verticalRatio,
+				GridBagConstraints.REMAINDER, 1, GridBagConstraints.NORTH);
+		myFrame.add(dirPanel, c);
+		c = GBHelp.makeConstraints(0, 1, GridBagConstraints.HORIZONTAL, 0.0, verticalRatio / 10,
+				GridBagConstraints.REMAINDER, 1, GridBagConstraints.NORTH);
+		myFrame.add(new JSeparator(), c);
+		c = GBHelp.makeConstraints(0, 2, GridBagConstraints.BOTH, horizontalRatio, 1 - verticalRatio,
+				GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+		myFrame.add(browser, c);
+
+		/* Addition of components to tabbed pane */
+		TextStdIOPane readArea = TextStdIOPane.getInstance();
+		tabsPane.add("IO/Status", readArea);
+		tabsPane.setMnemonicAt(0, KeyEvent.VK_I);
+		final JTextArea current = new JTextArea();
+		JScrollPane scrollCurrent = new JScrollPane(current);
+		tabsPane.add("Current", scrollCurrent);
+		tabsPane.setMnemonicAt(1, KeyEvent.VK_C);
+		browser.addFileSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent arg0) {
+				SmartFile[] files = browser.getCurrentFiles();
+				SmartFile firstReadable = null;
+				for (SmartFile cur : files) {
+					if (cur.isReadable()) {
+						firstReadable = cur;
+						break;
+					}
+				}
+				if (firstReadable != null)
+					current.setText(firstReadable.read());
+			}
+		});
+		tabsPane.add("Grades", scrollGrading);
+		tabsPane.setMnemonicAt(2, KeyEvent.VK_G);
+		tabsPane.setSelectedIndex(0);
+
+		/* Addition of tabbed pane to frame */
+		c = GBHelp.makeConstraints(1, 2, GridBagConstraints.BOTH, 1 - horizontalRatio, 1 - verticalRatio,
+				GridBagConstraints.REMAINDER, GridBagConstraints.RELATIVE, GridBagConstraints.EAST);
+		myFrame.add(tabsPane, c);
+
+		/* Program start */
+		myFrame.pack();
+		myFrame.setVisible(true);
+	}
+
+	// TODO: move to more appropriate place?
+	public static class ConfigSave extends WindowAdapter {
+		private Configuration toSave;
+		private JFrame forFrame;
+
+		public ConfigSave(JFrame frame, Configuration save) {
+			toSave = save;
+			this.forFrame = frame;
+		}
+
+		public void windowClosing(WindowEvent we) {
+			ConfigManager.getInstance().save(toSave);
+			Dialogs.askIfExitApplication(forFrame);
+		}
+	}
+}

@@ -1,0 +1,66 @@
+package edu.gatech.geochat;
+
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.opengl.GLSurfaceView;
+import android.os.Bundle;
+import android.view.Display;
+import android.view.WindowManager;
+
+public class RadarView extends GLSurfaceView {
+	public static final double displayRadius=25;
+	private ArrayList<Location> displayLocation;
+	private static final double ANGLE_INCREMENT=0.05;
+	private static final long UPDATE_INTERVAL=50;
+	private int deviceHeight;
+	private int deviceWidth;
+	private double sweepAngle;
+	private Timer sweepTimer;
+	public RadarView(Context c) {
+		super(c);
+		WindowManager wm = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+		deviceHeight=display.getHeight();
+		deviceWidth=display.getWidth();
+		setRenderer(new RadarRenderer(this));
+		sweepAngle=Math.PI/2;
+		
+		sweepTimer=new Timer();
+		startRotation();
+		
+		}
+	
+	
+	public void startRotation(){
+		sweepTimer.scheduleAtFixedRate(new TimerTask(){
+
+			@Override
+			public void run() {
+				sweepAngle+=RadarView.ANGLE_INCREMENT;
+				sweepAngle%=(2*Math.PI);
+				
+			}
+			
+			
+		}
+		, 5,RadarView.UPDATE_INTERVAL);
+	}
+	
+	public double getAngle(){
+		return sweepAngle;
+	}
+	
+	public int getDeviceHeight(){
+		return deviceHeight;
+	}
+	
+	public int getDeviceWidth(){
+		return deviceWidth;
+	}
+}

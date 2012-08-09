@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;conseq&apos; in &apos;Dynamic.realEstate(...)&apos; to &apos;seqRow&apos;&#x0A;- Original project: &apos;ExtraCredit1332_DP&apos;&#x0A;- Original element: &apos;Dynamic.realEstate(String[]).conseq&apos;&#x0A;- Renamed element: &apos;conseq&apos;&#x0A;- Update references to refactored element" description="Rename local variable &apos;conseq&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/&lt;{Dynamic.java[Dynamic~realEstate~\[QString;@conseq!5738!5814!5748!5753!\[\[\[I!0!false" name="seqRow" references="true" stamp="1335800055330" version="1.0"/>
+</session>

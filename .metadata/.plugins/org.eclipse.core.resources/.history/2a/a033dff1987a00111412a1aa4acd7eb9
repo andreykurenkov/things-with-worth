@@ -1,0 +1,261 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+import android.util.Log;
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.cache.TaskListCache;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.TaskListReference;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+/**
+ * Model representation of a TaskList. Facade for cache list and essentialy just a list of tasks.
+ * 
+ * @author AndreyK
+ */
+public class AppTaskList implements TaskList {
+
+	private TaskListCache	cache;
+	private String			name;
+
+	/**
+	 * Creates TaskList with new cache.
+	 */
+	public AppTaskList() {
+		this.cache = new TaskListCache();
+	}
+
+	/**
+	 * Created an object at the given StorageAddress
+	 * 
+	 * @param loc
+	 *            StorageAddress where TaskList already exists
+	 * @throws ObjectNotFoundException
+	 *             thrown if TaskList not found in cache, i.e. does not already exist
+	 */
+	private AppTaskList(StorageAddress loc) throws ObjectNotFoundException {
+		this.cache = CacheManager.getTaskListCache(loc);
+
+		if (this.cache == null) {
+			throw new ObjectNotFoundException(loc);
+		}
+	}
+
+	/**
+	 * Setter for name
+	 * 
+	 * @param setTo
+	 *            new value of name
+	 */
+	public void setName(String setTo) {
+		// Note: All TaskList names actually stored by AccountStorage, and set from account upon
+		// retrieval
+		name = setTo;
+	}
+
+	/**
+	 * Getter for name
+	 * 
+	 * @return the TaskList's name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Retrieves a stored TaskList
+	 * 
+	 * @param addr
+	 *            StorageAddress where TaskList is stored
+	 * @return null if Task not in storage, the TaskList otherwise
+	 */
+	public static AppTaskList locate(StorageAddress addr) {
+
+		if (!AppTaskList.exists(addr)) {
+			return null;
+		}
+
+		try {
+			return new AppTaskList(addr);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Checks if TaskList exists at given StorageAddress
+	 * 
+	 * @param addr
+	 *            Address to check
+	 * @return true if task there, false otherwise
+	 */
+	public static boolean exists(StorageAddress addr) {
+		return CacheManager.hasTaskListCache(addr);
+	}
+
+	/**
+	 * Binds this taskList to storage location and not just cache.
+	 * 
+	 * @param ref
+	 *            Reference to bind with.
+	 */
+	protected void bind(TaskListReference ref) {
+		this.cache.bind(ref);
+	}
+
+	/**
+	 * Deletes taskList from storage.
+	 */
+	public void delete() {
+		cache.delete();
+	}
+
+	/**
+	 * Getter for the Task at the given index within the list
+	 * 
+	 * @param index
+	 *            the index of the requested Task
+	 * @return
+	 */
+	public AppTask getTask(int index) {
+		AppTask t = AppTask.locate(cache.get(index));
+
+		if (t == null) {
+			Log.d("TaskList.getTask", "could not find task " + cache.get(index));
+		}
+
+		return t;
+	}
+
+	/**
+	 * Setter for Task at a given index
+	 * 
+	 * @param index
+	 *            the index at which to set the task
+	 * @param t
+	 *            the new value of the task
+	 */
+	public void setTask(int index, AppTask t) {
+		cache.add(t.getAddress());
+	}
+
+	/**
+	 * Add a new Task to the list
+	 * 
+	 * @param t
+	 *            the new task
+	 */
+	public void add(Task task) {
+		AppTask t = AppTask.clone(task);
+		// if the task is unbound, bind it to our storage location
+		if (t.getAddress() == null) {
+			t.bind(this.cache.getStorage().createTask());
+		}
+
+		cache.add(t.getAddress());
+	}
+
+	/**
+	 * Adds a task at the first position in the list
+	 * 
+	 * @param t
+	 *            the new task
+	 */
+	public void addFirst(AppTask t) {
+
+		// if the task is unbound, bind it to our storage location
+		if (t.getAddress() == null) {
+			t.bind(this.cache.getStorage().createTask());
+		}
+
+		cache.add(t.getAddress());
+	}
+
+	/**
+	 * Removes a task from this list
+	 * 
+	 * @param t
+	 *            the task to remove
+	 */
+	public void remove(AppTask t) {
+		cache.remove(t.getAddress());
+		t.delete();
+	}
+
+	/**
+	 * @return list size
+	 */
+	public int size() {
+		return cache.size();
+	}
+
+	/**
+	 * Iterator implementation for tasks in the list
+	 * 
+	 * @author Nick johnson
+	 */
+	private class TaskIterator implements Iterator<Task> {
+
+		private AppTaskList	list;
+		private int			position;
+
+		public TaskIterator(AppTaskList list) {
+			this.list = list;
+			this.position = 0;
+		}
+
+		public boolean hasNext() {
+			return (this.position < this.list.size());
+		}
+
+		public AppTask next() {
+			return list.getTask(this.position++);
+		}
+
+		public void remove() {
+			return;
+		}
+
+	}
+
+	public Iterator<Task> iterator() {
+		return new TaskIterator(this);
+	}
+
+	/**
+	 * @return StorageAddress
+	 */
+	public StorageAddress getAddress() {
+		return this.cache.getAddress();
+	}
+
+	/**
+	 * Synces Tasklist with its storage location.
+	 */
+	public void sync() {
+		this.cache.push();
+
+		try {
+			StorageManager.flushAll();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		this.cache.pull();
+	}
+
+	@Override
+	public boolean equals(Object equalTo) {
+		AppTaskList compare = (AppTaskList) equalTo;
+		return compare.getAddress().equals(this.getAddress());
+	}
+
+	public Task makeTask(String name) {
+		return new AppTask();
+	}
+
+}

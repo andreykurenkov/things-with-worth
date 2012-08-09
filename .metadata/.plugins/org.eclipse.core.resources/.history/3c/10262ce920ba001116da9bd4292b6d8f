@@ -1,0 +1,155 @@
+package edu.gatech.RecAwesome.Model;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.swing.JComponent;
+
+import edu.gatech.RecAwesome.GUI.QuestionsPanel;
+
+/**
+ * Container for a set of questions that keeps track of mundane or important
+ * statistics.
+ * 
+ * @author Andrey K.
+ */
+public class QuestionSet implements ParsedObjectSet<QuestionSet, Question>, Observer<Question>, Observable<QuestionSet> {
+	private HashMap<String, String> additionalState;
+	private ArrayList<Question> set;
+	private double gradeTotal;
+	private int numAnswered;
+	private int numQuestions;
+	private double gradeAverage;
+	private String title;
+	private Interpreter<QuestionSet> interpreter;
+	private boolean reseting;
+	private ArrayList<Observer<QuestionSet>> observers;
+
+	public QuestionSet(ArrayList<Question> set, String title) {
+		observsers=new ArrayList<Observer<QuestionSet>>();
+		interpreter = new QuestionsPanel();
+		this.set = set;
+		this.title = title;
+		numQuestions = set.size();
+		gradeTotal = 0;
+		gradeAverage = 0;
+	}
+
+	public QuestionSet(String title) {
+		this(new ArrayList<Question>(), title);
+	}
+
+	public QuestionSet(HashMap<String, String> content) {
+		this(new ArrayList<Question>(), content.get("Title"));
+		additionalState = content;
+	}
+
+	@SuppressWarnings("unused")
+	private void calculateAverage() {
+		gradeAverage = gradeTotal / (numQuestions * 100);
+	}
+
+	public void update() {
+		gradeTotal = 0;
+		numAnswered = 0;
+		for (Question q : set)
+			if (q.isAnswered()) {
+				numAnswered++;
+				gradeTotal += q.getGrade();
+			}
+		if (numAnswered != 0)
+			gradeAverage = gradeTotal / numAnswered;
+		this.notifyChanged();
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public Question[] getQuestions() {
+		return set.toArray(new Question[1]);
+	}
+
+	public void saveScore() {
+
+	}
+
+	public void saveQuestionFile() {
+
+	}
+
+	public void reset() {
+		reseting = true;// done to avoid updating due to observer behavior
+		for (Question q : set)
+			q.reset();
+		reseting = false;
+		this.notifyChanged();
+	}
+
+	public int getNumAnswered() {
+		return numAnswered;
+	}
+
+	public int getNumQuestions() {
+		return numQuestions;
+	}
+
+	public String getGrade() {
+		return String.format("%.2f/%d", gradeAverage, numQuestions * 100);
+	}
+
+	@Override
+	public JComponent getContainer() {
+		return interpreter.visualizeParsedObject(this);
+	}
+
+	@Override
+	public void setInterpreter(Interpreter<QuestionSet> set) {
+		interpreter = set;
+
+	}
+
+	@Override
+	public void add(Question question) {
+		if (!set.contains(question)) {
+			set.add(question);
+			question.acceptObserver(this);
+		}
+		numQuestions++;
+	}
+
+	@Override
+	public void setContained(Question[] setTo) {
+		set = new ArrayList<Question>();
+		for (Question q : setTo)
+			set.add(q);
+
+	}
+
+	@Override
+	public String toString() {
+		return title;
+	}
+
+	@Override
+	public Question[] getContained() {
+		return set.toArray(new Question[1]);
+	}
+
+	@Override
+	public void acceptNotification(Question source) {
+		if (!reseting)
+			this.update();// TODO:could be more efficient with source?
+	}
+
+	@Override
+	public void acceptObserver(Observer<QuestionSet> add) {
+		observers.add(add);
+	}
+
+	private void notifyChanged() {
+		for (Observer<QuestionSet> ob : observers)
+			ob.acceptNotification(this);
+	}
+
+}

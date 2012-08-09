@@ -1,0 +1,128 @@
+package edu.gatech.fiveminutesleft;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import android.view.View;
+import android.view.ViewGroup;
+
+/**
+ * This is a custom ViewGroup which works like the FlowLayout in Swing -
+ * it lays out elements left to right, wrapping down to the next line
+ * when it reaches its max width. It can be used in xml
+ * as &lt;edu.gatech.fiveminutesleft.FlowLayout&gt;.
+ * @author g
+ *
+ */
+public class FlowLayout extends ViewGroup {
+
+	/**
+	 * Creates new FlowLayout
+	 * @param con
+	 */
+	public FlowLayout(Context con) {
+		super(con);
+	}
+	
+	/**
+	 * Create a new FlowLayout
+	 * @param con
+	 * @param atts
+	 */
+	public FlowLayout(Context con, AttributeSet atts) {
+		super(con, atts);
+	}
+	
+	@Override
+	/**
+	 * Called by android to make this calculate its size
+	 */
+	protected void onMeasure(int wMS, int hMS) {
+		if (MeasureSpec.getMode(wMS) == MeasureSpec.UNSPECIFIED)
+			return;
+		
+		int count = getChildCount();
+		int width = MeasureSpec.getSize(wMS);
+		int height = 0;
+		
+		int mwidth = 0;
+		
+		int x = getPaddingLeft();
+		int y = getPaddingTop();
+		
+		int lineh = 0;
+		
+		for (int i = 0; i < count; i++) {
+			View child = getChildAt(i);
+			measureChild(child, wMS, hMS);
+			
+			if (child.getVisibility() != GONE) {
+				int cw = child.getMeasuredWidth();
+				int ch = child.getMeasuredHeight();
+				
+				LayoutParams lp = child.getLayoutParams();
+				
+				if (ch > lineh) 
+					lineh = ch;
+				
+				if (x + cw < width - getPaddingLeft() - getPaddingRight()) {
+					x += cw;
+					if (x+cw > mwidth)
+						mwidth = x+cw;
+				} else {
+					x = getPaddingLeft();
+					y += lineh;
+					lineh = 0;
+				}
+				
+				if (y + ch > height)
+					height = y + ch;
+			}
+		}
+		
+		width += getPaddingRight();
+		height += getPaddingBottom();
+		
+		if (mwidth < width && MeasureSpec.getMode(wMS) == MeasureSpec.AT_MOST)
+			width = mwidth;
+		
+		setMeasuredDimension(resolveSize(width, wMS), resolveSize(height, hMS));
+	}
+
+	@Override
+	/**
+	 * Called by android to make this layout its child components
+	 */
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
+		int count = getChildCount();
+		int width = r-l;
+		
+		int xstart = getPaddingLeft();
+		int ystart = getPaddingTop();
+		
+		int x = xstart;
+		int y = ystart;
+		
+		int maxh = 0;
+		
+		for (int i = 0; i < count; i++) {
+			View child = getChildAt(i);
+			if (child.getVisibility() == GONE)
+				continue;
+			
+			int cw = child.getMeasuredWidth();
+			int ch = child.getMeasuredHeight();
+			
+			if (ch > maxh) maxh = ch;
+			
+			if (x + cw > width - getPaddingLeft() - getPaddingRight()) {
+				x = xstart;
+				y += ch;
+				maxh = 0;
+			}
+			
+			child.layout(x, y, x+cw, y+ch);
+			x += cw;
+		}
+	}
+	
+}

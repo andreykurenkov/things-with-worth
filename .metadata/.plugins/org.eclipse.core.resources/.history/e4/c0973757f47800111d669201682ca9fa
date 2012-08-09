@@ -1,0 +1,122 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.Calendar;
+
+/**
+ * Representation of 24 hour
+ * 
+ * @author andrey
+ */
+public class TimeOfDay implements TimeUnit<TimeOfDay> {
+	private int	hours;
+	private int	minutes;
+
+	/**
+	 * Standard constructor for a TIme given the appropriate info.
+	 * 
+	 * @param hours
+	 * @param minutes
+	 */
+	public TimeOfDay(int hours, int minutes) {
+		this.hours = hours;
+		this.minutes = minutes;
+	}
+
+	/**
+	 * Adds the appropriate Date string to the given Task
+	 * 
+	 * @param addTo
+	 */
+	public void setInTask(Task addTo) {
+		addTo.setTime(toString());
+	}
+
+	/**
+	 * Extracts a Date object from a Task with a appropriate String parsing
+	 * 
+	 * @param getFrom
+	 *            the Task to get the Date from
+	 * @return the Date represented by the String stored by Task
+	 */
+	public static TimeOfDay getFromTask(Task getFrom) {
+		if (getFrom.getTime() == null)
+			return null;
+		int hours = parseTimeHours(getFrom.getTime());
+		int minutes = parseTimeMinutes(getFrom.getTime());
+		return new TimeOfDay(hours, minutes);
+	}
+
+	/**
+	 * Getter for hours of this TIMe
+	 * 
+	 * @return hours
+	 */
+	public int getHours() {
+		return hours;
+	}
+
+	/**
+	 * Getter for mintues of this TIme
+	 * 
+	 * @return minutes
+	 */
+	public int getMinutes() {
+		return minutes;
+	}
+
+	/**
+	 * Parses a hour int from a String representation of a Date
+	 * 
+	 * @param date
+	 *            the String representation of a TIme
+	 * @return the int value of hour
+	 */
+	private static int parseTimeHours(String time) {
+		if (time == null || time.length() == 0)
+			return Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+		return Integer.parseInt(time.substring(0, time.indexOf(":")));
+	}
+
+	/**
+	 * Parses a minutes int from a String representation of a Time
+	 * 
+	 * @param date
+	 *            the String representation of a TIMe
+	 * @return the int value of minutes
+	 */
+	private static int parseTimeMinutes(String time) {
+		if (time == null || time.length() == 0)
+			return Calendar.getInstance().get(Calendar.MINUTE);
+		return Integer.parseInt(time.substring(time.indexOf(":") + 1));
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer(5);
+		if (hours < 10)
+			sb.append("0");
+		sb.append(hours);
+		sb.append(":");
+		if (minutes < 10)
+			sb.append("0");
+		sb.append(minutes);
+		return sb.toString();
+	}
+
+	/**
+	 * Returns a positive integer if this Time is after the given Time, zero if they are the same,
+	 * and negative otherwise
+	 */
+	public int compareTo(TimeOfDay another) {
+		if (hours > another.getHours())
+			return 1;
+		else if (hours < another.getHours())
+			return -1;
+		else if (minutes > another.getMinutes())
+			return 1;
+		else if (minutes < another.getMinutes())
+			return -1;
+		else
+			return 0;
+	}
+}

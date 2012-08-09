@@ -1,0 +1,119 @@
+package edu.gatech.fiveminutesleft;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.model.Task;
+
+/**
+ * This is the Activity which allows users to view the details of a Task (and provides a button for
+ * editing).
+ * 
+ * @author Garret Malmquist
+ */
+public class TaskViewActivity extends Activity {
+
+	/**
+	 * Launches this activity
+	 * 
+	 * @param source
+	 *            the activity that called launch
+	 * @param task
+	 *            - the Task containing the data to populate the gui fields with
+	 */
+
+	public static void launch(Activity source, Task task, String[] categories) {
+		Intent n = new Intent(source, TaskViewActivity.class);
+		GUISpace.put(TaskViewActivity.class, "task", task);
+		GUISpace.put(TaskViewActivity.class, "categories", categories);
+
+		source.startActivity(n);
+	}
+
+	private TextView	nameView, dueView, repeatView, notesView, tagsView;
+	private Task		task;
+
+	@Override
+	/**
+	 * Sets the layout of this activity and initializes GUI instance variables
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+
+		this.task = (Task) GUISpace.get(getClass(), "task");
+
+		setContentView(R.layout.task_view_layout);
+
+		nameView = (TextView) findViewById(R.id.TaskName);
+		dueView = (TextView) findViewById(R.id.TaskDueDate);
+		repeatView = (TextView) findViewById(R.id.TaskRepeat);
+		notesView = (TextView) findViewById(R.id.TaskNotes);
+		tagsView = (TextView) findViewById(R.id.TaskTags);
+
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		this.task = (Task) GUISpace.get(getClass(), "task");
+		updateValues();
+	}
+	
+	/**
+	 * Clear out any remaining persistent data when this task is done.
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+
+	/**
+	 * Updates the GUI fields of this Activity
+	 */
+	private void updateValues() {
+		if (task == null) {
+			Log.e("TaskViewActivity", "Task is null");
+			return;
+		}
+
+		nameView.setText(task.getName());
+		dueView.setText(task.getDate());
+		repeatView.setText(task.getRepeats());
+		notesView.setText(task.getNotes());
+		tagsView.setText(task.getTags());
+	}
+
+	/**
+	 * Closes this Activity when the "Done" button is pressed
+	 * 
+	 * @param view
+	 */
+	public void done(View view) {
+		finish();
+	}
+
+	/**
+	 * Calls up the Activity to edit the details of this task when the "Edit" button is pressed
+	 * 
+	 * @param view
+	 */
+	public void editTask(View view) {
+		TaskEditActivity.launch(this, this.task, (String[]) GUISpace.get(getClass(), "categories"));
+	}
+
+	/**
+	 * Calls up Google Maps to display the geographic location of this task when "View Location" is
+	 * pressed
+	 * 
+	 * @param view
+	 */
+	public void viewMap(View view) {
+		// yep, not implemented yet.
+	}
+}

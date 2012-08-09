@@ -1,0 +1,82 @@
+package edu.gatech.fiveminutesleft.storage.sqlite;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.json.JSONArray;
+
+import android.database.Cursor;
+import edu.gatech.fiveminutesleft.storage.Storage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.TaskListReference;
+
+public class TaskListReferenceImpl implements TaskListReference {
+
+	private LocalSQLiteStorage		store;
+	private final StorageAddress	addr;
+
+	public TaskListReferenceImpl(LocalSQLiteStorage store) {
+		this.store = store;
+		this.addr = new StorageAddress(store.getServerAddress(), UUID.randomUUID().toString());
+
+		store.db.execSQL("INSERT INTO pool (id, data) VALUES ('" + this.addr.getObjectAddress().toString() + "', '{}');");
+	}
+
+	public TaskListReferenceImpl(LocalSQLiteStorage store, StorageAddress addr) {
+		this.store = store;
+		this.addr = addr;
+	}
+
+	public StorageAddress getAddress() {
+		return addr;
+	}
+
+	public List<StorageAddress> read() {
+		List<StorageAddress> data = new ArrayList<StorageAddress>();
+
+		String[] columns = { "id", "data" };
+		Cursor c = store.db.query("pool", columns, "id = '" + this.addr.getObjectAddress().toString() + "'", null, null,
+				null, null);
+
+		if (c.getCount() == 0) {
+			return data;
+		}
+
+		c.moveToFirst();
+
+		try {
+			JSONArray jsonData = new JSONArray(c.getString(1));
+
+			for (int i = 0; i < jsonData.length(); i++) {
+				data.add(new StorageAddress(jsonData.getString(i)));
+			}
+		} catch (Exception e) {
+			return new ArrayList<StorageAddress>();
+		}
+
+		return data;
+	}
+
+	public void update(List<StorageAddress> data) {
+		JSONArray jsonData = new JSONArray();
+
+		for (StorageAddress a : data) {
+			jsonData.put(a.toString());
+		}
+
+		jsonData.toString();
+
+		store.db.execSQL("UPDATE pool SET data = '" + jsonData.toString() + "' WHERE id = '"
+				+ this.addr.getObjectAddress().toString() + "';");
+	}
+
+	public void delete() {
+		store.db.execSQL("DELETE FROM pool WHERE id = '" + this.addr.getObjectAddress().toString() + "';");
+	}
+
+	public Storage getStorage() {
+		return store;
+	}
+
+}

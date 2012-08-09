@@ -1,0 +1,29 @@
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.PriorityQueue;
+
+public class AscendingIterator<T extends Comparable<T>> implements Iterator<T> {
+
+	// TODO Perhaps a Field might be useful here. Hint: Look at the imports. 
+
+	public AscendingIterator(Collection<T> items) {
+		// TODO
+	}
+
+	@Override
+	public boolean hasNext() {
+		// TODO
+		return false;
+	}
+
+	@Override
+	public T next() {
+		// TODO
+		return null;
+	}
+
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+}

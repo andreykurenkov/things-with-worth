@@ -1,0 +1,18 @@
+package com.thingswithworth.genregetter.wikiio;
+
+import info.bliki.api.Page;
+
+public abstract class WikiParser {
+
+	public abstract String[] infoboxSupport();
+
+	public abstract boolean imageSupport();
+
+	public String[] getHeadings(Page toRender) {
+		String pageContent=toRender.toString();
+		String currentMatch="==";
+		String[] mainHeadings=pageContent.split(currentMatch+"(.*)"+currentMatch);
+				
+		return null;
+	}
+}

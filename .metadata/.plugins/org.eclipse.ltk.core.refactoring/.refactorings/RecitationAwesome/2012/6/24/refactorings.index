@@ -1,0 +1,18 @@
+1339412994026	Delete element
+1339491851872	Rename type 'QuestionParser'
+1339491868548	Rename type 'DefaultParser'
+1339492249686	Rename method 'parseQuestions'
+1339492673162	Rename type 'QuestionInterpreter'
+1339492691041	Rename type 'DefaultInterpreter'
+1339492885169	Move compilation unit
+1339493521368	Rename type 'parsedObject'
+1339494686894	Rename type 'QuestionBuilder'
+1339494853643	Infer generic type arguments
+1339494966005	Rename type 'parsedObjectSet'
+1339499260028	Delete element
+1339505379775	Rename method 'getContentsContainer'
+1339542321002	Delete element
+1339542568298	Move compilation unit
+1339615318862	Delete element
+1339787582206	Delete element
+1339787590558	Delete element

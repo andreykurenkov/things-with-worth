@@ -1,0 +1,42 @@
+public class Edge implements Comparable<Edge> {
+
+	private Vertex u, v;
+	private int cap;
+	private int flow;
+
+	public Edge(Vertex u, Vertex v, int cap) {
+		this.u = u;
+		this.v = v;
+		this.cap = cap;
+	}
+
+	public Vertex[] vertices() {
+		return new Vertex[] { u, v };
+	}
+
+	public String toString() {
+		return "<" + u.getId() + "," + v.getId() + ":" + weight + ">";
+	}
+
+	@Override
+	public int compareTo(Edge that) {
+			return this.cap - that.cap;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Edge) {
+			Edge e = (Edge) o;
+			return weight == e.weight
+					&& ((u.equals(e.u) && v.equals(e.v)) || (u.equals(e.v) && v
+							.equals(e.u)));
+		} else {
+			return false;
+		}
+	}
+
+	public int hashCode() {
+		// XOR is commutative, so this is okay
+		return weight ^ u.getId() ^ v.getId();
+	}
+}

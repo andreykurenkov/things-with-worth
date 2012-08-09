@@ -1,0 +1,10 @@
+public class Player {
+	private String name;
+	private int choice;
+
+	public Player(String name, int choice) {
+		this.name = name;
+		this.choice = choice;
+
+	}
+}

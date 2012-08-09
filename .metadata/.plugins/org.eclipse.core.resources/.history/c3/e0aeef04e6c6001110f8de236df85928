@@ -1,0 +1,51 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+/**
+ * Main class with frame and not much else.
+ * 
+ * @author andrey
+ * 
+ */
+public class Life {
+	private final int WIDTH = 600;
+	private final int HEIGHT = 700;
+
+	public static void main(String[] args) {
+		int border = getIntSafely("What border length would you like?");// Not necessary
+		int numCol = getIntSafely("How many columns in the grid would you like?");// Not necessary?
+		int numRow = getIntSafely("How many rows in the grid would you like?");// Not necessary?
+
+		JFrame theFrame = new JFrame("This is a metaphor for your life");
+
+		GameOfLife life = new GameOfLife(numCol, numRow);
+		LifePanel lifePanel = new LifePanel(life, new Dimension(border, border));
+		ControlPanel control = new ControlPanel(lifePanel, life);
+
+		theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		theFrame.add(control, BorderLayout.NORTH);
+		theFrame.add(lifePanel, BorderLayout.CENTER);
+		theFrame.setResizable(false);
+		theFrame.pack();
+		theFrame.setVisible(true);
+
+	}
+
+	private static int getIntSafely(String checkMessage) {
+		boolean validInput = false;
+		int input = -1;
+		while (!validInput) {
+			try {
+				input = Integer.parseInt(JOptionPane.showInputDialog(checkMessage));
+				validInput = true;
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, ":(. Thats not a valid int input. Try again.");
+				validInput = false;
+			}
+		}
+		return input;
+	}
+}

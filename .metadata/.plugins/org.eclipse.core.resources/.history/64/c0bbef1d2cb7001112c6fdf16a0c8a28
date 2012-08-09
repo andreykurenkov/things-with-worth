@@ -1,0 +1,25 @@
+public class Player {
+	private String name;
+	private int choice;
+	public final static String rock = "Rock";
+	public final static String paper = "Paper";
+	public final static String scissors = "Scissors";
+
+	public Player(String name, int choice) {
+		this.name = name;
+		this.choice = choice;
+	}
+
+	public int getChoice() {
+		return choice;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setChoice(int ch) {
+		choice = ch;
+	}
+
+}

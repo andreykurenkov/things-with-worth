@@ -1,0 +1,107 @@
+package edu.gatech.fiveminutesleft;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.config.AccountManager;
+
+/**
+ * Activity to reset password and receive email containing if its forgotten
+ * 
+ * @author Nick Malmquist
+ */
+public class PasswordRecoveryActivity extends Activity {
+
+	/**
+	 * Method to launch this Activity from other activites.
+	 * 
+	 * @param source
+	 *            Activity that launched this
+	 * @param userinfo
+	 *            Text written for username in Login
+	 */
+	public static void launch(Activity source, String userinfo) {
+		Intent intent = new Intent(source, PasswordRecoveryActivity.class);
+		intent.putExtra("userinfo", userinfo);
+		source.startActivity(intent);
+	}
+
+	private TextView	userField, statusField;
+
+	/**
+	 * Standard Android method. Called when Activity gets launched without already being in stopped or paused state. Sets the
+	 * layout of this Activity and initializes userField
+	 */
+	@Override
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		Log.d("PasswordRecoveryActivity.onCreate", "Password Recovery Activity Created");
+		setContentView(R.layout.forgot_password);
+		userField = (TextView) findViewById(R.id.forgotPasswordField);
+		statusField = (TextView) findViewById(R.id.forgotPasswordStatus);
+	}
+
+	/**
+	 * Standard Android method. Called when this activity becomes displayed after being stopped or paused. Loads userField
+	 * with any default values passed to it.
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		Log.d("PasswordRecoveryActivity.onStart", "Password Recovery Activity Started");
+		Intent n = getIntent();
+		Bundle extras = n.getExtras();
+		userField.setText(extras.getString("userinfo"));
+	}
+
+	/**
+	 * onClick method for cancel button. Returns to the previous Activity (called when the "Cancel" button is pressed)
+	 * 
+	 * @param view
+	 *            Button clicked to call this method
+	 */
+	public void cancel(View view) {
+		finish();
+	}
+
+	/**
+	 * Standard Android method. Case when user presses physical back button - ends activity and returns to login screen.
+	 */
+	@Override
+	public void onBackPressed() {
+		finish();
+	}
+
+	/**
+	 * Standard Android method. Called when this activity stops being displayed, but not actually finished. Currently does
+	 * nothing but aid debugging by logging activity flow.
+	 */
+	@Override
+	public void onStop() {
+		Log.d("PasswordRecoveryActivity.onStop", "Recovery stopped");
+		super.onStop();
+	}
+
+	/**
+	 * onClick method for Sends an email to the address associated with the user's account via AccountManager, then returns
+	 * to LoginActivity
+	 * 
+	 * @param view
+	 *            the button clicked to call this method
+	 */
+	public void recover(View view) {
+		ProgressBar progress = (ProgressBar) findViewById(R.id.forgotPasswordProgress);
+		progress.setVisibility(View.VISIBLE);
+		progress.bringToFront();
+		String response = AccountManager.getInstance().handleForgotPassword(userField.getText().toString());
+		progress.setVisibility(View.INVISIBLE);
+		if (response == null) {
+			finish();
+		} else
+			statusField.setText(response);
+	}
+}

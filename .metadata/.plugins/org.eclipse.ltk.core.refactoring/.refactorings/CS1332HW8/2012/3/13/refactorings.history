@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;comparatorQueue&apos; in &apos;AscendingIterator&apos; to &apos;sortQueue&apos;&#x0A;- Original project: &apos;CS1332HW8&apos;&#x0A;- Original element: &apos;AscendingIterator.comparatorQueue&apos;&#x0A;- Renamed element: &apos;AscendingIterator.sortQueue&apos;&#x0A;- Update references to refactored element&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;comparatorQueue&apos;" flags="589830" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/&lt;{AscendingIterator.java[AscendingIterator^comparatorQueue" name="sortQueue" references="true" setter="false" stamp="1332907146393" textual="false" version="1.0"/>
+</session>

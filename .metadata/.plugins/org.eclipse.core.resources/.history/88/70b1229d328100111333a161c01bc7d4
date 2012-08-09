@@ -1,0 +1,75 @@
+package edu.gatech.fiveminutesleft.mock;
+
+import java.util.HashMap;
+
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.model.Account;
+import edu.gatech.fiveminutesleft.model.AccountLists;
+/**
+ * A mock implementaion of Account used for testing.
+ * @author Andrey Kurenkov
+ *
+ */
+public class MockAccount implements Account {
+
+	private String name;
+	private String password;
+	private String username;
+	private String email;
+	private HashMap<String,String> settings;
+	public MockAccount(String testName, String testUser, String testPassword, String testEmail){
+		this.name=testName;
+		this.username=testUser;
+		this.password=testPassword;
+		this.email=testEmail;
+		settings=new HashMap<String,String>();
+	}
+
+	public AccountLists getLists() {
+		//TODO: make MockTaskLists()
+		return null;
+	}
+
+	public String getRealName() {
+		return name;
+	}
+
+	public void setRealName(String name) {
+		this.name=name;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public boolean isPassword(String password) {
+		return this.password.equals(password);
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public String setEmail(String email) {
+		this.email=email;
+		return null;
+	}
+
+	public String setPassword(String newPassword) {
+		if(newPassword.length()>=6){
+			this.password=newPassword;
+			return null;
+		}
+		return AccountManager.ERROR_INVALID_PASSWORD;
+	}
+
+	public String addSetting(String key, String value) {
+		settings.put(key, value);
+		return null;
+	}
+	
+	public String getSetting(String key) {
+		return settings.get(key);
+	}
+
+}

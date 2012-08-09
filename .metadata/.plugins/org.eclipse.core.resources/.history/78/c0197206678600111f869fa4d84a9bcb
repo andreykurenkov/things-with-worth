@@ -1,0 +1,20 @@
+import java.util.*;
+public class ShootTheTarget {
+	public static void main(String[] args){
+		Scanner scan=new Scanner(System.in);
+		int cases=scan.nextInt();
+		for(int caseNum=1;caseNum<=cases;caseNum++){
+			int x1=scan.nextInt();
+			int y1=scan.nextInt();
+			int x2=scan.nextInt();
+			int y2=scan.nextInt();
+			int xMin=Math.min(x1, x2);
+			int xMax=Math.max(x1,x2);
+			int yMin=Math.min(y1, y2);
+			int yMax=Math.max(y1, y2);
+			double thetaVertical=Math.atan2(y2-y1, x2-x1);
+			double thetaBoth=(1-thetaVertical);
+			
+		}
+	}
+}

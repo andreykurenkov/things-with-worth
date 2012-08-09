@@ -1,0 +1,59 @@
+/**
+ * Model representation of game of life.
+ * 
+ * @author Andrey
+ */
+public class GameOfLife {
+	private Cell[][] gameField;
+	private int height, width;
+
+	public GameOfLife(int height, int width, boolean[][] initState) {
+		this.height = height;
+		this.width = width;
+		gameField = new Cell[height][width];
+		init(initState);
+	}
+
+	public GameOfLife(int height, int width) {
+		this(height, width, new boolean[height][width]);
+	}
+
+	public void update() {
+		for (int x = 0; x < gameField.length; x++) {
+			for (int y = 0; y < gameField[x].length; y++) {
+				updateCell(x, y);
+			}
+		}
+	}
+
+	private void updateCell(int x, int y) {
+		Cell pertinent=gameField[x][y];
+		for(int checkY=y-1;checkY)
+	}
+
+	public void reset() {
+		for (int x = 0; x < gameField.length; x++) {
+			for (int y = 0; y < gameField[x].length; y++) {
+				gameField[x][y].kill();
+			}
+		}
+	}
+
+	public void init(boolean[][] toState) {
+		if (toState.length != gameField.length || toState[0].length != gameField[0].length)
+			return;
+		for (int x = 0; x < toState.length; x++) {
+			for (int y = 0; y < toState[x].length; y++) {
+				gameField[x][y].revive();
+			}
+		}
+	}
+
+	private int boundW(int getBounded) {
+		return (width + getBounded % width) % width;
+	}
+
+	private int boundH(int getBounded) {
+		return (height + getBounded % height) % height;
+	}
+}

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <TextView
+        android:id="@+id/list_note_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textSize="18dp"
+        android:text="This is the example text and it..."
+     />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+     <TextView
+        android:id="@+id/list_note_location"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:layout_gravity="left"
+        android:layout_gravity="0.5"
+        android:textSize="14dp"
+        android:text="lat:23.63423 long:34.2345245"
+     />
+     
+      <TextView
+        android:id="@+id/list_note_username"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:maxLines="1"
+        android:textSize="14dp"
+        android:text="by sparky"
+     />
+     
+     </LinearLayout>
+    
+
+</LinearLayout>

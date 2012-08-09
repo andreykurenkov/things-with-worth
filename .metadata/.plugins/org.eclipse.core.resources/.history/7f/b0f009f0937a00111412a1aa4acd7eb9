@@ -1,0 +1,54 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.ArrayList;
+
+public interface AccountLists<T extends TaskList> {
+
+	/**
+	 * Associates the given serverAddress and localAddress for a T with this accounT and stores it
+	 * 
+	 * @param address
+	 *            the address of the T to add as owned to this account
+	 */
+	public String addTaskList(T list, String name);
+
+	/**
+	 * Returns a lisT with a specific namef
+	 * 
+	 * @param name
+	 *            the name of the lisT to get
+	 * @return the T with the specifed name
+	 */
+	public T getTaskList(String name);
+
+	/**
+	 * Retrieves from storage and returns all the Ts owned or associated with the account
+	 * 
+	 * @return an ArrayLisT containing all the Ts belonging to this account
+	 */
+	public ArrayList<T> getTaskLists();
+
+	/**
+	 * Returns the names of all the Ts thaT belong to this account
+	 * 
+	 * @return a string array with the lists' names
+	 */
+	public String[] getListNames();
+
+	/**
+	 * Returns the number of lists currently in storage
+	 * 
+	 * @return 0 if no lists stored previously, number of lists otherwise
+	 */
+	public int getNumLists();
+
+	/**
+	 * Deletes tha T with the given name
+	 * 
+	 * @param name
+	 *            The name of the T to delete
+	 * @return the deleted T
+	 */
+	public T deleteTaskList(String name);
+
+}

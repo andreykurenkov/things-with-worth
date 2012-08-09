@@ -1,0 +1,53 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="5dp"
+     >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+    
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center_horizontal"
+            android:text="@string/add_note_screen"
+            android:textSize="24dp"
+            android:textStyle="bold" />
+    
+    <EditText
+            android:layout_marginTop="15dp"
+            android:id="@+id/writeNoteField"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="Write Note Here" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"   
+        >
+        <Button
+        style="@style/GreenButton"
+        android:text="Cancel"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.5"
+        android:onClick="cancelAddNote"
+        />
+        
+   		 <Button
+        style="@style/GreenButton"
+        android:text="Save"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="2dp"
+        android:layout_weight="0.5"
+        android:onClick="addNote"
+        />
+</LinearLayout>
+</LinearLayout>
+</ScrollView>

@@ -1,0 +1,21 @@
+package edu.gatech.RecAwesome.IO;
+
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class JavaDictionary {
+	private static JavaDictionary instance;
+	private HashMap<String, String> dictionary;
+
+	public static JavaDictionary getInstance() {
+		if (instance == null)
+			instance = new JavaDictionary();
+		return instance;
+	}
+
+	private JavaDictionary() {
+		dictionary = new HashMap<String, String>();
+		Scanner fileScanner=new Scanner(new File("Files/Java Definitions.txt"));
+	}
+
+}

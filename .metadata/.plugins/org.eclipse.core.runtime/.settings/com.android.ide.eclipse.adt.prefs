@@ -1,0 +1,5 @@
+com.android.ide.eclipse.adt.attrSort=logical
+com.android.ide.eclipse.adt.customDebugKeyStore=/home/andrey/School/2340/fiveminutesleft-todolist/debug.keystore
+com.android.ide.eclipse.adt.fixLegacyEditors=1
+com.android.ide.eclipse.adt.sdk=/home/andrey/Documents/Android/android-sdk-linux
+eclipse.preferences.version=1

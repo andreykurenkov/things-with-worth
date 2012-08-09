@@ -1,0 +1,166 @@
+package edu.gatech.fiveminutesleft.storage.jsonfile;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.gatech.fiveminutesleft.storage.AccountReference;
+import edu.gatech.fiveminutesleft.storage.EmailReference;
+import edu.gatech.fiveminutesleft.storage.LocalStorage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.TaskListReference;
+import edu.gatech.fiveminutesleft.storage.TaskReference;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+import android.content.Context;
+import android.util.Log;
+
+/**
+ * Local storage object using a JSON-encoded file as a database.
+ * 
+ * @author Nick Johnson
+ */
+public class LocalJSONFileStorage implements LocalStorage {
+
+	private final String uri;
+	private final String path;
+	
+	JSONObject dbstate;
+	
+	public LocalJSONFileStorage(String path) throws IOException, JSONException {
+		this.uri = "local://" + path;
+		this.path = path;
+		
+		this.dbstate = new JSONObject();
+
+		this.readdb();
+		
+		StorageManager.add(this);
+	}
+	
+	private void readdb() throws IOException, JSONException {
+		FileInputStream fis;
+		
+		try {
+			fis = StorageManager.getActiveContext().openFileInput(path);
+		} catch (FileNotFoundException e) {
+			Log.d("LocalJSONFileStorage:readdb", new JSONObject().toString());
+			dbstate = new JSONObject();
+			return;
+		}
+			
+		StringBuilder b = new StringBuilder();
+		int c;
+		
+		while (true) {
+			c = fis.read();
+			if (c == -1) break;
+			
+			b.append((char) c);
+		}
+
+		Log.d("LocalJSONFileStorage:readdb", b.toString());
+		
+		dbstate = new JSONObject(b.toString());
+	}
+	
+	private void writedb() throws IOException {
+		FileOutputStream fos = StorageManager.getActiveContext().openFileOutput(path, Context.MODE_PRIVATE);
+		
+		Log.d("LocalJSONFileStorage:writedb", dbstate.toString());
+		
+		String s = dbstate.toString();
+		
+		fos.write(s.getBytes());
+	}
+	
+	public TaskReference getTask(StorageAddress addr) {
+		try {
+			return new FileTaskReferenceImpl(this, addr);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	public TaskReference createTask() {
+		Log.d("LocalJSONFileStorage", "creating new task");
+		return new FileTaskReferenceImpl(this);
+	}
+
+	public TaskListReference getTaskList(StorageAddress addr) {
+		try {
+			return new TaskListReferenceImpl(this, addr);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	public TaskListReference createTaskList() {
+		Log.d("LocalJSONFileStorage", "creating new task list");
+		return new TaskListReferenceImpl(this);
+	}
+
+	public String getServerAddress() {
+		return uri;
+	}
+	
+	public void flush() throws IOException {
+		
+		Log.d("LocalJSONFileStorage:flush", "flushing");
+		
+		writedb();
+		// reading back is unnecessary, because it's local
+	}
+
+	public AccountReference getAccount(String username) {
+		try {
+			return new AccountReferenceImpl(this, username, false);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	public AccountReference createAccount(String username) {
+		Log.d("LocalJSONFileStorage", "creating new account");
+		try {
+			return new AccountReferenceImpl(this, username, true);
+		} catch (ObjectNotFoundException e) {
+			// This should never happen
+			return null;
+		}
+	}
+
+	public EmailReference getEmail(String email) {
+		try {
+			return new EmailReferenceImpl(this, email, false);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	public EmailReference createEmail(String email) {
+		Log.d("LocalJSONFileStorage", "creating new email");
+		try {
+			return new EmailReferenceImpl(this, email, true);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+		
+	}
+	
+	public void delete() {
+		this.dbstate = new JSONObject();
+		try {
+			writedb();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+}

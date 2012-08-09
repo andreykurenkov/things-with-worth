@@ -1,0 +1,70 @@
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+public class SearchTest extends Assert {
+
+	public void setUp() {
+		TextSearch.resetComp();
+	}
+
+	@Test
+	public void bruteTest() {
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBruteForce(search, pattern));
+	}
+
+	@Test
+	public void BoyerMoyerTest() {
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBoyerMoore(search, pattern));
+	}
+
+	/*
+	 * @Test public void KMPTest() { String search =
+	 * "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm"
+	 * ; String pattern = "ghedla fa, c"; assertEquals(search.indexOf(pattern),
+	 * TextSearch.runKMP(search, pattern)); }
+	 */
+	@Test
+	public void KMPSimpleTest() {
+		//System.out.println("TestSimpleKMP");
+		//System.out.println("_________");
+		String search = "abcabxabcabc";
+		String pattern = "abcabc";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runKMP(search, pattern));
+	}
+
+	@Test
+	public void BoyerMoyerLastTest() {
+		String p = "abcabc";
+		int[] last = TextSearch.last(p);
+		for (int i = 0; i < last.length; i++) {
+			if (i == 'a')
+				assertEquals(2, last[i]);
+			else if (i == 'b')
+				assertEquals(1, last[i]);
+			else if (i == 'c')
+				assertEquals(0, last[i]);
+			else
+				assertEquals(6, last[i]);
+		}
+
+	}
+
+	@Test
+	public void KMPFailTest() {
+		String p = "abcabc";
+		int[] fail = TextSearch.failure(p);
+		int[] expect = { -1, 0, 0, 0, 1, 2 };
+		for (int i = 0; i < fail.length; i++) {
+			assertEquals(expect[i], fail[i]);
+		}
+
+	}
+}

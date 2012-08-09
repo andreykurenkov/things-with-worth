@@ -1,0 +1,113 @@
+package edu.gatech.RecAwesome.IO;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import javax.swing.filechooser.FileFilter;
+
+import sun.misc.FpUtils;
+
+import edu.gatech.RecAwesome.Exceptions.InvalidFileException;
+import edu.gatech.RecAwesome.GUI.QuestionsPanel;
+import edu.gatech.RecAwesome.GUI.Components.TabManager;
+import edu.gatech.RecAwesome.Model.ParsedObject;
+import edu.gatech.RecAwesome.Model.ParsedObjectSet;
+import edu.gatech.RecAwesome.Model.QuestionSet;
+
+/**
+ * A currently nebulous class that I wrote because it seems like we might need
+ * one. Currently handles correctly opening files.
+ * 
+ * @author Andrey
+ * @version 1.0
+ */
+public class FileManager {
+	private static FileManager instance;
+	public static final FileType genericFile = instance.new FileType("qpf", "Other RecAwesome files", null);
+	public static final FileType questionSetFile = instance.new FileType("qsf", "Question set files", new QuestionParser());
+	public static final FileType[] validFileTypes = { genericFile, questionSetFile };
+	public static final FileFilter allFileFilter = new FileFilter() {
+
+		@Override
+		public boolean accept(File f) {
+			boolean accepted = false;
+			String name = f.getName();
+			for (FileType ft : validFileTypes)
+				if (ft.checkFile(f)) {
+					accepted = true;
+					break;
+				}
+			return accepted;
+		}
+
+		@Override
+		public String getDescription() {
+			return "Valid RecAwesome files";
+		}
+	};
+
+	private FileManager() {
+	}
+
+	public FileFilter[] getFileFilters() {
+		FileFilter[] filters = new FileFilter[validFileTypes.length + 1];
+		for (int i = 0; i < validFileTypes.length; i++) {
+			final int type = i;
+			filters[i] = new FileFilter() {
+				@Override
+				public boolean accept(File f) {
+					return validFileTypes[type].checkFile(f);
+				}
+
+				@Override
+				public String getDescription() {
+					return validFileTypes[type].description;
+				}
+			};
+		}
+		filters[validFileTypes.length] = allFileFilter;
+		return filters;
+	}
+
+	public static FileManager getInstance() {
+		if (instance == null)
+			instance = new FileManager();
+		return instance;
+	}
+
+	/**
+	 * Handles opening different file types correctly. Not robust, but how many
+	 * files formats are we gonna have?
+	 * 
+	 * @param toOpen
+	 *            the File to open
+	 * @throws InvalidFileException
+	 * @throws FileNotFoundException
+	 */
+	public void handleFileOpen(File open) throws InvalidFileException, FileNotFoundException {
+		if (open.getName().contains(".qsf")) {
+			ParsedObjectSet<ParsedObjectSet<?, ParsedObject<?>>, ParsedObject<?>> res = Parser.parseContents(open);
+			TabManager.getInstance().addTab(TabManager.getInstance().new Tab(res.toString(), res.getContainer()));
+		} else
+			throw new InvalidFileException("Tried opening invalid file named " + open.getName());
+	}
+
+	private class FileType {
+		private String extension;
+		private String description;
+		private Parser correctParser;
+
+		public FileType(String ex, String desc, Parser parser) {
+			extension = ex;
+			description = desc;
+			correctParser = parser;
+		}
+
+		public boolean checkFile(File check) {
+			String name = check.getName();
+			return !name.contains(".")
+					|| (name.contains(extension) && name.indexOf(extension) == name.length() - extension.length());
+		}
+	}
+
+}

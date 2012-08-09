@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, GeoChatActivity!</string>
+    <string name="app_name">GeoChat</string>
+    <string name="GeoChat">GeoChat</string>
+    <string name="loginTitle">Login</string>
+    <string name="loginText">Login</string>
+    <string name="loginUserHint">Username</string>
+    <string name="loginPassHint">Password</string>
+    <string name="registerTitle">Register</string>
+    <string name="loginEmailHint">Email Address</string>
+    <string name="loginPassConfirmHint">Confirm Password</string>
+    <string name="titleTitle">GeoChat</string>
+    <string name="commentNoteHint">Write Comment Here</string>
+    <string name="sample_note">sample not really note but something like this maybe but more likely will be very long so this is the sample tesxt foth that</string>
+    <string name="note_found">Note Found!</string>
+    <string name="viewNoteTitle">View Note</string>
+    <string name="addNoteTitle">addNote</string>
+
+</resources>

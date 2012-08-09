@@ -1,0 +1,114 @@
+package edu.gatech.geochat.model;
+
+import java.util.ArrayList;
+
+import edu.gatech.geochat.GeoChatActivity;
+import edu.gatech.geochat.database.Storage;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.os.Looper;
+import android.util.Log;
+import android.widget.Toast;
+
+public class User {
+	private String username;
+	private String password;
+	private String email;
+	private String found = "";
+	private LocationManager locManager;
+
+	public static final double displayRadius=25;
+	public static final double maxDistance=100;
+	private static Iterable<GeoMessage> closeMessages;
+	private static Location currentLocation;
+
+	public User(String username, String password, String email) {
+		this.username = username;
+		this.password = password;
+		this.email = email;
+		
+		locManager=(LocationManager)GeoChatActivity.getActiveContext().getSystemService(Context.LOCATION_SERVICE);
+		Looper.prepare();
+		currentLocation=locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		Log.d("Initial Location","Location set to: "+currentLocation);
+		if(!locManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+			Log.d("User location","Provider does not work");
+		}
+		LocationListener listener=new LocationListener(){
+
+			@Override
+			public void onLocationChanged(Location location) {
+				currentLocation=location;
+				closeMessages=Storage.getInstance().getNearbyLocations(User.this,maxDistance);
+				
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				Toast.makeText(GeoChatActivity.getActiveContext(), "Provider has been disabled", Toast.LENGTH_SHORT);	
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				Toast.makeText(GeoChatActivity.getActiveContext(), "Provider has been enabled", Toast.LENGTH_SHORT);	
+				
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				
+			}
+		};
+		
+		//minDelay in milliseconds, minDistance in meters
+		locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,100,10,listener);
+	}
+
+	public String getFoundText() {
+		return found;
+	}
+	public void setFound(String found) {
+		this.found = found;
+	}
+	public String[] founds() {
+		if (found.indexOf(',') < 0)
+			return new String[] {};
+		return found.replaceAll("\\s+", "").split(",");
+	}
+	public void found(String f) {
+		if (found.indexOf(',') > 0)
+			found += ",";
+		found += f;
+	}
+	
+	public String getLatitude() {
+		if (currentLocation == null) return "0";
+		return String.valueOf(currentLocation.getLatitude());
+	}
+	public String getLongitude() {
+		if (currentLocation == null) return "0";
+		return String.valueOf(currentLocation.getLongitude());
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public String getEmail() {
+		return email;
+	}
+	
+	public static Location getLocation(){
+		return currentLocation;
+	}
+	
+	public static Iterable<GeoMessage> getMessages(){
+		return closeMessages;
+	}
+}

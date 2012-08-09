@@ -1,0 +1,62 @@
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import org.junit.Test;
+
+public class landTest {
+
+	@Test
+	public void test1() {
+		String[] test = { "000120", "100000", "100001", "270700" };
+		int[] expect = { 8, 0, 0, 0, 2, 0, 3, 0, 5, 0, 4, 0, 2 };
+		int[] result = Dynamic.get().realEstate(test);
+		for (int i = 0; i < expect.length; i++)
+			assertEquals(expect[i], result[i]);
+	}
+
+	@Test
+	public void test2() {
+		String[] test = { "0001010223400", "1200000100002", "1332151337000", "1234000000001", "0000000000000",
+				"0000000100000" };
+		int[] expect = { 26, 0, 0, 0, 7, 0, 9, 0, 9, 0, 6, 0, 5, 0, 5, 0, 3, 0, 3, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 };
+		int[] result = Dynamic.get().realEstate(test);
+		for (int i = 0; i < expect.length; i++)
+			assertEquals(expect[i], result[i]);
+	}
+
+	@Test
+	public void test3() {
+		String[] test = { "11000", "11110", "10000", "10000", "00000" };
+		int[] expect = { 8, 0, 0, 0, 3, 0, 4, 0, 4, 0, 3, 0, 2, 0, 1, 0, 0, 0, 0, 0 };
+		int[] result = Dynamic.get().realEstate(test);
+		for (int i = 0; i < expect.length; i++) {
+			assertEquals(expect[i], result[i]);
+		}
+	}
+
+	@Test
+	public void test4() throws IOException {
+		String[] test = new String[3000];
+		PrintWriter write = new PrintWriter("test.txt");
+		write.write("{\"");
+		for (int i = 0; i < 3000; i++) {
+			write.write("\"");
+			for (int j = 0; j < 3000; j++) {
+				int add = (int) (Math.random() * 2);
+				test[i] += "" + add;
+				write.write(add);
+			}
+			if (i != 2999)
+				write.write("\",\n");
+		}
+		write.write("};");
+		write.close();
+		int[] result = Dynamic.get().realEstate(test);
+		assertTrue(result != null);
+
+	}
+
+}

@@ -1,0 +1,19 @@
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+
+public class RPSPanel {
+	private JRadioButton rock, paper, scissors;
+	private JLabel display;
+	private JButton shoot;
+
+	public RPSPanel() {
+		rock = new JRadioButton("Rock");
+		rock.setActionCommand(Player.rock);
+		paper = new JRadioButton("Paper");
+		paper.setActionCommand(Player.paper);
+		scissors = new JRadioButton("Scissors");
+		scissors.setActionCommand(Player.scissors);
+
+	}
+}

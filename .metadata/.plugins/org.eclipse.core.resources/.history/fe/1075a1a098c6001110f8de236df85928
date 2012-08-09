@@ -1,0 +1,14 @@
+import java.awt.Dimension;
+
+/**
+ * Model representation of game of life.
+ * 
+ * @author Andrey
+ */
+public class GameOfLife {
+	private Cell[][] gameField;
+
+	public GameOfLife(int height, int width){
+		gameField=new Cell[height, width];
+	}
+}

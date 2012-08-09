@@ -1,0 +1,124 @@
+package edu.gatech.fiveminutesleft;
+
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.model.Account;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+/**
+ * Activity which allows user to edit their account settings.
+ * @author g
+ *
+ */
+public class SettingsActivity extends Activity {
+	
+	/**
+	 * Launches the Activity
+	 * @param source
+	 * @param account - the account to work on
+	 */
+	public static void launch(Activity source, Account account) {
+		Intent n = new Intent(source, SettingsActivity.class);
+		GUISpace.put(SettingsActivity.class, "account", account);
+		GUISpace.put(SettingsActivity.class, "fullname", account.getRealName());
+		GUISpace.put(SettingsActivity.class, "username", account.getUsername());
+		GUISpace.put(SettingsActivity.class, "email", account.getEmail());
+		source.startActivity(n);
+	}
+	
+	private TextView emailView, nameView, userView, statusView;
+	
+	@Override
+	/**
+	 * Set layout and instantiate stuff
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		
+		setContentView(R.layout.settings_layout);
+		
+		emailView = (TextView) findViewById(R.id.SettingsEmail);
+		nameView = (TextView) findViewById(R.id.SettingsName);
+		userView = (TextView) findViewById(R.id.SettingsUsername);
+		statusView = (TextView) findViewById(R.id.SettingsStatus);
+	}
+	
+	@Override
+	/**
+	 * Store temporary data in text fields
+	 */
+	public void onPause() {
+		super.onPause();
+		GUISpace.put(getClass(), "fullname", nameView.getEditableText().toString());
+		GUISpace.put(getClass(), "username", userView.getEditableText().toString());
+		GUISpace.put(getClass(), "email", emailView.getEditableText().toString());
+	}
+	
+	@Override
+	/**
+	 * Restore temporary data in text fields
+	 */
+	public void onResume() {
+		super.onResume();
+		nameView.setText(GUISpace.getString(getClass(), "fullname"));
+		userView.setText(GUISpace.getString(getClass(), "username"));
+		emailView.setText(GUISpace.getString(getClass(), "email"));
+	}
+	
+	@Override
+	/**
+	 * Clear out any GUISpace data if we're finishing
+	 */
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+	
+	/**
+	 * Called when user presses "Cancel" to close the Activity without saving
+	 * @param v
+	 */
+	public void cancel(View v) {
+		finish();
+	}
+	
+	/**
+	 * Calls up the dialog to allow users to change their password. Called
+	 * when the "Change Password" button is pressed.
+	 * @param v
+	 */
+	public void changePassword(View v) {
+		ChangePasswordActivity.launch(this, (Account) GUISpace.get(getClass(), "account"));
+	}
+	
+	/**
+	 * Called when the users presses "Save" to save their changes and close
+	 * the Activity.
+	 * @param v
+	 */
+	public void save(View v) {
+		String name = nameView.getEditableText().toString();
+		String user = userView.getEditableText().toString();
+		String email=emailView.getEditableText().toString();
+		
+		Account account = (Account) GUISpace.get(getClass(), "account");
+		StringBuffer errors = new StringBuffer();
+		String e = null;
+		
+		account.setRealName(name);
+		e = AccountManager.getInstance().changeEmail(account,email);
+		if (e != null) errors.append(e);
+		
+		statusView.setText(e);
+		
+		if (errors.length() == 0)
+			finish();
+	}
+	
+	
+}

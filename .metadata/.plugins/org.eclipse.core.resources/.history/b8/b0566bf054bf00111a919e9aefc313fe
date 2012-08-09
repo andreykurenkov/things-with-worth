@@ -1,0 +1,108 @@
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+
+public class Ship {
+	public static final double MAX_VEL = Math.PI / 2;
+	private Vector2D pos, vel;
+	private final static double bulletSpeedRatio = 5;
+	private double rotation;
+	private final double dR = Math.PI / 10;
+	private final double dV = Math.PI / 100;// why not?
+	// All these bounds, vel, pos objects should be subclassing a movable object...But not there yet?
+	// TODO: would make for a decent example once we get to poly/inheritance
+	private Dimension bounds;
+
+	public Ship(Vector2D pos, Vector2D vel, Dimension bounds) {
+		this(pos, vel.getX(), vel.getY(), bounds);
+	}
+
+	public Ship(Vector2D pos, double velX, double velY, Dimension bounds) {
+		this(pos.getX(), pos.getY(), velX, velY, bounds);
+	}
+
+	public Ship(double x, double y, double velX, double velY, Dimension bounds) {
+		pos = new Vector2D(x, y);
+		vel = new Vector2D(velX, velY);
+		this.bounds = bounds;
+		rotation = 0;
+	}
+
+	public void accelerate(Vector2D acc) {
+		Vector2D max = new Vector2D(MAX_VEL, MAX_VEL);
+		Vector2D sum = vel.add(acc);
+		if (sum.compareTo(max) < 0) {
+			vel = sum;
+		}
+
+	}
+
+	public void rotate(boolean right) {
+		if (right)
+			rotate(-dR);
+		else
+			rotate(dR);
+	}
+
+	public void rotate(double radian) {
+		rotation += radian;
+	}
+
+	public void accelerate(boolean forwards) {
+		if (forwards)
+			accelerate(new Vector2D(Math.cos(rotation) * dV, Math.sin(rotation) * dV));
+		else
+			accelerate(new Vector2D(Math.cos(rotation) * (-dV), Math.sin(rotation) * (-dV)));
+	}
+
+	public void move() {
+		pos = pos.add(vel);
+		double boundX = (bounds.getWidth() + pos.getX() % bounds.getWidth()) % bounds.getWidth();
+		double boundY = (bounds.getHeight() + pos.getY() % bounds.getHeight()) % bounds.getHeight();
+		pos.setLocation(boundX, boundY);
+
+	}
+
+	public Bullet shoot() {
+
+		return new Bullet(pos, new Vector2D(Math.cos(rotation) / bulletSpeedRatio, Math.sin(rotation) / bulletSpeedRatio), bounds);
+	}
+
+	public boolean crash(Asteroid a) {
+		return a.collide(new Rectangle(pos.toPoint().x, pos.toPoint().y, 2, 2));
+	}
+
+	public void draw(Graphics g) {
+		g.drawPolygon(makeTriangle());
+
+		int x1 = (int) ((10) * Math.cos(rotation) - (0) * Math.sin(rotation) + pos.getX());
+		int y1 = (int) ((10) * Math.sin(rotation) + (0) * Math.cos(rotation) + pos.getY());
+		int x2 = (int) ((6) * Math.cos(rotation) - (0) * Math.sin(rotation) + pos.getX());
+		int y2 = (int) ((6) * Math.sin(rotation) + (0) * Math.cos(rotation) + pos.getY());
+
+		g.setColor(Color.red);
+		g.drawLine(x1, y1, x2, y2);
+		g.setColor(Color.black);
+	}
+
+	private Polygon makeTriangle() {
+		int x1 = (int) ((8) * Math.cos(rotation) - (0) * Math.sin(rotation) + pos.getX());
+		int y1 = (int) ((8) * Math.sin(rotation) + (0) * Math.cos(rotation) + pos.getY());
+
+		int x2 = (int) ((-4) * Math.cos(rotation) - (-7) * Math.sin(rotation) + pos.getX());
+		int y2 = (int) ((-4) * Math.sin(rotation) + (-7) * Math.cos(rotation) + pos.getY());
+
+		int x3 = (int) ((-4) * Math.cos(rotation) - 7 * Math.sin(rotation) + pos.getX());
+		int y3 = (int) ((-4) * Math.sin(rotation) + 7 * Math.cos(rotation) + pos.getY());
+
+		// int xRot = (int)(x*Math.cos(rotation) - y*Math.sin(rotation));
+		// int yRot = (int)(x*Math.sin(rotation) + y*Math.cos(rotation));
+
+		Polygon p = new Polygon(new int[] { x1, x2, x3 }, new int[] { y1, y2, y3 }, 3);
+
+		return p;
+	}
+
+}

@@ -1,0 +1,59 @@
+package edu.gatech.GradeAwesome.GUI.Helpers;
+
+import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import edu.gatech.GradeAwesome.GUI.Components.JFileList;
+
+public class TimedSelectionListener implements ListSelectionListener {
+	private int currentIndex;
+	private long microInterval;
+	private boolean expired;
+	private Timer expireMaker;
+	private JFileList list;
+
+	public TimedSelectionListener(JFileList list, long interval) {
+		this.microInterval = interval;
+		this.list = list;
+		expired = true;
+		expireMaker = new Timer(true);
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent event) {
+		if (!event.getValueIsAdjusting()) {
+			if (expired) {
+				currentIndex = event.getFirstIndex();
+				expired = false;
+				expireMaker.schedule(new ExpireTask(), microInterval);
+			} else {
+				if (event.getFirstIndex() == currentIndex) {
+					list.updateOpened((File) list.getSelectedValue());
+					expired = true;
+
+				} else {
+					currentIndex = event.getFirstIndex();
+					expired = false;
+					expireMaker.cancel();
+					expireMaker.schedule(new ExpireTask(), microInterval);
+				}
+			}
+		}
+
+		System.out.println("yay");
+	}
+
+	private class ExpireTask extends TimerTask {
+
+		@Override
+		public void run() {
+
+			expired = true;
+		}
+
+	}
+}

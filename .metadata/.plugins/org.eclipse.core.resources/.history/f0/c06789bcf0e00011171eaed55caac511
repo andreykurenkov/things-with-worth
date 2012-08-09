@@ -1,0 +1,40 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+
+//TODO
+public class CSVFile extends SmartFile {
+	public static final String TYPE = "Comma Seperated";
+	public static final String[] EXTENSIONS = { "csv" };
+	static {
+		SmartFileMaker.addSupport(EXTENSIONS, CSVFile.class);
+	}
+
+	protected CSVFile(File f) {
+		super(f);
+	}
+
+	protected CSVFile(String s) {
+		super(s);
+	}
+
+	@Override
+	protected SmartFile makeSmarter(File make) {
+		return new CSVFile(make);
+	}
+
+	@Override
+	public String[] getValidExtensionRegex() {
+		return EXTENSIONS;
+	}
+
+	@Override
+	public String getType() {
+		return TYPE;
+	}
+
+	@Override
+	public boolean isReadable() {
+		return true;
+	}
+}

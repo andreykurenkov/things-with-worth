@@ -1,0 +1,67 @@
+package edu.gatech.fiveminutesleft;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * This class is used as a temporary storage location for passing objects between finicky Android activities. It is a simple
+ * String to Object map, and is globally accessible. Most items stored in it will only be there for a fraction of a second,
+ * while an Activity is (re)loaded.
+ * 
+ * @author Nick Johnson
+ */
+public class ObjectLocker {
+	// http://tvtropes.org/pmwiki/pmwiki.php/Main/Hammerspace
+	private static Map<String, Object>	hammerSpace	= new HashMap<String, Object>();
+
+	/**
+	 * Add an object to ObjectLocker. If another object is using the same key, it is replaced.
+	 * 
+	 * @param key
+	 *            Key for later retrieval
+	 * @param object
+	 *            Object to be stored
+	 */
+	public static void push(String key, Object object) {
+		hammerSpace.put(key, object);
+	}
+
+	/**
+	 * Add an object to ObjectLocker. A random key is associated with that object, and returned so that the object may be
+	 * retrieved later.
+	 * 
+	 * @param object
+	 *            Object to be stored
+	 * @return Key for later retrieval
+	 */
+	public static String push(Object object) {
+		String key = UUID.randomUUID().toString();
+		hammerSpace.put(key, object);
+		return key;
+	}
+
+	/**
+	 * Retrieve an object from ObjectLocker. If no matching object exists, null is returned. If a matching object exists, it
+	 * is removed from ObjectLocker when it is returned.
+	 * 
+	 * @param key
+	 *            Key with which to find the object.
+	 * @return The object with the given key from ObjectLocker.
+	 */
+	public static Object pull(String key) {
+		Object o = hammerSpace.get(key);
+		hammerSpace.remove(key);
+		return o;
+	}
+
+	/**
+	 * @param key
+	 *            Key with which to find the object.
+	 * @return True iff there is an object in ObjectLocker with the given key.
+	 */
+	public static boolean contains(String key) {
+		return hammerSpace.containsKey(key) && hammerSpace.get(key) != null;
+	}
+
+}

@@ -1,0 +1,13 @@
+package edu.gatech.geochat;
+
+import android.app.Activity;
+
+public class AddNoteActivity extends Activity {
+	
+	public void onCreate(){
+		
+	}
+	
+	
+
+}

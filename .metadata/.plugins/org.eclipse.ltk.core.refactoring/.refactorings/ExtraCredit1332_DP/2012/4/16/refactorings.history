@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;done&apos; in &apos;Dynamic.lcs(...)&apos; to &apos;store&apos;&#x0A;- Original project: &apos;ExtraCredit1332_DP&apos;&#x0A;- Original element: &apos;Dynamic.lcs(String, String).done&apos;&#x0A;- Renamed element: &apos;done&apos;&#x0A;- Update references to refactored element" description="Rename local variable &apos;done&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/&lt;{Dynamic.java[Dynamic~lcs~QString;~QString;@done!104!152!112!115!\[\[I!0!false" name="store" references="true" stamp="1334597456567" version="1.0"/>
+</session>

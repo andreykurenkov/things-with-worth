@@ -1,0 +1,36 @@
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+public class GradingPanel extends JPanel {
+
+	public GradingPanel(Student[] students) {
+		this.setLayout(new GridLayout(1 + students.length, 1));
+		for (int i = 0; i < students.length; i++) {
+			JPanel add = new JPanel();
+			add.setLayout(new GridBagLayout());
+			JLabel test = new JLabel(students[i].getName());
+			JTextField grade = new JTextField("(score)");
+			JTextArea comments = new JTextArea(5, 25);
+			comments.setEditable(true);
+			JScrollPane commentScroll = new JScrollPane(comments);
+			GridBagConstraints constraint = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.NONE, 0.3, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+			add.add(test, constraint);
+			constraint = ConstraintsHelper.makeConstraints(1, 0, GridBagConstraints.NONE, 0.1, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+			add.add(grade, constraint);
+			constraint = ConstraintsHelper.makeConstraints(2, 0, GridBagConstraints.BOTH, 0.6, 1,
+					GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+			add.add(commentScroll, constraint);
+			this.add(add);
+		}
+
+	}
+}

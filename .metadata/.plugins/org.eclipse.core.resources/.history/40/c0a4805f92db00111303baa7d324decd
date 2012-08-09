@@ -1,0 +1,42 @@
+import gmusic.api.impl.GoogleMusicAPI;
+import gmusic.api.model.Song;
+
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.util.Collection;
+
+import javax.swing.JApplet;
+
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
+
+public class MetaMusic extends JApplet {
+	private PiePlot plot;
+	private boolean done;
+	public void init() {
+		GoogleMusicAPI api = new GoogleMusicAPI();
+		try {
+			api.login("andrey.sendme@gmail.com", "16253461");
+			Collection<Song> songs = api.getAllSongs();
+			DefaultPieDataset data = new DefaultPieDataset();
+			for (Song s : songs){
+				try{
+					data.setValue(s.getGenre(), data.getValue(s.getGenre()).intValue() + 1);
+				}
+				catch(UnknownKeyException ex){
+					data.setValue(s.getGenre(), + 1);
+				}
+			}
+			done=true;
+			plot = new PiePlot(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void paint(Graphics g) {
+		plot.drawBackground((Graphics2D) g, new Rectangle(0, 0, (int) this.getSize().getWidth(), (int) this.getSize()
+				.getHeight()));
+	}
+}

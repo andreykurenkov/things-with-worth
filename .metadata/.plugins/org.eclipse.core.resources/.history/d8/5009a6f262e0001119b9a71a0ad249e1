@@ -1,0 +1,152 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.Component;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.EmptyStackException;
+import java.util.Stack;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileSystemView;
+
+import edu.gatech.GradeAwesome.GUI.Helpers.Dialogs;
+import edu.gatech.GradeAwesome.GUI.Helpers.GBHelp;
+
+public class DirectoryBrowser extends JPanel {
+	private JFileList currentFolders;
+	private JScrollPane dirScroll;
+	private Stack<File> previous;
+	private Stack<File> next;
+	private BackActionNextButtons previousNext;
+	private JButton setDir;
+
+	public DirectoryBrowser() {
+		this(FileSystemView.getFileSystemView().getHomeDirectory());
+	}
+
+	public DirectoryBrowser(File startDir) {
+		super(new GridBagLayout());
+		previous = new Stack<File>();
+		next = new Stack<File>();
+		FileFilter dirFilter = new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				return file.isDirectory() && !file.isHidden();
+			}
+
+		};
+		currentFolders = new JFileList(dirFilter, startDir);
+		// TODO: make a non-hardcoded icon management thing somehow
+		setDir = new JButton("Set Directory", new ImageIcon("Res/openFolder.png"));
+		previousNext = new BackActionNextButtons("", false);
+		previousNext.getAction().setIcon(new ImageIcon("Res/UpArrow.png"));
+		previousNext.getBack().setEnabled(false);
+		previousNext.getNext().setEnabled(false);
+		dirScroll = new JScrollPane(currentFolders);
+		previousNext.addBackListener(new StackListener(previous));
+		previousNext.addNextListener(new StackListener(next));
+		previousNext.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				File newDir = currentFolders.getCurrentDirectory().getParentFile();
+				if (newDir != null) {
+					addBackStack();
+					currentFolders.changeDirectory(newDir);
+				}
+			}
+		});
+		setDir.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				File newDir = Dialogs.getFile(null, "Select new directory", "Browse to new directory and click open",
+						currentFolders.getCurrentDirectory(), JFileChooser.DIRECTORIES_ONLY);
+				if (newDir != null && !newDir.equals(currentFolders.getCurrentDirectory())) {
+					addBackStack();
+					currentFolders.changeDirectory(newDir);
+				}
+			}
+		});
+		currentFolders.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent evt) {
+				if (evt.getClickCount() == 2) {
+					addBackStack();
+					currentFolders.changeDirectory((File) currentFolders.getSelectedValue());
+				}
+			}
+		});
+		currentFolders.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		currentFolders.setCellRenderer(new FileNameRenderer());
+		this.add(previousNext, GBHelp.makeConstraints(0, 0, GBHelp.HOR, 1, 0.1, GBHelp.REM, GBHelp.REL, GBHelp.NORTH));
+		this.add(setDir, GBHelp.makeConstraints(0, 1, GBHelp.BOTH, 1, 0.2, GBHelp.REM, GBHelp.REL, GBHelp.NORTH));
+		this.add(dirScroll, GBHelp.makeConstraints(0, 2, GBHelp.BOTH, 1, 0.8, GBHelp.REM, GBHelp.REL, GBHelp.NORTH));
+	}
+
+	private void addBackStack() {
+		previous.add(currentFolders.getCurrentDirectory());
+		previousNext.getBack().setEnabled(true);
+		next.clear();
+		previousNext.getNext().setEnabled(false);
+
+	}
+
+	public class FileNameRenderer implements ListCellRenderer {
+		private ListCellRenderer normalRenderer;
+
+		public FileNameRenderer() {
+			JList defaultList = new JList();
+			normalRenderer = defaultList.getCellRenderer();
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object cell, int index, boolean selected, boolean focus) {
+			JLabel defaultRender = (JLabel) normalRenderer.getListCellRendererComponent(list, cell, index, selected, focus);
+			defaultRender.setText(((File) cell).getName());
+			return defaultRender;
+		}
+	}
+
+	public class StackListener implements ActionListener {
+		private Stack<File> theStack;
+
+		public StackListener(Stack<File> forStack) {
+			this.theStack = forStack;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				File newDir = theStack.pop();
+				if (theStack == previous) {
+					next.add(currentFolders.getCurrentDirectory());
+					previousNext.getNext().setEnabled(true);
+					if (theStack.empty())
+						previousNext.getBack().setEnabled(false);
+				} else {
+					previous.add(currentFolders.getCurrentDirectory());
+					previousNext.getBack().setEnabled(true);
+					if (theStack.empty())
+						previousNext.getNext().setEnabled(false);
+				}
+				currentFolders.changeDirectory(newDir);
+			} catch (EmptyStackException ex) {
+				System.err.println("DirectoryBrowser;StackListener: back or next clicked when empty - should be disabled");
+			}
+
+		}
+	}
+
+}

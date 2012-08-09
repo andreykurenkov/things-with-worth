@@ -1,0 +1,8 @@
+import java.io.File;
+
+public class MainFrame {
+	public static void main(String[] args) {
+		StudentSet mySet = new StudentSet(new File("/School/2011-2012/Summer/TA/grading.txt"));
+
+	}
+}

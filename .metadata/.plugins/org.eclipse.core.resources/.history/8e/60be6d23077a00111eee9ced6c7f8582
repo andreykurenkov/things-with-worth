@@ -1,0 +1,144 @@
+package edu.gatech.fiveminutesleft.test;
+
+import android.app.Activity;
+import edu.gatech.fiveminutesleft.R;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.test.ActivityInstrumentationTestCase2;
+import android.test.UiThreadTest;
+import android.widget.Button;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.RegisterActivity;
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.model.Account;
+/**
+ * 
+ * @author Andrey Kurenkov
+ *
+ */
+public class RegisterTest extends  
+ActivityInstrumentationTestCase2<RegisterActivity>  {
+
+	private RegisterActivity myActivity;
+	private final String testUser="testUse";
+	private final String testPassword="testPass";
+	private final String testEmail="testEmail@test.com";
+	private final String testName="test Test";
+	private TextView	nameField, userField, emailField, passwordField, confirmField, errorStatus;
+	private Button registerButton;
+	
+		
+	public RegisterTest() {
+	      super("edu.gatech.fiveminutesleft.test.RegisterTest", RegisterActivity.class);
+	    }
+	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		Intent intent = new Intent();
+		intent.putExtra("userinfo",testUser);
+		intent.putExtra("userpass",testPassword);
+		this.setActivityIntent(intent);
+		myActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		myActivity=getActivity();
+		nameField = (TextView) myActivity.findViewById(R.id.registerName);
+		userField = (TextView) myActivity.findViewById(R.id.registerUsername);
+		emailField = (TextView) myActivity.findViewById(R.id.registerEmail);
+		passwordField = (TextView) myActivity.findViewById(R.id.registerPassword);
+		confirmField = (TextView) myActivity.findViewById(R.id.registerConfirm);
+	    errorStatus=(TextView)myActivity.findViewById(R.id.registerStatusLabel);
+	    
+		registerButton=(Button)myActivity.findViewById(R.id.registerRegisterButton);
+		AccountManager.getInstance().register(testName, testUser+"taken", testPassword, testPassword, testEmail+"taken");
+		}
+	
+	public void tearDown(){
+		try {
+			super.tearDown();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(Account.locate(testUser+"taken")!=null)
+			Account.locate(testUser+"taken").delete();
+	}
+	public void testPreconditions(){
+		assertEquals("",nameField.getText().toString());
+		assertEquals(testUser,userField.getText().toString());
+		assertEquals("",emailField.getText().toString());
+		assertEquals(testPassword,passwordField.getText().toString());
+		assertEquals("",confirmField.getText().toString());
+		assertTrue(Account.locate(testUser+"taken")!=null);
+		assertTrue(myActivity.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+	}
+	
+	public void testSuccesful(){
+		nameField.setText(testName);
+		userField.setText(testUser+"dif");
+		emailField.setText(testEmail+"taken");
+		passwordField.setText(testPassword);
+		confirmField.setText(testPassword);
+		registerButton.performClick();
+		assertTrue(myActivity.isFinishing(),true);
+		
+	}
+	
+	public void testRotatePersistence(){
+		assertTrue(true);
+	}
+	
+	@UiThreadTest
+	public void testFieldsNotFilled(){
+		registerButton.performClick();
+		assertTrue(errorStatus.getText().equals(AccountManager.ERROR_FIELDS_NOT_FILLED));
+	}
+	
+	@UiThreadTest
+	public void testInvalidEmail(){
+		assertTrue(true);
+		nameField.setText(testName);
+		userField.setText(testUser);
+		emailField.setText("InvalidEmail");
+		passwordField.setText(testPassword);
+		confirmField.setText(testPassword);
+		registerButton.performClick();
+		assertTrue(errorStatus.getText().equals(AccountManager.ERROR_INVALID_EMAIL));
+	}
+	
+	@UiThreadTest
+	public void testInvalidPassword(){
+		nameField.setText(testName);
+		userField.setText(testUser);
+		emailField.setText(testEmail);
+		passwordField.setText("inv");
+		confirmField.setText("inv");
+		registerButton.performClick();
+		assertTrue(errorStatus.getText().equals(AccountManager.ERROR_INVALID_PASSWORD));
+	}
+	
+	@UiThreadTest
+	public void testTakenEmail(){
+		nameField.setText(testName);
+		userField.setText(testUser+"dif");
+		emailField.setText(testEmail+"taken");
+		passwordField.setText(testPassword);
+		confirmField.setText(testPassword);
+		registerButton.performClick();
+		assertTrue(errorStatus.getText().equals(AccountManager.ERROR_EMAIL_TAKEN));
+	}
+	
+	@UiThreadTest
+	public void testTakenUsername(){
+		nameField.setText(testName);
+		userField.setText(testUser+"taken");
+		emailField.setText(testEmail+"dif");
+		passwordField.setText(testPassword);
+		confirmField.setText(testPassword);
+		registerButton.performClick();
+		assertTrue(errorStatus.getText().equals(AccountManager.ERROR_USERNAME_TAKEN));
+	}
+
+	
+}
+

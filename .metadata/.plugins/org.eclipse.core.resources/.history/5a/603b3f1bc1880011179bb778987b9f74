@@ -1,0 +1,144 @@
+import java.util.PriorityQueue;
+
+
+public class Dynamic implements DynamicInterface {
+
+	@Override
+	/**
+	 * Finds longest common substinrg
+	 * @param a first string
+	 * @param b second string
+	 * @return length
+	 */
+	public int lcs(String a, String b) {
+		int[][] store=new int[a.length()+1][b.length()+1];
+		for(int iA=0;iA<a.length();iA++){
+			for(int iB=0;iB<b.length();iB++){
+				if(a.charAt(iA)==b.charAt(iB)){
+					store[iA+1][iB+1]=store[iA][iB]+1;
+				}
+				else{
+					store[iA+1][iB+1]=Math.max(store[iA+1][iB],store[iA][iB+1]);
+				}
+			}
+		}
+
+		return store[a.length()][b.length()];
+	}
+
+	@Override
+	/**
+	 * Finds shortest edit
+	 * @param a first string
+	 * @param b second string
+	 * @return edit length
+	 */
+	public int edit(String a, String b) {
+		int[][] store=new int[a.length()+1][b.length()+1];
+		for(int iA=0;iA<a.length()+1;iA++)
+			store[iA][0]=iA;
+		for(int iB=0;iB<b.length()+1;iB++)
+			store[0][iB]=iB;
+		for(int iA=0;iA<a.length();iA++){
+			for(int iB=0;iB<b.length();iB++){
+				int add=1;
+				if(a.charAt(iA)==b.charAt(iB))
+					add=0;
+				if((store[iA][iB]+add)<Math.min(store[iA+1][iB]+1,store[iA][iB+1]+1))
+					store[iA+1][iB+1]=store[iA][iB]+add;
+				else
+					store[iA+1][iB+1]=Math.min(store[iA+1][iB]+1,store[iA][iB+1]+1);				
+			}
+		}
+		return store[a.length()][b.length()];
+	}
+
+	@Override
+	/**
+	 * Finds most valued items
+	 * @param weight item weight
+	 * @param value item values
+	 * @param max max weight
+	 * @return max value
+	 */
+	public int shop(int[] weight, int[] value, int max) {
+		int numItems=weight.length;
+		int[] store=new int[max+1];
+		for(int iW=1;iW<=max;iW++){
+			for(int iI=0;iI<numItems;iI++){
+				if(weight[iI]<=iW){
+					if(store[iW-weight[iI]]+value[iI]>store[iW]){
+						store[iW]=store[iW-weight[iI]]+value[iI];
+					}
+				}
+			}
+		}
+		return store[max];
+	}
+
+	
+	
+	@Override
+	/**
+	 * Finds least operation to multiply
+	 * @param matrices i and j for matrices
+	 * @return fewest operation to multiply
+	 */
+	public long matrix(int[] matrices) {
+		int numM=matrices.length-1;
+		int[][] store=new int[numM+1][numM+1];
+		for(int iM=1;iM<=numM;iM++)
+			store[iM][iM]=0;
+		for(int nM=2;nM<=numM;nM++){
+			for(int i=1;i<=numM-nM+1;i++){
+				int j=i+nM-1;
+				int min=Integer.MAX_VALUE;
+				for(int k=i;k<j;k++){
+					if(min>(matrices[i-1]*matrices[k]*matrices[j]+store[i][k]+store[k+1][j]))
+						min=matrices[i-1]*matrices[k]*matrices[j]+store[i][k]+store[k+1][j];
+					}
+				store[i][j]=min;
+				store[j][i]=min;
+			}
+		}
+		/*
+		for(int i1=0;i1<store.length;i1++){
+			for(int i2=0;i2<store[i1].length;i2++){
+				System.out.print(store[i1][i2]+" ");
+			}
+			System.out.println();
+		}
+		*/
+		return store[1][numM];
+		
+	}
+
+	@Override
+	public int robbers(int[] weight, int[] value, int max) {
+		int numItems=weight.length;
+		int[] store=new int[max+1];
+		for(int iW=1;iW<=max;iW++){
+			for(int iI=0;iI<numItems;iI++){
+				if(weight[iI]<=iW){
+					if(store[iW-weight[iI]]+value[iI]>store[iW]){
+						store[iW]=value[iI];
+					}
+				}
+			}
+		}
+		return store[max];
+	}
+
+	@Override
+	public int circus(String[] forest) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int[] realEstate(String[] flatLand) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

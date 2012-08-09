@@ -1,0 +1,219 @@
+package edu.gatech.fiveminutesleft.model;
+
+import edu.gatech.fiveminutesleft.cache.AccountCache;
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.storage.AccountReference;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+import edu.gatech.fiveminutesleft.util.CryptoWrapper;
+
+/**
+ * A simple Information Holder for a user's account for the app.
+ * 
+ * @author Andrey Kurenkov
+ */
+public class Account {
+	private AccountCache	myCache;
+	private AccountLists	myLists;
+	private AccountEmail	myEmail;
+
+	/**
+	 * A constructor used for registering a new user account.
+	 * 
+	 * @param actualName
+	 *            The user's actual name
+	 * @param accountUsername
+	 *            The account login username
+	 * @param hashedAccountPassword
+	 *            The hashed login password
+	 * @param email
+	 *            The user's provided email
+	 */
+	public Account(String name, String username, String password, String email) {
+		AccountReference newAccount = StorageManager.createAccount(username);
+		String hashedAccountPassword = CryptoWrapper.secureHash(password);
+		myCache = CacheManager.getAccountCache(newAccount);
+		myCache.setField("password", hashedAccountPassword);
+		myCache.setField("name", name);
+		myCache.setField("email", email);
+		myLists = new AccountLists(myCache);
+		myEmail = new AccountEmail(email, username);
+	}
+
+	/**
+	 * Constructor for retrieving a stored account by username.
+	 * 
+	 * @param username
+	 *            The username of the account to be retrieved
+	 * @throws ObjectNotFoundException
+	 */
+	private Account(String username) throws ObjectNotFoundException {
+		myCache = CacheManager.getAccountCache(username);
+		myLists = new AccountLists(myCache);
+		myEmail = AccountEmail.locate(getEmail());
+		if (myCache == null || myEmail==null) {
+			throw new ObjectNotFoundException();
+		}
+	}
+
+	/**
+	 * Locates the account in storage or in cache
+	 * 
+	 * @param username
+	 *            the username of the account to look up
+	 * @return the StandardAccount if it is in storage, null otherwise
+	 */
+	public static Account locate(String username) {
+
+		if (!Account.exists(username)) {
+			return null;
+		}
+
+		try {
+			return new Account(username);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Deletes Account from storage.
+	 */
+	public void delete() {
+		myEmail.delete();
+		myCache.delete();
+
+	}
+
+	/**
+	 * Returns the lists that belong to this account
+	 * 
+	 * @return the accounts AccountTaskLists
+	 */
+	public AccountLists getLists() {
+		return myLists;
+	}
+
+	/**
+	 * Checks for the existence of an account with the given username
+	 * 
+	 * @param username
+	 *            the Account's username
+	 * @return true if the Account with the given username exists in the cache or remote storage,
+	 *         false otherwise
+	 */
+	public static boolean exists(String username) {
+		return CacheManager.hasAccount(username);
+	}
+
+	/**
+	 * Returns the user's real name
+	 * 
+	 * @return
+	 */
+	public String getRealName() {
+		return myCache.getField("name");
+	}
+
+	/**
+	 * Sets the user's real name
+	 * 
+	 * @param name
+	 */
+	public void setRealName(String name) {
+		myCache.setField("name", name);
+	}
+
+	/**
+	 * Getter for the account username.
+	 * 
+	 * @return username
+	 */
+	public String getUsername() {
+		return myCache.getAddress().getObjectAddress();
+	}
+
+	/**
+	 * @param password
+	 *            Password attempt
+	 * @return True if the given password is the password for this account.
+	 */
+	public boolean isPassword(String password) {
+		String hash = CryptoWrapper.secureHash(password);
+		return hash.equals(myCache.getField("password"));
+	}
+
+	/**
+	 * Getter for the email of the account
+	 * 
+	 * @return the email
+	 */
+	public String getEmail() {
+		return myCache.getField("email");
+	}
+
+	/**
+	 * Sets the user's email
+	 * 
+	 * @param email
+	 */
+	public String setEmail(String email) {
+		myCache.setField("email", email);
+		myEmail.delete();
+		myEmail = new AccountEmail(getUsername(), email);
+		return null;
+	}
+
+	/**
+	 * Changes the stored password for this account to the hashed value of the provided password
+	 * 
+	 * @param newPassword
+	 *            the new unhashed password for this account
+	 * @return null on success, error code otherwise
+	 */
+	public String setPassword(String newPassword) {
+		String newHashedPassword = CryptoWrapper.secureHash(newPassword);
+		myCache.setField("password", newHashedPassword);
+		return null;
+	}
+
+	/**
+	 * Add a non-specific configuration with the type being the key and the set option the
+	 * associated value
+	 * 
+	 * @param key
+	 *            the name of the setting or
+	 * @param value
+	 *            value to correspond to key
+	 * @return null on success, error code otherwise
+	 */
+	public String addSetting(String key, String value) {
+		myCache.setField(key, value);
+		return null;
+	}
+
+	// TODO: add any more needed requirements for password and username syntax
+
+	/**
+	 * Checks if a password is valid to use in the app
+	 * 
+	 * @param unhashedPassword
+	 *            the password to check validity for
+	 * @return
+	 */
+	public static boolean isPasswordValid(String unhashedPassword) {
+		return unhashedPassword.length() >= 6;
+	}
+
+	/**
+	 * Checks if a username is valid to use in the app
+	 * 
+	 * @param username
+	 *            the username to check validity for
+	 * @return true if username meets requirements (currently just longer than 0 chars)
+	 */
+	public static boolean isUsernameValid(String username) {
+		return username.length() > 0;
+	}
+
+}

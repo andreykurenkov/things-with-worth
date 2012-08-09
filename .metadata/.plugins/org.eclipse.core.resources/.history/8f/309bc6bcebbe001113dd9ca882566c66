@@ -1,0 +1,13 @@
+/**
+ * This class represents a simple mathematical 2D vector that allows for
+ * efficient mathematical operations involving two doubles.
+ * 
+ * @author Andrey
+ * @verison 1.0
+ * 
+ */
+public class Vector2D {
+	// TODO: have students write entier clas, or most of it? Pretty simple
+	private double x;
+	private double y;
+}

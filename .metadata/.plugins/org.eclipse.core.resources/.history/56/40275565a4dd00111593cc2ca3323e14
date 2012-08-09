@@ -1,0 +1,7 @@
+import info.bliki.wiki.model.WikiModel;
+
+public class InfoboxWikiMOdel extends WikiModel {
+	public InfoboxWikiModel(String a, String b) {
+		super(a, b);
+	}
+}

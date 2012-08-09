@@ -1,0 +1,69 @@
+package edu.gatech.RecAwesome;
+
+import java.awt.*;
+import java.io.File;
+
+import javax.swing.*;
+import javax.swing.UIManager.LookAndFeelInfo;
+
+import edu.gatech.RecAwesome.GUI.GraphPanel;
+import edu.gatech.RecAwesome.GUI.QuestionsPanel;
+import edu.gatech.RecAwesome.GUI.Components.FileMenu;
+import edu.gatech.RecAwesome.GUI.Components.TabManager;
+import edu.gatech.RecAwesome.GUI.Components.TabManager.Tab;
+
+/**
+ * Main class of application.
+ * 
+ * @author Stefano,Andrey
+ * @version 1.0
+ */
+public class RecitationTracker {
+	public static final Dimension screenSize, frameSize;
+
+	private static JMenuBar menuBar;
+
+	static {
+		final Toolkit defToolkit = Toolkit.getDefaultToolkit();
+		screenSize = defToolkit.getScreenSize();
+		frameSize = new Dimension((int) screenSize.getHeight(), (int) (screenSize.getHeight() * 0.85));
+	}
+
+	public static void main(String[] args) {
+
+		try {
+			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+				if ("Nimbus".equals(info.getName())) {
+					UIManager.setLookAndFeel(info.getClassName());
+					break;
+				}
+			}
+		} catch (Exception e) {
+			// If Nimbus is not available, we could set the GUI to another look
+			// and feel.
+		}
+
+		JFrame frame = new JFrame("F&K Software Recitation Tracker 2.0");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		frame.setPreferredSize(RecitationTracker.frameSize);
+
+		menuBar = new JMenuBar();
+		menuBar.updateUI();
+		menuBar.add(FileMenu.getInstance());
+		frame.setJMenuBar(menuBar);
+
+		GraphPanel p = new GraphPanel(new Dimension((int) (frameSize.getHeight() * 0.8),
+				(int) (frameSize.getHeight() * 0.85)));
+
+		TabManager tabs = TabManager.getInstance();
+
+		frame.add(tabs);
+		frame.setVisible(true);
+		frame.pack();
+		ImageIcon startImage = new ImageIcon("res/Front.gif");
+		Image scaled = startImage.getImage().getScaledInstance((int) frame.getSize().getWidth(),
+				(int) frame.getSize().getHeight(), Image.SCALE_SMOOTH);
+		tabs.addTab("Hello!", new JLabel(new ImageIcon(scaled)));
+	}
+}

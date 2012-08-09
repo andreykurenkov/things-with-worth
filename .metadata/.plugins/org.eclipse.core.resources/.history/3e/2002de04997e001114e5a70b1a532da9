@@ -1,0 +1,100 @@
+package edu.gatech.fiveminutesleft.storage;
+
+import edu.gatech.fiveminutesleft.storage.exception.AddressSyntaxException;
+
+/**
+ * An object representing the location of some stored object. This object is
+ * immutable and is purely an information holder.
+ * 
+ * @author Nick Johnson
+ */
+public class StorageAddress {
+	
+	/**
+	 * A string representing a way to find the storage location where the 
+	 * object is stored. This is most likely a URL of some sort. If two storage
+	 * addresses have the same server address, they are stored in the same
+	 * storage location.
+	 */
+	private final String serverAddress;
+	
+	/**
+	 * A string representing which object in a storage location is being
+	 * referred to. This is most likely a UUID or index number, but is entirely
+	 * specific to the storage location's implementation.
+	 */
+	private final String objectAddress;
+	
+	/**
+	 * Create a storage address from a string representation.
+	 * 
+	 * @param address The string representation of the storage address.
+	 * @throws AddressSyntaxException The string was not a valid representation
+	 * of a storage address.
+	 */
+	public StorageAddress(String address) throws AddressSyntaxException {
+		int separator = address.lastIndexOf('#');
+		
+		if (separator == -1) {
+			throw new AddressSyntaxException(address);
+		}
+		
+		this.serverAddress = address.substring(0, separator);
+		this.objectAddress = address.substring(separator + 1);
+	}
+	
+	/**
+	 * Create a storage address from a server/object address pair.
+	 * 
+	 * @param server The address of the storage location of the object.
+	 * @param object The address of the object within the storage location.
+	 */
+	public StorageAddress(String server, String object) {
+		this.serverAddress = server;
+		this.objectAddress = object;
+	}
+	
+	/**
+	 * @return The address of the storage location of the object.
+	 */
+	public String getServerAddress() {
+		return this.serverAddress;
+	}
+	
+	/**
+	 * @return The address of the object within the storage location.
+	 */
+	public String getObjectAddress() {
+		return this.objectAddress;
+	}
+	
+	/**
+	 * @return A hash of this storage address.
+	 */
+	@Override
+	public int hashCode() {
+		return this.toString().hashCode();
+	}
+	
+	/**
+	 * @return true if and only if this storage address and the given object 
+	 * represent the same storage address.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return this.toString().equals(obj.toString());
+	}
+	
+	/**
+	 * @return A string representation of this storage address, which may be
+	 * used to reconstruct this storage object later.
+	 */
+	public String toString() {
+		
+		// TODO escape any '#' characters in objectAddress to ensure parsing
+		// is reversible.
+		
+		return this.serverAddress + "#" + this.objectAddress;
+	}
+	
+}

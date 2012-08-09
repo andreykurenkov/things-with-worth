@@ -1,0 +1,21 @@
+import info.bliki.api.Page;
+import info.bliki.api.User;
+
+import java.util.List;
+
+public class Test {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		String[] listOfTitleStrings = { "Stolen Babies" };
+		User user = new User("", "", "http://en.wikipedia.org/w/api.php");
+		user.login();
+		List<Page> listOfPages = user.queryContent(listOfTitleStrings);
+		for (Page page : listOfPages) {
+			System.out.println(page.toString());
+		}
+	}
+
+}

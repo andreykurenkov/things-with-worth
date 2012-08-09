@@ -1,0 +1,121 @@
+package edu.gatech.fiveminutesleft.cache;
+
+import edu.gatech.fiveminutesleft.storage.Storage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.StorageReference;
+
+/**
+ * Represents some sort of cache object that can be pushed/pulled from.
+ * 
+ * @author Nick Johnson
+ *
+ * @param <D> The type used to represent the backing store of this object.
+ */
+public abstract class Cache<D> implements StorageReference<D> {
+
+	/**
+	 * Set if the internal state has been changed since the last pull or push.
+	 */
+	protected boolean dirty;
+	
+	/**
+	 * Reference to the storage object cached by this object.
+	 */
+	protected StorageReference<D> ref;
+	
+	/**
+	 * Current internal state of the cache.
+	 */
+	protected D state;
+	
+	/**
+	 * Update the backing store with all changes made to the cache.
+	 * 
+	 * Due to the way that the storage system works, if there have been
+	 * changes made to the backing store concurrently (which can only occur if
+	 * the backing store is in remote storage), the system may perform a 
+	 * three-way merge between this cache, the last state of the backing store,
+	 * and the current state of the backing store. A pull must be performed to
+	 * get the new state of the backing store.
+	 */
+	public void push() {
+		
+		if (this.dirty && this.ref != null) {
+			// cache has been modified: update backing store
+			ref.update(this.state);
+		}
+		
+		// mark cache as clean
+		this.dirty = false;
+	}
+	
+	/**
+	 * Pull a new state of the cache from the backing store, replacing the 
+	 * current state.
+	 */
+	public void pull() {
+
+		if (this.ref != null) {
+			// create cache from backing store
+			this.state = ref.read();
+		}
+		
+		// mark cache as clean
+		this.dirty = false;
+	}
+	
+	/**
+	 * Get the address of the backing store cached by this object.
+	 * 
+	 * @return The address of the backing store.
+	 */
+	public StorageAddress getAddress() {
+		if (this.ref != null) {
+			return this.ref.getAddress();
+		}
+		else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Get the representation of the cache data.
+	 * 
+	 * @return A representation of the cache data.
+	 */
+	public D read() {
+		return this.state;
+	}
+	
+	/**
+	 * Replace the internal state of the cache with the given data.
+	 * 
+	 * @param data New state of the cache.
+	 */
+	public void update(D data) {
+		this.state = data;
+		this.dirty = true;
+	}
+	
+	/**
+	 * Delete the corresponding object 
+	 */
+	public void delete() {
+		if (this.ref != null) {
+			this.ref.delete();
+		}
+	}
+	
+	/**
+	 * @return Storage for this cache.
+	 */
+	public Storage getStorage() {
+		if (this.ref != null) {
+			return this.ref.getStorage();
+		}
+		else {
+			return null;
+		}
+	}
+	
+}

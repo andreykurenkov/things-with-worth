@@ -1,0 +1,48 @@
+public class TextSearch {
+	public static int comparision; // Increment this every time a comparision is made
+
+	public static int[] last(String p) {
+		// TODO
+		return null;
+	}
+
+	public static int[] failure(String p) {
+		// TODO
+		return null;
+	}
+
+	public static int runBruteForce(String t, String p) {
+		for(int i=0;i<t.length()-p.length();i++){
+			boolean match=true;
+				for(int j=0;j<p.length();j++){
+					if(p.charAt(i)!=t.charAt(j)){
+						match=false;
+						break;
+					}
+					comparision++;
+				}
+		}
+		return 0;
+	}
+
+	public static int runBoyerMoore(String t, String p) {
+		// TODO
+		return 0;
+	}
+
+	public static int runKMP(String t, String p) {
+		// TODO
+		return 0;
+	}
+
+	// DO NOT edit code below this line
+
+	public static void resetComp() {
+		comparision = 0;
+	}
+
+	public static int getComp() {
+		return comparision;
+	}
+
+}

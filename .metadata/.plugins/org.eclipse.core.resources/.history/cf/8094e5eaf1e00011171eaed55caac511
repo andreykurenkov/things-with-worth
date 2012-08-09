@@ -1,0 +1,71 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import edu.gatech.GradeAwesome.Debugger;
+
+public abstract class SmartFileFactory {
+	public SmartFile makeSmart(File file) {
+		if (isValid(file)) {
+			return makeSmarter(file);
+		}
+		return null;
+	}
+
+	protected abstract SmartFile makeSmarter(File file);
+
+	public abstract boolean isValid(File file);
+
+	private final static boolean DEBUG = true;
+	private final static HashMap<String[], SmartFileFactory> supported = new HashMap<String[], SmartFileFactory>();
+	static {
+		addSupport(JavaFile.EXTENSIONS, new JavaFile.JavaFileFactory());
+		addSupport(CompiledJavaFile.EXTENSIONS, new CompiledJavaFile.CompiledJavaFileFactory());
+		addSupport(HtmlFile.EXTENSIONS, HtmlFile.class);
+		addSupport(DirectoryFile.EXTENSIONS, DirectoryFile.class);
+		addSupport(TxtFile.EXTENSIONS, TxtFile.class);
+		addSupport(CSVFile.EXTENSIONS, CSVFile.class);
+	}
+
+	protected static void addSupport(String[] exten, SmartFileFactory newSupported) {
+		supported.put(exten, newSupported);
+	}
+
+	@SuppressWarnings("unused")
+	public static SmartFile smartify(File stupid) {
+		ExtendedFile file = new ExtendedFile(stupid);
+		for (Entry<String[], Class<? extends SmartFile>> entry : supported.entrySet()) {
+			for (String exten : entry.getKey()) {
+				if (DEBUG)
+					System.out.println("Checking extensions " + exten + " against file " + file);
+				if (exten.equals(file.getExtension())) {
+					try {
+						for (Constructor struct : entry.getValue().getConstructors()) {
+							System.out.println(struct);
+						}
+						Constructor<? extends SmartFile> construct = entry.getValue().getConstructor(File.class);
+						SmartFile smart = construct.newInstance(stupid);
+						return smart.makeSmarter(stupid);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		if (DEBUG || Debugger.globalDebug)
+			System.err.println("SmartFileFactory; makeSmart(File) - no appropriate SmartFile found for file " + file
+					+ " with extensions " + file.getExtension());
+		return null;
+	}
+
+	public static SmartFile[] smartify(File[] stupid) {
+		SmartFile[] smart = new SmartFile[stupid.length];
+		for (int i = 0; i < stupid.length; i++)
+			smart[i] = SmartFileMaker.makeSmarter(stupid[i]);
+		return smart;
+	}
+
+}

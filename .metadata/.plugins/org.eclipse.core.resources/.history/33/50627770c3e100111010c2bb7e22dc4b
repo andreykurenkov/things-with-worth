@@ -1,0 +1,29 @@
+package edu.gatech.GradeAwesome.Model.copy;
+
+public class Student implements Comparable<Student> {
+	private String name;
+	private String id;
+
+	public Student(String name, String id) {
+		this.name = name;
+		this.id = id;
+	}
+
+	public String toString() {
+		return name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getID() {
+		return id;
+	}
+
+	@Override
+	public int compareTo(Student compare) {
+		return this.name.compareTo(compare.getName());
+	}
+
+}

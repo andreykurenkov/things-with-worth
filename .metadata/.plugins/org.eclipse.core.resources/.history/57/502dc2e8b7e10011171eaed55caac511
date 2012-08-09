@@ -1,0 +1,28 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+
+import javax.swing.JEditorPane;
+
+public class JColorableEditorPane extends JTextPane {
+	private HashMap<String, Color> coloring;
+
+	public JColorableEditorPane() {
+		coloring = new HashMap<String, Color>();
+		this.addPropertyChangeListener(listener)
+	}
+	
+	private class ColorListener implements PropertyChangeListener{
+
+		@Override
+		public void propertyChange(PropertyChangeEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+
+}

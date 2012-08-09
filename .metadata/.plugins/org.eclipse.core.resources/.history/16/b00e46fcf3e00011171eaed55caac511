@@ -1,0 +1,107 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.Component;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.filechooser.FileSystemView;
+
+import edu.gatech.GradeAwesome.Observable;
+import edu.gatech.GradeAwesome.Observer;
+
+public class JFileList extends JList implements Observable<Observer<JFileList>> {
+	private FileFilter filter;
+	private File currentDir;
+	private File[] files;
+	private File lastOpened;
+	private ArrayList<Observer<JFileList>> observers;
+
+	public static final String CHANGED_DIR_CODE = "JFileList Changed Directory";
+	public static final String CHANGE_OPEN_CODE = "JFileList new File opened";
+
+	public JFileList(FileFilter filter, File startDir) {
+		observers = new ArrayList<Observer<JFileList>>();
+		this.filter = filter;
+		this.changeDirectory(startDir);
+	}
+
+	public JFileList(FileFilter filter) {
+		this(filter, FileSystemView.getFileSystemView().getHomeDirectory());
+	}
+
+	public void changeDirectory(File toDir) {
+		if (toDir != null) {
+			this.currentDir = toDir;
+			this.updateFiles();
+			this.notifyObservers(toDir, JFileList.CHANGED_DIR_CODE);
+		}
+	}
+
+	public File getCurrentDirectory() {
+		return currentDir;
+	}
+
+	public void updateFiles() {
+		this.files = currentDir.listFiles(filter);
+		this.setListData(currentDir.listFiles(filter));
+	}
+
+	public File getLastOpened() {
+		return lastOpened;
+	}
+
+	public void updateOpened(File updateTo) {
+		if (updateTo == null || Arrays.asList(files).contains(updateTo)) {
+			this.lastOpened = updateTo;
+			this.notifyObservers(updateTo, JFileList.CHANGE_OPEN_CODE);
+		}
+	}
+
+	private void notifyObservers(Object arg, String code) {
+		for (Observer<JFileList> obv : observers)
+			obv.acceptNotification(this, arg, code);
+	}
+
+	@Override
+	public void acceptObserver(Observer<JFileList> add) {
+		this.observers.add(add);
+	}
+
+	@Override
+	public void deleteObserver(Observer<JFileList> add) {
+		this.observers.remove(add);
+
+	}
+
+	@Override
+	public void deleteObservers() {
+		observers = new ArrayList<Observer<JFileList>>();
+	}
+
+	@Override
+	public int countObservers() {
+		return observers.size();
+	}
+
+	public class FileNameRenderer implements ListCellRenderer {
+		private ListCellRenderer normalRenderer;
+
+		public FileNameRenderer() {
+			JList defaultList = new JList();
+			normalRenderer = defaultList.getCellRenderer();
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList list, Object cell, int index, boolean selected, boolean focus) {
+			JLabel defaultRender = (JLabel) normalRenderer.getListCellRendererComponent(list, cell, index, selected, focus);
+			defaultRender.setText(((File) cell).getName());
+			return defaultRender;
+		}
+	}
+
+}

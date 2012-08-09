@@ -1,0 +1,197 @@
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+//TODO: tons of stuff?
+public class GradingPanel extends JPanel {
+	private File saveDir;
+	private File loadDir;
+	private String saveLoadName;
+	private ArrayList<StudentPanel> panels;
+	private JButton save, clearAll, load;
+
+	public GradingPanel(Student[] students) {
+		this.setLayout(new GridLayout(1 + students.length, 1));
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(1, 3));
+		save = new JButton("Save");
+		clearAll = new JButton("Clear all");
+		load = new JButton("Load");
+
+		save.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (saveDir == null) {
+					// TODO:ask for dir(currently set same as time as files dir)
+				}
+				if (saveLoadName == null) {
+					// TODO: ask for name(currently set as default Grades.txt)
+				}
+				save();
+
+			}
+
+		});
+
+		clearAll.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				for (StudentPanel sp : panels) {// TODO: are you sure
+												// JOptionPane?
+					sp.grade.setText("");
+					sp.comments.setText("");
+				}
+			}
+		});
+
+		load.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (loadDir == null) {
+					// TODO:ask for dir(currently set same as time as files dir)
+				}
+				if (saveLoadName == null) {
+					// TODO: ask for name(currently set as default Grades.txt)
+				}
+				load();
+
+			}
+
+		});
+
+		buttonPanel.add(save);
+		buttonPanel.add(clearAll);
+		buttonPanel.add(load);
+		this.add(buttonPanel);
+
+		panels = new ArrayList<StudentPanel>(students.length);
+		for (int i = 0; i < students.length; i++) {
+			StudentPanel sp = new StudentPanel(students[i].getName());
+			panels.add(sp);
+			this.add(sp);
+		}
+		// revalidate();
+
+	}
+
+	public void setSaveDir(File setTo) {
+		saveDir = setTo;
+	}
+
+	public void setLoadDir(File setTo) {
+		loadDir = setTo;
+	}
+
+	public void setSaveLoadName(String setTo) {
+		saveLoadName = setTo;
+	}
+
+	public void load() {
+		// TODO: yo, safety first? Later.
+		try {
+			Scanner scan = new Scanner(new File(loadDir.getAbsolutePath() + saveLoadName));
+			scan.useDelimiter("<<>>");
+			for (int i = 0; i < panels.size(); i++) {
+				String line = scan.next();
+				String[] parts = line.split("<>");
+				StudentPanel fill = panels.get(i);
+				fill.name.setText(parts[0]);
+				fill.grade.setText(parts[1].trim().equals("") ? "(score)" : parts[1]);
+				fill.commentScroll.setPreferredSize(new Dimension(fill.getWidth() / 2, fill.getHeight()));
+				fill.comments.setText(parts[2]);
+				// TODO: figure out how to make it not awkwardly resize without
+				// sacrificing dynamic size(resizes because of filling BOTH).
+
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void save() {
+		// TODO: make uploadable? Would be dope.
+		try {
+			File saveToParsable = new File(saveDir.getAbsolutePath() + saveLoadName);
+			File saveToReadable = new File(saveDir.getAbsolutePath() + "_Readable_" + saveLoadName);
+			FileOutputStream out = new FileOutputStream(saveToParsable);
+			FileOutputStream outRead = new FileOutputStream(saveToReadable);
+			for (StudentPanel sp : panels) {
+				out.write(sp.name.getText().trim().getBytes());
+				outRead.write((sp.name.getText() + "\n").getBytes());
+				out.write("<>".getBytes());
+				// " " avoids null values
+				out.write((" " + sp.grade.getText()).getBytes());
+				outRead.write(("Grade: " + sp.grade.getText() + "\n").getBytes());
+				out.write("<>".getBytes());
+				out.write((sp.comments.getText() + " ").getBytes());
+				outRead.write(("Comment: " + sp.comments.getText() + "\n\n").getBytes());
+				out.write("<<>>\n".getBytes());
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private class StudentPanel extends JPanel {
+		public JLabel name;
+		public JTextField grade;
+		public JTextArea comments;
+		public JScrollPane commentScroll;
+
+		public StudentPanel(String name) {
+			this.setLayout(new GridBagLayout());
+			StringBuilder build = new StringBuilder();
+
+			build.append(name);// For equals spacing
+			for (int i = name.length(); i < 25; i++)
+				build.append(' ');
+			this.name = new JLabel(build.toString());
+			Font uniformFont = new Font("Courier", Font.PLAIN, 12);
+			if (uniformFont != null) {
+				this.name.setFont(uniformFont);
+			}
+			this.grade = new JTextField("(score)");
+			this.comments = new JTextArea(5, 30);
+			comments.setEditable(true);
+			commentScroll = new JScrollPane(comments);
+			commentScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			commentScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			// below is NECESSARY for scrollbars to function
+			comments.setLineWrap(true);
+			GridBagConstraints constraint = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.NONE, 2, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+			this.add(this.name, constraint);
+			constraint = ConstraintsHelper.makeConstraints(1, 0, GridBagConstraints.NONE, 0.5, 1,
+					GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+			this.add(grade, constraint);
+			constraint = ConstraintsHelper.makeConstraints(2, 0, GridBagConstraints.BOTH, 1, 1,
+					GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+			this.add(commentScroll, constraint);
+		}
+	}
+}

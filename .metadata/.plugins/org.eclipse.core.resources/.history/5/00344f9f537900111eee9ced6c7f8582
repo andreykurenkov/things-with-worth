@@ -1,0 +1,11 @@
+package edu.gatech.fiveminutesleft.test;
+
+import junit.framework.TestCase;
+
+public class RegisterTest extends TestCase {
+
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+
+}

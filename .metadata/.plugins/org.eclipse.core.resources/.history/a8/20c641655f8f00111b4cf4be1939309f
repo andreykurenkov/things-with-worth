@@ -1,0 +1,43 @@
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class MaxMarriages {
+	/**
+	 * Given a list of men and the women that each is willing to marry, return
+	 * the maximum number of acceptable pairings. Note that configurations are
+	 * not necessarily unique! The full description is found in the pdf, but the
+	 * format is re-copied below for convenience:
+	 * 
+	 * The format will be as follows: Man1 Woman1_1 Woman1_2 Woman1_3 �
+	 * Woman1_n1 Man2 Woman2_1 Woman2_2 Woman2_3 � Woman2_n2 . . . ManK WomanK_1
+	 * WomanK_2 WomanK_3 � WomanK_nK
+	 * 
+	 * Where there are K lines corresponding to K men, and man X chooses the nX
+	 * wives listed after his name (space delimited).
+	 * 
+	 * For example, in the following, Bob will marry Alice or Eve; Sam will
+	 * marry Sara, Alice, or Susie; and Lance will marry no one: Bob Alice Eve
+	 * Sam Sara Alice Susie Lance
+	 * 
+	 * @param marriageList
+	 *            the list of potential pairings as described in the pdf
+	 * @return the maximum number of possible marriages
+	 */
+	public static int maxMarriages(String marriageList) {
+		if(marriageList==null)
+			return 0;
+		Scanner scan = new Scanner(marriageList);
+		int man = Integer.MAX_VALUE;
+		HashMap<String, Integer> wiveIds = new HashMap<String, Integer>();
+		String g = "0";
+		while (scan.hasNext()) {
+			String[] line = scan.nextLine().split(" ");
+			g += " S " + line[0] + " 1";
+			for (int i = 1; i < line.length; i++) {
+				g += " " + line[0] + " " + line[i] + " 1 " + line[i] + " T 1";
+			}
+		}
+		Graph graph = new Graph(g);
+		return (int) MaxFlow.maxFlow(graph);
+	}
+}

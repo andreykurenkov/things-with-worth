@@ -1,0 +1,85 @@
+package jUnit;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
+
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.model.Account;
+
+public class RegisterTest extends TestCase {
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPassword",
+				"testemail@test.test");
+	}
+
+	@Test
+	public void emptyFieldTest() {
+		String result = AccountManager.getInstance().register("", "testUsername", "testPassword", "testPassword",
+				"testemail@test.test");
+		assertEquals(AccountManager.ERROR_FIELDS_NOT_FILLED, result);
+	}
+
+	@Test
+	public void invalidPasswordTest() {
+		String result = AccountManager.getInstance().register("testName", "testUsername", "testP", "testP",
+				"testemail@test.test");
+		assertEquals(AccountManager.ERROR_INVALID_PASSWORD, result);
+	}
+
+	@Test
+	public void invalidEmailTest() {
+		String result = AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPassword",
+				"invalidEmail");
+		assertEquals(AccountManager.ERROR_INVALID_EMAIL, result);
+	}
+
+	@Test
+	public void passwordsNotMatchingTest() {
+		String result = AccountManager.getInstance().register("testName", "testUsername", "testPassword",
+				"testPasswordWrong", "testemail@test.test");
+		assertEquals(AccountManager.ERROR_PASSWORD_DOES_NOT_MATCH_CONFIRM, result);
+	}
+
+	@Test
+	public void usernameTakenTest() {
+		String result = AccountManager.getInstance().register("testName", "testUsername", "testPasswordDif",
+				"testPasswordDIf", "testemailDif@test.test");
+		assertEquals(AccountManager.ERROR_USERNAME_TAKEN, result);
+	}
+
+	@Test
+	public void emailTakenTest() {
+		String result = AccountManager.getInstance().register("testName", "testUsernameDIf", "testPasswordDif",
+				"testPasswordDIf", "testemail@test.test");
+		assertEquals(AccountManager.ERROR_EMAIL_TAKEN, result);
+	}
+
+	@Test
+	public void wrongInputUsernameTest() {
+		String result = AccountManager.getInstance().login("testUsernameWrong", "testPassword");
+		assertEquals(AccountManager.ERROR_INCORRECT_USERNAME_OR_PASSWORD, result);
+	}
+
+	@Test
+	public void wrongInputPasswordTest() {
+		String result = AccountManager.getInstance().login("testUsername", "testPasswordWrong");
+		assertEquals(AccountManager.ERROR_INCORRECT_USERNAME_OR_PASSWORD, result);
+	}
+
+	@Test
+	public void loginSuccess() {
+		String result = AccountManager.getInstance().login("testUsername", "testPassword");
+		assertEquals(null, result);
+	}
+
+	@Override
+	public void tearDown() throws Exception {
+		super.tearDown();
+		Account.locate("testUsername").delete();
+	}
+
+}

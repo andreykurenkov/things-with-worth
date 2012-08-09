@@ -1,0 +1,17 @@
+package edu.gatech.GradeAwesome.FileIO;
+
+import java.io.File;
+
+public class HtmlFile extends SmartFile {
+	public static final String TYPE = "HTML";
+	public static final String[] EXTENSIONS = { "html" };
+
+	public HtmlFile(File f) {
+		super(f);
+	}
+
+	public HtmlFile(String s) {
+		super(s);
+	}
+
+}

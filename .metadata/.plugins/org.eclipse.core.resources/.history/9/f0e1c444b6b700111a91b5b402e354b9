@@ -1,0 +1,21 @@
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
+
+import javax.swing.JTextArea;
+
+public class TextStdInputArea extends JTextArea {
+	private InputStream redirect;
+
+
+	public TextStdInputArea() {
+		PipedOutputStream redirectFrom=new PipedOutputStream();
+		redirect=new PipedInputStream();
+		System.setIn(redirect);
+		((PipedInputStream)redirect).connect(redirectFrom);
+	}
+
+
+}

@@ -1,0 +1,231 @@
+public class Dynamic implements DynamicInterface {
+
+	public static Dynamic get() {
+		return new Dynamic();
+	}
+
+	@Override
+	/**
+	 * Finds longest common substinrg
+	 * @param a first string
+	 * @param b second string
+	 * @return length
+	 */
+	public int lcs(String a, String b) {
+		if (a == null || b == null)
+			return 0;
+		int[][] store = new int[a.length() + 1][b.length() + 1];
+		for (int iA = 0; iA < a.length(); iA++) {
+			for (int iB = 0; iB < b.length(); iB++) {
+				if (a.charAt(iA) == b.charAt(iB)) {
+					store[iA + 1][iB + 1] = store[iA][iB] + 1;
+				} else {
+					store[iA + 1][iB + 1] = Math.max(store[iA + 1][iB], store[iA][iB + 1]);
+				}
+			}
+		}
+
+		return store[a.length()][b.length()];
+	}
+
+	@Override
+	/**
+	 * Finds shortest edit
+	 * @param a first string
+	 * @param b second string
+	 * @return edit length
+	 */
+	public int edit(String a, String b) {
+		if (a == null || b == null)
+			return 0;
+		int[][] store = new int[a.length() + 1][b.length() + 1];
+		for (int iA = 0; iA < a.length() + 1; iA++)
+			store[iA][0] = iA;
+		for (int iB = 0; iB < b.length() + 1; iB++)
+			store[0][iB] = iB;
+		for (int iA = 0; iA < a.length(); iA++) {
+			for (int iB = 0; iB < b.length(); iB++) {
+				int add = 1;
+				if (a.charAt(iA) == b.charAt(iB))
+					add = 0;
+				if ((store[iA][iB] + add) < Math.min(store[iA + 1][iB] + 1, store[iA][iB + 1] + 1))
+					store[iA + 1][iB + 1] = store[iA][iB] + add;
+				else
+					store[iA + 1][iB + 1] = Math.min(store[iA + 1][iB] + 1, store[iA][iB + 1] + 1);
+			}
+		}
+		return store[a.length()][b.length()];
+	}
+
+	@Override
+	/**
+	 * Finds most valued items
+	 * @param weight item weight
+	 * @param value item values
+	 * @param max max weight
+	 * @return max value
+	 */
+	public int shop(int[] weight, int[] value, int max) {
+		if (weight == null || value == null || max == 0)
+			return 0;
+		int numItems = weight.length;
+		int[] store = new int[max + 1];
+		for (int iW = 1; iW <= max; iW++) {
+			for (int iI = 0; iI < numItems; iI++) {
+				if (weight[iI] <= iW) {
+					if (store[iW - weight[iI]] + value[iI] > store[iW]) {
+						store[iW] = store[iW - weight[iI]] + value[iI];
+					}
+				}
+			}
+		}
+		return store[max];
+	}
+
+	@Override
+	/**
+	 * Finds least operation to multiply
+	 * @param matrices i and j for matrices
+	 * @return fewest operation to multiply
+	 */
+	public long matrix(int[] matrices) {
+		if (matrices == null)
+			return 0;
+		int numM = matrices.length - 1;
+		long[][] store = new long[numM + 1][numM + 1];
+		for (int iM = 1; iM <= numM; iM++)
+			store[iM][iM] = 0;
+		for (int nM = 2; nM <= numM; nM++) {
+			for (int i = 1; i <= numM - nM + 1; i++) {
+				int j = i + nM - 1;
+				long min = Long.MAX_VALUE;
+				for (int k = i; k < j; k++) {
+					if (min > (matrices[i - 1] * matrices[k] * matrices[j] + store[i][k] + store[k + 1][j]))
+						min = matrices[i - 1] * matrices[k] * matrices[j] + store[i][k] + store[k + 1][j];
+				}
+				store[i][j] = min;
+				store[j][i] = min;
+			}
+		}
+
+		return store[1][numM];
+
+	}
+
+	@Override
+	public int robbers(int[] weight, int[] value, int max) {
+		if (weight == null || value == null || max == 0)
+			return 0;
+		int numItems = weight.length;
+		int[][] store = new int[numItems + 1][max + 1];
+		for (int iI = 1; iI <= numItems; iI++) {
+			for (int iW = 0; iW <= max; iW++) {
+				if (weight[iI - 1] <= iW) {
+					store[iI][iW] = Math.max(value[iI - 1] + store[iI - 1][iW - weight[iI - 1]], store[iI - 1][iW]);
+				} else
+					store[iI][iW] = store[iI - 1][iW];
+			}
+		}
+		return store[weight.length][max];
+	}
+
+	@Override
+	public int circus(String[] forest) {
+		if (forest == null)
+			return 0;
+		int max = 0;
+		int[][] maxDownRight = new int[forest.length + 1][forest[0].length() + 1];
+		for (int i = 1; i < forest.length; i++)
+			for (int j = 1; j < forest[i].length(); j++) {
+				if (forest[i - 1].charAt(j - 1) == '.') {
+					int minLocal = Math.min(maxDownRight[i - 1][j], maxDownRight[i][j - 1]);
+					minLocal = Math.min(minLocal, maxDownRight[i - 1][j - 1]);
+					maxDownRight[i][j] = 1 + minLocal;
+					if (maxDownRight[i][j] > max)
+						max = maxDownRight[i][j];
+				} else
+					maxDownRight[i][j] = 0;
+
+			}
+		return max * max;
+	}
+
+	@Override
+	public int[] realEstate(String[] flatLand) {
+		if (flatLand == null)
+			return new int[] { 0 };
+		int[] perims = new int[Math.max(flatLand.length, flatLand[0].length()) * 4];
+		int[][][] conseq = new int[2][flatLand.length + 1][flatLand[0].length() + 1];
+		int[][][] conseq2 = new int[2][flatLand.length + 1][flatLand[0].length() + 1];
+		for (int i = 1; i <= flatLand.length; i++)
+			for (int j = 1; j <= flatLand[i - 1].length(); j++) {
+				if (flatLand[i - 1].charAt(j - 1) == '0') {
+					// fill up the consecutive row/cols
+					conseq[0][i][j] = conseq[0][i][j - 1] + 1;
+					conseq[1][i][j] = conseq[1][i - 1][j] + 1;
+					// fill up the rows of consec cols, vice versa
+					
+					if (conseq[0][i][j] <= conseq[0][i - 1][j])
+						conseq2[0][i][j] = conseq2[0][i - 1][j] + 1;
+					else
+						conseq2[0][i][j] = 1;
+
+					if (conseq[1][i][j] <= conseq[1][i][j - 1])
+						conseq2[1][i][j] = conseq2[1][i][j - 1] + 1;
+					else
+						conseq2[1][i][j] = 1;
+
+					int at = i;
+					int min = conseq[0][at][j];
+					int sum = 0;
+					int maxPerim = 0;
+					while (at >= 0) {
+						if (conseq[0][at][j] > 0 && conseq[0][at][j] <= min) {
+							sum += conseq2[0][at][j];
+							min = conseq[0][at][j];
+							if (conseq[0][at][j] * 2 + sum * 2 > maxPerim) {
+								maxPerim = conseq[0][at][j] * 2 + sum * 2;
+							}
+							at -= conseq2[0][at][j];
+							if (min == 1)
+								break;
+						} else
+							break;
+					}
+					at = j;
+					sum = 0;
+					min = conseq[1][i][at];
+					while (at >= 0) {
+						if (conseq[1][i][at] > 0 && conseq[1][i][at] <= min) {
+							sum += conseq2[1][i][at];
+							min = conseq[1][i][at];
+							if (conseq[1][i][at] * 2 + sum * 2 > maxPerim) {
+								maxPerim = conseq[1][i][at] * 2 + sum * 2;
+							}
+							at -= conseq2[1][i][at];
+							if (min == 1)
+								break;
+						} else
+							break;
+					}
+
+					perims[maxPerim]++;// yup
+				} else {
+					conseq[0][i][j] = 0;
+					conseq[1][i][j] = 0;
+					perims[0]++;// yup
+				}
+			}
+		return perims;
+	}
+
+	private void print2D(int[][] print) {
+		for (int i = 0; i < print.length; i++) {
+			for (int i2 = 0; i2 < print[i].length; i2++) {
+				System.out.print(print[i][i2] + " ");
+			}
+			System.out.println();
+		}
+	}
+
+}

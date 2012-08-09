@@ -1,0 +1,5 @@
+package edu.gatech.JThing;
+
+public class Debugger {
+	public final static boolean globalDebug = false;
+}
