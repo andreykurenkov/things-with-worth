@@ -1,0 +1,9 @@
+package serverCom;
+/**
+ * Static class for server communication for laters
+ * @author andrey
+ *
+ */
+public class ServerCommunication {
+
+}

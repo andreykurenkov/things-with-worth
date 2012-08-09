@@ -1,0 +1,11 @@
+package edu.gatech.fiveminutesleft.test;
+
+import edu.gatech.fiveminutesleft.model.TaskList;
+
+public class MockTaskList extends TaskList {
+	
+	public MockTaskList(String name){
+		
+	}
+
+}

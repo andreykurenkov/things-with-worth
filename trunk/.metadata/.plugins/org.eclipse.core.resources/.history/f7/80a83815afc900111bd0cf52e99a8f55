@@ -1,0 +1,78 @@
+import java.awt.Color;
+import java.awt.Point;
+
+public class Cell {
+	private int age;
+	private boolean state;
+	private boolean changed;
+	private Point place;
+	private boolean oscillating;
+	public final static boolean DEAD = false;
+	public final static boolean ALIVE = true;
+
+	public Cell(Point place) {
+		this(0, false, place);
+	}
+
+	private Cell(int age, boolean state, Point place) {
+		this.age = age;
+		this.state = state;
+		this.place = place;
+		changed = false;
+		oscillating = false;
+	}
+
+	public Point getPlace() {
+		return place;
+	}
+
+	public boolean getChanged() {
+		return changed;
+	}
+
+	public void age() {
+		changed = false;
+		age++;
+	}
+
+	public void kill() {
+		changed = state != DEAD;
+		state = DEAD;
+		age = 0;
+
+	}
+
+	public void revive() {
+		changed = state != ALIVE;
+		state = ALIVE;
+	}
+
+	public boolean getState() {
+		return state;
+	}
+
+	public boolean isAlive() {
+		return state == ALIVE;// better style to check equality
+	}
+
+	public Color getColor() {
+
+		if (state == DEAD) {
+			if (changed)
+				return Color.GRAY;
+			return Color.DARK_GRAY;
+		} else {
+			if (changed)
+				return Color.green;
+			return new Color(255 - age % 200, 255 - ((age / 200) * age) % 200, 255 - ((age / 400) * age) % 200);
+		}
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public Cell clone() {
+		return new Cell(age, state, new Point(place.x, place.y));
+	}
+}

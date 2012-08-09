@@ -1,0 +1,20 @@
+public class Player {
+	private String name;
+	private int choice;
+	public final static int rock=1;
+	public final static int paper=2;
+	public final static int scissors=3;
+	
+	public Player(String name, int choice) {
+		this.name = name;
+		this.choice = choice;
+	}
+	
+	public int getChoice(){
+		return choice;
+	}
+	
+	public String getName(){
+		return name;
+	}
+}

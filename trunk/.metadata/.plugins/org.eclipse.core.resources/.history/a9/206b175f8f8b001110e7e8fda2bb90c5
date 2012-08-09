@@ -1,0 +1,130 @@
+package edu.gatech.geochat;
+
+import java.util.List;
+
+import edu.gatech.fiveminutesleft.EditListActivity;
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.ListsActivity.TaskListAdapter;
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.TaskList;
+import edu.gatech.geochat.database.Storage;
+import edu.gatech.geochat.model.GeoMessage;
+import edu.gatech.geochat.model.User;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
+
+public class PlacedNotesActivity extends BetterActivity {
+	public static void launch(Activity source, User user) {
+		Intent intent = new Intent(source, PlacedNotesActivity.class);
+		source.startActivity(intent);
+		GUISpace.put(PlacedNotesActivity.class, "user", user);
+	}
+	
+	private ListView		listsView;
+	private PlacedAdapter	listAdapter;
+	private List<GeoMessage> placed;
+	@Override
+	public void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
+		setContentView(R.layout.placed_notes_activity);
+	
+		listAdapter = new PlacedAdapter();
+		listsView.setAdapter(listAdapter);
+		placed=Storage.getInstance().getPlaced((User)GUISpace.get(getClass(),"user"));
+		setStatusText("");
+	}
+
+	class PlacedAdapter extends BaseAdapter {
+		private LayoutInflater	inflater;
+
+		/**
+		 * Adapter constructor that initializes the inflater.
+		 */
+		public PlacedAdapter() {
+			inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the amount of items to display, which is
+		 * the amount of TaskLists stored by the used AccountLists.
+		 */
+		public int getCount() {
+			return placed.size();
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the item displayed at the given index.
+		 * 
+		 * @param i
+		 *            the index of the item to be retrieved
+		 */
+		public GeoMessage getItem(int i) {
+			return placed.get(i);
+		}
+
+		/**
+		 * Return a unique id for the item displayed at that position. This id should remain the
+		 * same even as the item changed positions within the display.
+		 * 
+		 * @param position
+		 *            the hashcode of the item at the given index
+		 */
+		public long getItemId(int position) {
+			return getItem(position).hashCode();
+		}
+
+		/**
+		 * Standard Android method for Adapter. Called whenever any visual element being displayed
+		 * is changed. Returns the View or Edit layout as appropriate for the TaskList with the
+		 * given index position.
+		 * 
+		 * @param position
+		 *            the position of the displayed item in the display
+		 * @param convert
+		 *            a possibly reusable old view
+		 * @param parent
+		 *            The parent that this view will eventually be attached to
+		 */
+		public View getView(int position, View convert, ViewGroup parent) {
+			GeoMessage message=placed.get(position);
+			View view = inflater.inflate(R.layout.note_list_view, null);
+
+			TextView text = (TextView) view.findViewById(R.id.noteText);
+			
+			final TextView listname = (TextView) view.findViewById(R.id.listNameView);
+			if (names != null) {
+
+				final String name = names[getIndexFromEnd(position)];
+				final TaskList list = lists.getTaskLists().get(getIndexFromEnd(position));
+				listname.setText(name);
+				OnClickListener loadViewListener = new OnClickListener() {
+					public void onClick(View v) {
+						viewList(list);
+					}
+				};
+				listname.setOnClickListener(loadViewListener);
+				viewButton.setOnClickListener(loadViewListener);
+
+				editButton.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						EditListActivity.launch(self(), getAccount(), list);
+					}
+				});
+			} else {
+				listname.setText("Null List #" + position);
+			}
+
+			return view;
+		}
+	}
+}

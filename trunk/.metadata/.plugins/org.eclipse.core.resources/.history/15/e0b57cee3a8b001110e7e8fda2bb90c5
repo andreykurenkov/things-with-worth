@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, GeoChatActivity!</string>
+    <string name="app_name">GeoChat</string>
+
+</resources>

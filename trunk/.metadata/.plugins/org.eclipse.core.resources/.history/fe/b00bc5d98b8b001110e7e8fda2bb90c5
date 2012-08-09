@@ -1,0 +1,182 @@
+package edu.gatech.geochat;
+
+import edu.gatech.fiveminutesleft.EditListActivity;
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.ListsActivity.TaskListAdapter;
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.TaskList;
+import edu.gatech.geochat.model.User;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
+
+public class PlacedNotesActivity extends BetterActivity {
+	public static void launch(Activity source, User user) {
+		Intent intent = new Intent(source, PlacedNotesActivity.class);
+		source.startActivity(intent);
+		GUISpace.put(PlacedNotesActivity.class, "user", user);
+	}
+	
+	private ListView		listsView;
+	private TaskListAdapter	listAdapter;
+	
+	@Override
+	public void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
+		setContentView(R.layout.placed_notes_activity);
+	
+		listAdapter = new PlacedAdapter();
+		listsView.setAdapter(listAdapter);
+		
+		setStatusText("");
+	}
+
+	class PlacedAdapter extends BaseAdapter {
+		private LayoutInflater	inflater;
+
+		/**
+		 * Adapter constructor that initializes the inflater.
+		 */
+		public PlacedAdapter() {
+			inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		}
+
+		/**
+		 * Add new lists to the display.
+		 * 
+		 * @param name
+		 *            the name of the new list
+		 */
+		public void addItem(String name) {
+			if (name == null)
+				return;
+			name = name.trim();
+			if (name.length() == 0)
+				return; // no empty strings
+
+			if (getAccount() == null)
+				return;
+
+			AccountLists lists = getAccount().getLists();
+
+			if (lists == null)
+				return;
+
+			String[] names = lists.getListNames();
+			if (names == null)
+				return;
+
+			// Checking that name is not duplicated done in Domain level
+			// Create and add a new TaskList here
+			lists.addTaskList(lists.makeTaskList(), name);
+
+			this.notifyDataSetChanged();
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the amount of items to display, which is
+		 * the amount of TaskLists stored by the used AccountLists.
+		 */
+		public int getCount() {
+			AccountLists lists = getAccount().getLists();
+			if (lists == null)
+				return 0;
+			return lists.getTaskLists().size();
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the item displayed at the given index.
+		 * 
+		 * @param i
+		 *            the index of the item to be retrieved
+		 */
+		public TaskList getItem(int i) {
+			AccountLists lists = getAccount().getLists();
+			if (lists == null)
+				return null;
+			return lists.getTaskLists().get(getIndexFromEnd(i));
+		}
+
+		/**
+		 * Return a unique id for the item displayed at that position. This id should remain the
+		 * same even as the item changed positions within the display.
+		 * 
+		 * @param position
+		 *            the hashcode of the item at the given index
+		 */
+		public long getItemId(int position) {
+			return getItem(position).hashCode();
+		}
+
+		/**
+		 * Helper method used to display tasks newest to olders
+		 * 
+		 * @return index from end of list of tasks
+		 */
+		private int getIndexFromEnd(int index) {
+			if (getAccount().getLists() == null)
+				return 0;
+			return getAccount().getLists().getNumLists() - (index + 1);
+		}
+
+		/**
+		 * Standard Android method for Adapter. Called whenever any visual element being displayed
+		 * is changed. Returns the View or Edit layout as appropriate for the TaskList with the
+		 * given index position.
+		 * 
+		 * @param position
+		 *            the position of the displayed item in the display
+		 * @param convert
+		 *            a possibly reusable old view
+		 * @param parent
+		 *            The parent that this view will eventually be attached to
+		 */
+		public View getView(int position, View convert, ViewGroup parent) {
+			AccountLists lists = getAccount().getLists();
+			if (lists == null)
+				return null;
+
+			String[] names = lists.getListNames();
+			if (names == null)
+				return null;
+
+			View view = inflater.inflate(R.layout.list_item, null);
+
+			ImageButton editButton = (ImageButton) view.findViewById(R.id.EditList);
+			View viewButton = view.findViewById(R.id.EditArrow);
+			final TextView listname = (TextView) view.findViewById(R.id.listNameView);
+			if (names != null) {
+
+				final String name = names[getIndexFromEnd(position)];
+				final TaskList list = lists.getTaskLists().get(getIndexFromEnd(position));
+				listname.setText(name);
+				OnClickListener loadViewListener = new OnClickListener() {
+					public void onClick(View v) {
+						viewList(list);
+					}
+				};
+				listname.setOnClickListener(loadViewListener);
+				viewButton.setOnClickListener(loadViewListener);
+
+				editButton.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						EditListActivity.launch(self(), getAccount(), list);
+					}
+				});
+			} else {
+				listname.setText("Null List #" + position);
+			}
+
+			return view;
+		}
+	}
+}

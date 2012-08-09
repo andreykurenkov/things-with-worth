@@ -1,0 +1,37 @@
+package edu.gatech.RecAwesome.IO;
+
+import java.util.ArrayList;
+
+import edu.gatech.RecAwesome.Model.Question.Question;
+
+/**
+ * Defines the default parsing method for .qsf documents.
+ * 
+ * @author andrey
+ * 
+ */
+public class DefaultParser extends QuestionParser {
+	/**
+	 * 
+	 */
+	public Question parseQuestion(String parseFrom) {
+		String question, id, text;
+		String[] lines = parseFrom.split("\n");
+		int atLine = 0;
+
+		// making question string
+		String[] lineParts = lines[atLine++].split("_");
+		String id = lineParts[0];
+		String content = lineParts[1];
+
+		ArrayList<String> opts = new ArrayList<String>();
+		lineParts = lines[atLine++].split("_");
+		while (!lineParts[0].contains("Answer")) {
+			opts.add(lineParts[0]);
+			lineParts = lines[atLine++].split("_");
+		}
+		int answer = Integer.parseInt(lineParts[1]);
+		return new DefaultQuestion(id, content, answer, opts.toArray(lineParts));
+	}
+
+}

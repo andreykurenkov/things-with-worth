@@ -1,0 +1,149 @@
+package edu.gatech.fiveminutesleft.model;
+
+
+public interface Task {
+	public static final String	FALSE_STRING	= String.valueOf(false);
+	public static final String	TRUE_STRING		= String.valueOf(true);
+
+	/**
+	 * Setter for how often task due date repeats.
+	 * 
+	 * @param setTo
+	 *            Value of repeating pattern - needs to be A defined parcable string
+	 */
+	public void setRepeats(String setTo);
+
+	/**
+	 * Setter for how often task due date repeats.
+	 * 
+	 * @param pattern
+	 *            defined pattern for how the task should repeat
+	 */
+	public void setRepeats(TaskRepeat pattern);
+
+	/**
+	 * Setter for Notes property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setNotes(String setTo);
+
+	/**
+	 * Setter for Tags property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setTags(String setTo);
+
+	/**
+	 * Setter for Name property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setName(String setTo);
+
+	/**
+	 * Setter for Description property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setDescription(String setTo);
+
+	/**
+	 * Setter for Date property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setDate(String setTo);
+
+	/**
+	 * Setter for Time property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setTime(String setTo);
+
+	/**
+	 * Setter for Completed property
+	 * 
+	 * @param setTo
+	 *            value to set to
+	 */
+	public void setCompleted(String setTo);
+
+	/**
+	 * @return repeats for this task as string
+	 */
+	public String getRepeats();
+
+	/**
+	 * @return notes for this task
+	 */
+	public String getNotes();
+
+	/**
+	 * @return tags for this task
+	 */
+	public String getTags();
+
+	/**
+	 * @return name of this task
+	 */
+	public String getName();
+
+	/**
+	 * @return description of this task
+	 */
+	public String getDescription();
+
+	/**
+	 * @return date of this task
+	 */
+	public String getDate();
+
+	/**
+	 * @return time of this task
+	 */
+	public String getTime();
+
+	/**
+	 * @return completion property of this Task
+	 */
+	public String getCompleted();
+
+	/**
+	 * General get method for a non-specific property of the Task
+	 * 
+	 * @return the key for the given property
+	 */
+	public String getTag(String tag);
+
+	/**
+	 * General method for a non-specific property of the Task
+	 * 
+	 * @param tag
+	 *            - the property to get
+	 * @param defValue
+	 *            - the default value (if value is null)
+	 * @return
+	 */
+	public String getTag(String tag, Object defValue);
+
+	/**
+	 * General set method for a non-specific property of the Task
+	 * 
+	 * @param tag
+	 *            the key for the given property
+	 * @param value
+	 *            what to set the property to
+	 */
+	public void setTag(String tag, String value);
+
+
+}

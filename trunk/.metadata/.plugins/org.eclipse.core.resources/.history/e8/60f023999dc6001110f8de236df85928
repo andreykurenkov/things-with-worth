@@ -1,0 +1,32 @@
+import javax.swing.JOptionPane;
+
+/**
+ * Main class with frame and not much else.
+ * 
+ * @author andrey
+ * 
+ */
+public class Life {
+	private final int WIDTH = 600;
+	private final int HEIGHT = 700;
+
+	public static void main(String[] args) {
+		boolean validInput = false;
+		
+
+	}
+	
+	private int getIntSafely(String checkMessage){
+		boolean validInput=false;
+		int input=-1;
+		while (!validInput){
+			try {
+				input = Integer.parseInt(JOptionPane.showInputDialog("What width would you like?"));// Not necessary, but																					// I like
+				validInput = true;
+			} catch (Exception e) {
+				validInput = false;
+			}
+		}
+		return input;
+	}
+}

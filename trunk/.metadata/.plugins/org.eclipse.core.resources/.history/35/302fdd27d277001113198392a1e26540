@@ -1,0 +1,328 @@
+package edu.gatech.fiveminutesleft;
+
+import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
+import android.widget.TimePicker;
+import edu.gatech.fiveminutesleft.model.Date;
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.Time;
+
+/**
+ * This is the Activity screen that allows users to edit the details of a Task.
+ * 
+ * @author Garret Malmquist
+ */
+public class TaskEditActivity extends Activity {
+
+	/**
+	 * Launches this activity
+	 * 
+	 * @param source
+	 *            Activity that launched this
+	 * @param task
+	 *            Task to display/edit
+	 */
+	public static void launch(Activity source, Task task, String[] categories) {
+		Intent n = new Intent(source, TaskEditActivity.class);
+		GUISpace.put(TaskEditActivity.class, "task", task);
+		GUISpace.put(TaskEditActivity.class, "categories", categories);
+
+		GUISpace.put(TaskEditActivity.class, "name", task.getName());
+		GUISpace.put(TaskEditActivity.class, "due", task.getDate());
+		GUISpace.put(TaskEditActivity.class, "time", task.getTime());
+		GUISpace.put(TaskEditActivity.class, "repeat", task.getRepeats());
+		GUISpace.put(TaskEditActivity.class, "notes", task.getNotes());
+		GUISpace.put(TaskEditActivity.class, "tags", task.getTags());
+
+		/*
+		 * String k = ""; for (String c : categories) k += c + " ";
+		 * GUISpace.put(TaskEditActivity.class, "notes", k);
+		 */
+
+		source.startActivity(n);
+	}
+
+	private TextView							nameView, dueView, timeView, repeatView, notesView, tagsView;
+	private Date								dateSet;
+	private Time								timeSet;
+	private DatePickerDialog.OnDateSetListener	dateListener	= new DatePickerDialog.OnDateSetListener() {
+
+																	public void onDateSet(DatePicker view, int year,
+																			int monthOfYear, int dayOfMonth) {
+																		Date setDate = new Date(year, monthOfYear,
+																				dayOfMonth);
+																		if (getTask() != null) {
+																			dateSet = setDate;
+																			setDate.setInTask(getTask());
+																			setDateText(getTask().getDate());
+																		}
+																	}
+																};
+
+	private TimePickerDialog.OnTimeSetListener	timeListener	= new TimePickerDialog.OnTimeSetListener() {
+
+																	public void onTimeSet(TimePicker view, int hourOfDay,
+																			int minute) {
+																		Time setTime = new Time(hourOfDay, minute);
+																		if (getTask() != null) {
+																			timeSet = setTime;
+																			setTime.setInTask(getTask());
+																			setTimeText(getTask().getTime());
+																		}
+																	}
+																};
+
+	// Garrett: grrr, this is not javadocd and sort of a hack. Problematic for times like 19:29.
+	// Changed
+	private String getDateText() {
+		return dueView.getText().toString().replaceAll(".*?:", "").trim();
+	}
+
+	private String getTimeText() {
+		return timeView.getText().toString();
+	}
+
+	private String getRepeatText() {
+		return repeatView.getText().toString().replaceAll(".*?:", "").trim();
+	}
+
+	private void setTimeText(String s) {
+		timeView.setText("Time Due: " + s);
+	}
+
+	private void setDateText(String s) {
+		dueView.setText("Due Date: " + s);
+	}
+
+	private void setRepeatText(String s) {
+		repeatView.setText("Repeat: " + s);
+	}
+
+	private Task getTask() {
+		return (Task) GUISpace.get(getClass(), "task");
+	}
+
+	/**
+	 * Standard Android method. Called when Activity gets launched without already being in stopped
+	 * or paused state. initializes variables and sets up the layout.
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+
+		Log.d("TaskEditActivity.onCreate", "TaskEditActivity Created");
+		setContentView(R.layout.task_view_edit_layout);
+
+		nameView = (TextView) findViewById(R.id.TaskName);
+		dueView = (TextView) findViewById(R.id.TaskDueDate);
+		timeView = (TextView) findViewById(R.id.TaskDueTime);
+		repeatView = (TextView) findViewById(R.id.TaskRepeat);
+		notesView = (TextView) findViewById(R.id.TaskNotes);
+		tagsView = (TextView) findViewById(R.id.TaskTags);
+
+		ViewGroup tagsLayout = (ViewGroup) findViewById(R.id.CategoryList);
+
+		String[] cats = (String[]) GUISpace.get(getClass(), "categories");
+		LayoutInflater infl = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		for (String cat : cats) {
+			View tagView = infl.inflate(R.layout.category_tag, null);
+			Button button = (Button) tagView.findViewById(R.id.CategoryButton);
+			button.setText(cat);
+
+			final String tag = cat;
+			button.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					addTag(tag);
+				}
+			});
+
+			tagsLayout.addView(tagView);
+
+			/*
+			 * <Button android:id="@+id/TagWork" style="@style/TagStyle"
+			 * android:background="#00000000" android:onClick="addTagWork"
+			 * android:text="@string/work" />
+			 */
+		}
+	}
+
+	private void storeFields() {
+		GUISpace.put(getClass(), "name", nameView.getEditableText().toString());
+		
+		GUISpace.put(getClass(), "repeat", getRepeatText());
+		if (timeSet != null)
+			GUISpace.put(getClass(), "time", timeSet.toString());
+		if(dateSet!=null)
+		GUISpace.put(getClass(), "due", dateSet.toString());
+		GUISpace.put(getClass(), "notes", notesView.getEditableText().toString());
+		GUISpace.put(getClass(), "tags", tagsView.getEditableText().toString());
+		GUISpace.put(getClass(), "newDate", dateSet);
+		GUISpace.put(getClass(), "newTIme", timeSet);
+	}
+
+	private void restoreFields() {
+		nameView.setText(GUISpace.getString(getClass(), "name"));
+		setDateText(GUISpace.getString(getClass(), "due"));
+		setTimeText(GUISpace.getString(getClass(), "time"));
+		setRepeatText(GUISpace.getString(getClass(), "repeat"));
+		notesView.setText(GUISpace.getString(getClass(), "notes"));
+		tagsView.setText(GUISpace.getString(getClass(), "tags"));
+
+		dateSet = (Date) GUISpace.get(getClass(), "newDate");
+		timeSet = (Time) GUISpace.get(getClass(), "newTime");
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		restoreFields();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		storeFields();
+	}
+
+	/**
+	 * Called by the user's button click to bring up a dialog to set the repeat options
+	 * 
+	 * @param view
+	 */
+	public void setRepeat(View view) {
+		if (getTask() == null)
+			return;
+		EditRepeatActivity.launch(this, getRepeatText(), new ContentListener() {
+			public void dataChanged(String s) {
+				GUISpace.put(TaskEditActivity.class, "repeat", s);
+			}
+		});
+	}
+
+	/**
+	 * Called by the user's button press to bring up a dialog to select the date.
+	 * 
+	 * @param view
+	 */
+	public void setDate(View view) {
+		Date userDate = Date.getFromTask(getTask());
+		Dialog dateDialog = new DatePickerDialog(this, dateListener, userDate.getYear(), userDate.getMonth(),
+				userDate.getDay());
+		dateDialog.show();
+	}
+
+	/**
+	 * Called by the user's button press to bring up a 24 hour formatted dialog to select the time.
+	 * 
+	 * @param view
+	 */
+	public void setTime(View view) {
+		Time userTime = Time.getFromTask(getTask());
+		Dialog timeDialog = new TimePickerDialog(this, timeListener, userTime.getHours(), userTime.getMinutes(), true);
+		timeDialog.show();
+	}
+
+	/**
+	 * Makes sure the tags are in their proper comma-separated format.
+	 */
+	private void formatTags() {
+		String text = tagsView.getEditableText().toString().trim().toLowerCase();
+		text = text.replaceAll(",", ", ");
+		text = text.replaceAll("\\s+", " ");
+		text = text.replaceAll("(\\s*,\\s*){2,}", ", ");
+		tagsView.setText(text);
+	}
+
+	/**
+	 * Adds a new tag to the list of tags, if it isn't already there.
+	 * 
+	 * @param add
+	 *            new tag to add
+	 */
+	private void addTag(String add) {
+		add = add.toLowerCase();
+		String text = tagsView.getEditableText().toString().trim().toLowerCase();
+		String[] parts = text.split("\\s*,\\s*");
+		StringBuffer sb = new StringBuffer(text.length() + 2 + add.length());
+		for (int i = 0; i < parts.length; i++) {
+			if (parts[i] == null)
+				continue;
+			if (parts[i].equals(add))
+				return;
+			if (sb.length() > 0)
+				sb.append(", ");
+			sb.append(parts[i]);
+		}
+		if (sb.length() > 0)
+			sb.append(", ");
+		sb.append(add);
+
+		tagsView.setText(sb.toString());
+	}
+
+	/**
+	 * Closes this Activity without saving anything when the "Cancel" button is pressed.
+	 * 
+	 * @param view
+	 */
+	public void cancel(View view) {
+		finish();
+	}
+
+	/**
+	 * onClick method for done button Saves all Task data and closes this Activity when the "Done"
+	 * button is pressed.
+	 * 
+	 * @param view
+	 *            button that was clicked
+	 */
+	public void done(View view) {
+		if (getTask() != null) {
+			Task task = getTask();
+			formatTags();
+			task.setName(nameView.getEditableText().toString());
+			if (timeSet != null)
+				timeSet.setInTask(task);
+			if (dateSet != null)
+				dateSet.setInTask(task);
+			task.setRepeats(getRepeatText());
+			task.setNotes(notesView.getEditableText().toString());
+			task.setTags(tagsView.getEditableText().toString());
+		}
+
+		finish();
+	}
+
+	/**
+	 * Clear out any remaining persistent data when this task is done.
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+
+	/**
+	 * This will pull up Google Maps to allow the user to select a geographic location for this
+	 * task.
+	 * 
+	 * @param view
+	 */
+	public void viewMap(View view) {
+		// Yeah, definitely not implemented yet.
+	}
+}

@@ -1,0 +1,214 @@
+package edu.gatech.geochat;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import edu.gatech.geochat.model.GeoMessage;
+import edu.gatech.geochat.model.User;
+
+import android.location.Location;
+import android.opengl.GLSurfaceView;
+import android.util.Log;
+
+public class RadarRenderer implements GLSurfaceView.Renderer {
+	private final float ICON_WIDTH=0.05f;
+	private final float ICON_HEIGHT=0.05f;
+	private final float[] shading= {
+            0f, 0.644f, 0f, 0.55f, // vertex 0 red
+            0f, 0.664f, 0f, 0.55f, // vertex 1 green
+            0f, 0.664f, 0f, 0.55f, // vertex 2 blue
+            0f, 0.664f, 0f, 0.75f, // vertex 3 magenta
+    };
+	private RadarView myView;
+	private float heightToWidth;
+	private float widthToHeight;
+	private OpenGLSquare radar;
+	public RadarRenderer(RadarView view){
+		myView=view;
+		this.adjustScaling(myView.getDeviceWidth(), myView.getDeviceHeight());
+		
+
+	}
+	
+	@Override
+	public void onDrawFrame(GL10 gl) {
+		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+		gl.glDisable(GL10.GL_BLEND);
+		gl.glDisable(GL10.GL_TEXTURE_2D);   
+		
+		this.drawLine(0f,
+				      0f,
+				      1f*widthToHeight*(float)Math.cos(myView.getAngle()),
+			          (1f*heightToWidth)*(float)Math.sin(myView.getAngle()),
+			          gl);
+		gl.glEnable(GL10.GL_TEXTURE_2D);   
+		gl.glEnable(GL10.GL_BLEND);
+		radar.draw(gl);
+		
+	
+		
+	}
+	
+	private void adjustScaling(int width, int height){
+		if(height>width){
+			heightToWidth=(float)width/height;
+			widthToHeight=1.0f;
+		}
+		else{
+			heightToWidth=1.0f;
+			widthToHeight=(float)height/width;
+		}
+		Log.d("Radar","wTh "+widthToHeight+"  and hTw "+heightToWidth);
+		float[] vertices = {
+    			-1f*widthToHeight, -1f*heightToWidth,	  0.0f,		// V1 - bottom left
+    			-1f*widthToHeight, 1f*heightToWidth,	  0.0f,		// V2 - top left
+    			1f*widthToHeight, -1f*heightToWidth, 0.0f,		// V3 - bottom right
+    			1f*widthToHeight, 1f*heightToWidth, 0.0f			// V4 - top right
+    	};
+        radar=new OpenGLSquare(vertices);
+	}
+	
+	private FloatBuffer getLineBuffer(float[] lineCords){
+		
+		  ByteBuffer vbb = ByteBuffer.allocateDirect(lineCords.length*4);
+			vbb.order(ByteOrder.nativeOrder());
+			FloatBuffer line = vbb.asFloatBuffer();
+			line.put(lineCords);
+			line.position(0);
+			return line;
+	}
+	
+	private void drawLine(float x1, float y1, float x2, float y2, GL10 gl){
+
+		  float[] lineCords= new float[] {
+		    x1, y1,
+		    x2, y2
+		    };
+		 
+		 FloatBuffer line=getLineBuffer(lineCords);
+		 this.drawLineBuffer(line,gl);
+	
+	}
+	
+	private void drawLineBuffer(FloatBuffer line, GL10 gl){
+		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		gl.glLineWidth(5.0f);
+		gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
+		gl.glVertexPointer(2, GL10.GL_FLOAT, 0,  line);
+        gl.glDrawArrays(GL10.GL_LINE_STRIP, 0, 2);
+       
+	}
+	
+	private void drawManyLines(FloatBuffer[] lines,GL10 gl){
+		for(FloatBuffer line:lines)
+			this.drawLineBuffer(line,gl);
+	}
+	
+	/**
+	 * Here radius is understood to be a percentage of the screen width. 
+	 * 
+	 */
+	private float[] getCenteredCircleVertices(float percentOfWidth, int numLines){
+		float[] verts=new float[numLines*2];
+		
+		for(int i=0;i<numLines*2;i+=2){
+			float angle=(float)(i)/(numLines*2-2)*2*(float)Math.PI;
+			verts[i]=1f*percentOfWidth*widthToHeight*(float)Math.cos(angle);//x1
+			verts[i+1]=1f*percentOfWidth*heightToWidth*(float)Math.sin(angle);//y1
+		}
+
+		return verts;
+	}
+	
+	/**
+	 * Here radius is understood to be a percentage of the screen width. 
+	 * 
+	 */
+	private FloatBuffer[] getCenteredCircleLines(float percentOfWidth, int numLines){
+		float[][] lines=new float[numLines][4];
+		
+		for(int i=0;i<numLines-1;i++){
+			float angle=(float)(i)/(numLines-1)*2*(float)Math.PI;
+			float angleDos=(float)(i+1)/(numLines-1)*2*(float)Math.PI;
+			lines[i][0]=1f*percentOfWidth*widthToHeight*(float)Math.cos(angle);//x1
+			lines[i][1]=1f*percentOfWidth*heightToWidth*(float)Math.sin(angle);//y1
+			lines[i][2]=1f*percentOfWidth*widthToHeight*(float)Math.cos(angleDos);//x2
+			lines[i][3]=1f*percentOfWidth*heightToWidth*(float)Math.sin(angleDos);//y2
+		}
+		FloatBuffer[] returnable = new FloatBuffer[numLines];
+		for(int i=0;i<numLines;i++){
+			returnable[i]=this.getLineBuffer(lines[i]);
+		}
+
+		return returnable;
+	}
+	
+
+	@Override
+	public void onSurfaceChanged(GL10 gl, int width, int height) {
+        gl.glViewport(0, 0, width, height);
+	
+        gl.glMatrixMode(GL10.GL_PROJECTION);
+        gl.glLoadIdentity();
+
+	}
+
+	
+	@Override
+	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+		gl.glClearColor(0.0f, 0.13333f, 0.0f, 0.25f);
+		gl.glEnable(GL10.GL_ALPHA);
+		gl.glEnable(GL10.GL_TEXTURE_2D);            //Enable Texture Mapping ( NEW 
+	    gl.glEnable(GL10.GL_BLEND);   
+		gl.glColor4f(0f, 0.664f,0f, 0f);
+        gl.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		gl.glClearDepthf(1.0f);                     //Depth Buffer Setup
+		gl.glEnable(GL10.GL_DEPTH_TEST);            //Enables Depth Testing
+		gl.glDepthFunc(GL10.GL_LEQUAL);             //The Type Of Depth Testing To Do
+		
+		//Really Nice Perspective Calculations
+		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+		
+		radar.loadGLTexture(gl, GeoChatActivity.getActiveContext(), R.drawable.rings);
+		
+		
+		ByteBuffer cbb = ByteBuffer.allocateDirect(shading.length * 4);
+		cbb.order(ByteOrder.nativeOrder());
+		FloatBuffer	colorBuffer = cbb.asFloatBuffer();
+		colorBuffer.put(shading);
+		colorBuffer.position(0);
+		gl.glColorPointer(4, GL10.GL_FLOAT, 0, colorBuffer);
+	}
+	
+	public void drawMessages(GL10 gl){
+		Iterable<GeoMessage> nearby=User.getMessages();
+		Location currentLocation=User.getLocation();
+		for(GeoMessage message:nearby){
+		Location messageLocation=message.getLoc();
+		float distance=currentLocation.distanceTo(messageLocation);
+		if(distance<User.displayRadius){
+			double scale=distance/User.displayRadius;
+			double theta=currentLocation.getLongitude()-messageLocation.getLongitude();
+			float[] vertices = {
+	    			(float)(scale*Math.cos(theta))*widthToHeight-ICON_WIDTH/2,
+	    			(float)(scale*Math.sin(theta))*heightToWidth-ICON_HEIGHT/2,	  0.0f,		// V1 - bottom left
+	    			(float)(scale*Math.cos(theta))*widthToHeight-ICON_WIDTH/2,
+	    			(float)(scale*Math.sin(theta))*heightToWidth+ICON_HEIGHT/2,	  0.0f,		// V2 - top left
+	    			(float)(scale*Math.cos(theta))*widthToHeight+ICON_WIDTH/2, 
+	    			(float)(scale*Math.sin(theta))*heightToWidth-ICON_HEIGHT/2, 0.0f,		// V3 - bottom right
+	    			(float)(scale*Math.cos(theta))*widthToHeight+ICON_WIDTH/2, 
+	    			(float)(scale*Math.sin(theta))*heightToWidth+ICON_HEIGHT/2, 0.0f			// V4 - top right
+	    	};
+			
+			OpenGLSquare icon= new OpenGLSquare(vertices);
+			icon.loadGLTexture(gl, GeoChatActivity.getActiveContext(), R.drawable.blip);
+		}
+		}
+	}
+	
+}

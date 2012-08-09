@@ -1,0 +1,184 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+import android.util.Log;
+import edu.gatech.fiveminutesleft.cache.AccountCache;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+
+/**
+ * A controller that encapsulates the retrieval and interactions with the task lists that belong to
+ * a certain account
+ * 
+ * @author Andrey Kurenkov
+ */
+public class AccountLists {
+
+	private AccountCache		myCache;
+
+	private final String		LIST_COUNT_FIELD			= "TaskListCount";
+	// Prefix for key to store a TaskList's name - needs to be completed with the list's number(one
+	// higher than current
+	// count)
+	private final String		LIST_NAME_FIELD				= "Name of List #"/* +<List Index> */;
+	// Prefix for key to store a TaskList's index- needs to be completed with name
+	private final String		LIST_INDEX_FIELD			= "Index of List "/* +<List Name> */;
+	// Prefix for key to store a TaskList's server address - needs to be completed with name
+	private final String		LIST_SERVER_ADDRESS_FIELD	= "Server Address of List "/*
+																						 * +<List
+																						 * Name>
+																						 */;
+	// Prefix for key to store a TaskList's object address - needs to be completed with name
+	private final String		LIST_OBJECT_ADDRESS_FIELD	= "Object Address of List "/*
+																						 * +<List
+																						 * Name>
+																						 */;
+	public static final String	ERROR_LIST_NAME_REPLICATED	= "Lists cannot have the same name";
+	public static final String	ERROR_LIST_NAME_NOT_FOUND	= "List name not found";
+
+	HashMap<String, TaskList>	retrieved;
+
+	/**
+	 * Constructor that get the cache in which taskList information is actually stored
+	 * 
+	 * @param accountCache
+	 *            the cache from which to get taskList information
+	 */
+	public AccountLists(AccountCache accountCache) {
+		myCache = accountCache;
+		retrieved = new HashMap<String, TaskList>();
+	}
+
+	/**
+	 * Associates the given serverAddress and localAddress for a TaskList with this account and
+	 * stores it
+	 * 
+	 * @param address
+	 *            the address of the taskList to add as owned to this account
+	 */
+	public String addTaskList(AppTaskList list, String name) {
+
+		if (Arrays.asList(this.getListNames()).contains(name)) {
+			return ERROR_LIST_NAME_REPLICATED;
+		}
+
+		// if the task is unbound, bind it to our storage location
+		if (list.getAddress() == null) {
+			list.bind(this.myCache.getStorage().createTaskList());
+			Log.d("AccountLists.addTaskList", "bound newly-created list to " + list.getAddress());
+		}
+
+		int currentTaskListCount = getNumLists();
+		incrementNumLists();
+		myCache.setField(LIST_NAME_FIELD + currentTaskListCount, name);
+		myCache.setField(LIST_INDEX_FIELD + name, "" + currentTaskListCount);
+		myCache.setField(LIST_SERVER_ADDRESS_FIELD + name, list.getAddress().getServerAddress());
+		myCache.setField(LIST_OBJECT_ADDRESS_FIELD + name, list.getAddress().getObjectAddress());
+		return null;
+
+	}
+
+	/**
+	 * Returns a list with a specific name
+	 * 
+	 * @param name
+	 *            the name of the list to get
+	 * @return the TaskList with the specifed name
+	 */
+	public TaskList getTaskList(String name) {
+		String serverAddress = myCache.getField(LIST_SERVER_ADDRESS_FIELD + name);
+		String objectAddress = myCache.getField(LIST_OBJECT_ADDRESS_FIELD + name);
+		if (!retrieved.containsKey(name)) {
+			TaskList toReturn = AppTaskList.locate(new StorageAddress(serverAddress, objectAddress));
+			toReturn.setName(name);
+			retrieved.put(name, toReturn);
+			return toReturn;
+		}
+		return retrieved.get(name);
+	}
+
+	/**
+	 * Retrieves from storage and returns all the TaskLists owned or associated with the account
+	 * 
+	 * @return an ArrayList containing all the TaskLists belonging to this account
+	 */
+	public ArrayList<TaskList> getTaskLists() {
+		ArrayList<TaskList> lists = new ArrayList<TaskList>();
+		int currentTaskListCount = getNumLists();
+		for (int i = 0; i < currentTaskListCount; i++) {
+			String name = myCache.getField(LIST_NAME_FIELD + i);
+			lists.add(getTaskList(name));
+		}
+		return lists;
+	}
+
+	/**
+	 * Returns the names of all the tasklists that belong to this account
+	 * 
+	 * @return a string array with the lists' names
+	 */
+	public String[] getListNames() {
+		int currentTaskListCount = getNumLists();
+		String[] names = new String[currentTaskListCount];
+		for (int i = 0; i < currentTaskListCount; i++) {
+			names[i] = myCache.getField(LIST_NAME_FIELD + i);
+		}
+		return names;
+	}
+
+	/**
+	 * Returns the number of lists currently in storage
+	 * 
+	 * @return 0 if no lists stored previously, number of lists otherwise
+	 */
+	public int getNumLists() {
+		String listNumField = myCache.getField(LIST_COUNT_FIELD);
+		if (listNumField == null) {
+			myCache.setField(LIST_COUNT_FIELD, "0");
+			return 0;
+		}
+		return Integer.parseInt(listNumField);
+	}
+
+	/**
+	 * Decrements the field storing the amounts of lists
+	 */
+	private void incrementNumLists() {
+		int currentTaskListCount = getNumLists();
+		myCache.setField(LIST_COUNT_FIELD, "" + (currentTaskListCount + 1));
+	}
+
+	/**
+	 * Increments the field storing the amounts of lists
+	 */
+	private void decrementNumLists() {
+		int currentTaskListCount = getNumLists();
+		if (currentTaskListCount > 0)
+			myCache.setField(LIST_COUNT_FIELD, "" + (currentTaskListCount - 1));
+	}
+
+	/**
+	 * Deletes tha TaskList with the given name
+	 * 
+	 * @param name
+	 *            The name of the tasklist to delete
+	 * @return the deleted TaskList
+	 */
+	public TaskList deleteTaskList(String name) {
+		TaskList toRemove = getTaskList(name);
+		if (toRemove != null) {
+			int index = Integer.parseInt(myCache.getField(LIST_INDEX_FIELD + name));
+			decrementNumLists();
+			for (int i = index; i < getNumLists(); i++) {
+				// Shift indexes of all following lists down
+				myCache.setField(LIST_NAME_FIELD + i, myCache.getField(LIST_NAME_FIELD + (i + 1)));
+				myCache.setField(LIST_INDEX_FIELD + myCache.getField(LIST_NAME_FIELD + i), "" + i);
+			}
+		}
+		toRemove.delete();
+		return toRemove;
+	}
+
+}

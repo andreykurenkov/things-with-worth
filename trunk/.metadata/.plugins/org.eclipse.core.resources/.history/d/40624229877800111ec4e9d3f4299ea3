@@ -1,0 +1,55 @@
+import java.util.HashMap;
+import java.util.Set;
+
+public class DisjointSets {
+
+	/**
+	 * This constructor could do any number of things. Feel free to add instance
+	 * variables if you need them. You may assume the methods sameSet, and merge
+	 * will only be called with vertices that are in the set vertex set passed
+	 * in here
+	 * 
+	 * @param vertices
+	 *            All vertices that are valid parameters for this disjoint set
+	 */
+	HashMap<Vertex,Vertex> childRootPair;
+	public DisjointSets(Set<Vertex> vertices) {
+		childRootPair=new HashMap<Vertex,Vertex>();
+		for(Vertex v:vertices)
+			childRootPair.put(v, null);
+	}
+
+	/**
+	 * Returns true if and only if u and v belong to the same set.
+	 * 
+	 * 
+	 * @param u
+	 * @param v
+	 * @return
+	 */
+	public boolean sameSet(Vertex u, Vertex v) {
+		return find(u).equals(find(v));
+	}
+
+	/**
+	 * Finds the root of the vertex v
+	 * @param v
+	 * @return
+	 */
+	public Vertex find(Vertex v){
+		while(childRootPair.get(v)!=null)
+			v=childRootPair.get(v);
+		return v;
+	}
+	/**
+	 * Merges the set containing u with the set containing v. If u and v are in
+	 * the same set do nothing
+	 * 
+	 * @param u
+	 * @param v
+	 */
+	public void merge(Vertex u, Vertex v) {
+		if(!sameSet(u,v))
+		childRootPair.put(find(u),v);
+	}
+}

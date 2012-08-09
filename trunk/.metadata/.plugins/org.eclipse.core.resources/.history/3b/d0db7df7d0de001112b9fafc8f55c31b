@@ -1,0 +1,15 @@
+package edu.gatech.GradeAwesome.FileIO;
+
+import java.io.File;
+
+public class ExtendedFile extends File {
+
+	public ExtendedFile(String pathname) {
+		super(pathname);
+	}
+	
+	public ExtendedFile(File f) {
+		this(f.getAbsolutePath());
+	}
+
+}

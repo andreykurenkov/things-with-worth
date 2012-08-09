@@ -1,0 +1,42 @@
+package edu.gatech.RecAwesome.IO;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import edu.gatech.RecAwesome.Model.Question.Question;
+
+public class QuestionParser {
+	private static final DefaultParser defaultCase = new DefaultParser();
+	private static final String questionDelimiter="-\n";
+	public static Question[] parseQuestions(File createFrom) throws FileNotFoundException {
+		ArrayList<Question> builtQuestions = new ArrayList<Question>();
+		Scanner scan = new Scanner(createFrom);
+		scan.useDelimiter("-\n");
+		while (scan.hasNext()) {
+			String chunk = scan.next();
+			builtQuestions.add(QuestionParser.createQuestion(chunk));
+		}
+		return builtQuestions.toArray(new Question[1]);
+	}
+
+	private static Question createQuestion(String createFrom) {
+		int firstLineEnd = createFrom.indexOf('\n');
+		if (createFrom.startsWith("Parser:")) {
+			int nameStart = createFrom.indexOf(':') + 1;
+			String parserName = createFrom.substring(nameStart, firstLineEnd);
+			try {
+				Class<?> parser = Class.forName(parserName);
+				Object parserInstance = parser.newInstance();
+				if (parserInstance instanceof QuestionParser) {
+					String content = createFrom.substring(firstLineEnd + 1);
+					return ((QuestionParser) parserInstance).createQuestion(content);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return defaultCase.parseQuestion(createFrom);
+	}
+}

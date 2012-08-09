@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+     <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="center_horizontal"
+            android:text="@string/note_found"
+            android:textSize="26dp"
+             />
+    
+   <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="left"
+            android:text="@string/sample_note"
+            android:textSize="18dp"
+             />
+
+   <LinearLayout
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:orientation="horizontal" >
+
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="left"
+            android:text="-Sample signature"
+            android:textSize="20dp"
+             />
+
+	<ImageButton
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	 
+	    android:src="@drawable/thumbs_up_small" />
+
+    </LinearLayout>
+    
+ 
+        <EditText
+            android:layout_marginTop="15dp"
+            android:id="@+id/commentOnNote"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/commentNoteHint" />
+        
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
+            android:text="Post Comment"/>
+
+        
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+        
+		</ListView>
+
+
+</LinearLayout>

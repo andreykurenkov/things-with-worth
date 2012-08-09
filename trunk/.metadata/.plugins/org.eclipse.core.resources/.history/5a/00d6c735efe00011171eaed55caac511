@@ -1,0 +1,8 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+
+public interface SmartFileFactory {
+	public SmartFile makeSmarter(File file);
+	public boolean isValid(File file);
+}

@@ -1,0 +1,12 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import edu.gatech.GradeAwesome.Debugger;
+
+public class SmartFileMaker {
+	
+}

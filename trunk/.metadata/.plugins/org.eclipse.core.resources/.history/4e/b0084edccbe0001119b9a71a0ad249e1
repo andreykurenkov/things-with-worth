@@ -1,0 +1,40 @@
+package edu.gatech.GradeAwesome.GUI.Helpers;
+
+import java.util.ArrayList;
+
+import javax.swing.JPanel;
+
+import edu.gatech.GradeAwesome.Observable;
+import edu.gatech.GradeAwesome.Observer;
+
+public class ObservableJPanel extends JPanel implements Observable<Observer<? extends ObservableJPanel>> {
+
+	private ArrayList<Observer<? extends ObservableJPanel>> observers;
+
+	private void notifyObservers(Object arg, String code) {
+		for (Observer<? extends ObservableJPanel> obv : observers)
+			obv.acceptNotification(this, arg, code);
+	}
+
+	@Override
+	public void acceptObserver(Observer<? extends ObservableJPanel> add) {
+		this.observers.add(add);
+	}
+
+	@Override
+	public void deleteObserver(Observer<? extends ObservableJPanel> add) {
+		this.observers.remove(add);
+
+	}
+
+	@Override
+	public void deleteObservers() {
+		observers = new ArrayList<Observer<? extends ObservableJPanel>>();
+	}
+
+	@Override
+	public int countObservers() {
+		return observers.size();
+	}
+
+}

@@ -1,0 +1,28 @@
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.PriorityQueue;
+
+public class AscendingIterator<T extends Comparable<T>> implements Iterator<T> {
+
+	PriorityQueue<T> sortQueue;
+	
+	public AscendingIterator(Collection<T> items) {
+		for(T item:items)
+			sortQueue.add(item);
+	}
+
+	@Override
+	public boolean hasNext() {
+		return sortQueue.isEmpty();
+	}
+
+	@Override
+	public T next() {
+		return sortQueue.remove();
+	}
+
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+}

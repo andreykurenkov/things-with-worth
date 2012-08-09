@@ -1,0 +1,17 @@
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class ControlPanel extends JPanel{
+	private JButton step;
+	private JButton run_pause;
+	private JButton clear;
+	private JTextField rate;
+	private GameOfLife myLife;
+	private LifePanel lifeVisual;
+
+	public ControlPanel(LifePanel visual, GameOfLife life) {
+		myLife = life;
+		lifeVisual = visual;
+	}
+}

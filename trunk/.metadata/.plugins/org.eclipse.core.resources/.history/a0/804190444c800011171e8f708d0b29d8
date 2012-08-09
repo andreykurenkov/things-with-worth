@@ -1,0 +1,93 @@
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+public class SearchTest extends Assert {
+
+	@Test
+	public void bruteTest() {
+		TextSearch.resetComp();
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBruteForce(search, pattern));
+		System.out.println("BT comps " + TextSearch.getComp());
+	}
+
+	/*
+	 * @Test public void BoyerMoyerTest() { TextSearch.resetComp(); String
+	 * search =
+	 * "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm"
+	 * ; String pattern = "ghedla fa, c"; assertEquals(search.indexOf(pattern),
+	 * TextSearch.runBoyerMoore(search, pattern));
+	 * System.out.println("BM comps " + TextSearch.getComp()); }
+	 */
+
+	@Test
+	public void KMPTest() {
+		TextSearch.resetComp();
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runKMP(search, pattern));
+		System.out.println("KMP comps " + TextSearch.getComp());
+	}
+
+	@Test
+	public void KMPSimpleTest() {
+		TextSearch.resetComp();
+		String search = "abcabxcabcabc";
+		String pattern = "abcabc";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runKMP(search, pattern));
+		System.out.println("KMP comps simple " + TextSearch.getComp());
+	}
+
+	@Test
+	public void BTSimpleTest() {
+		TextSearch.resetComp();
+		String search = "abcaxcabcabc";
+		String pattern = "abcabc";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBruteForce(search, pattern));
+		System.out.println("BT comps simple " + TextSearch.getComp());
+	}
+
+	@Test
+	public void BMSimpleTest() {
+		TextSearch.resetComp();
+		String search = "abcabxcabcabc";
+		String pattern = "abcabc";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBoyerMoore(search, pattern));
+		System.out.println("BM comps simple " + TextSearch.getComp());
+	}
+
+	@Test
+	public void BoyerMoyerLastTest() {
+		String p = "abcabc";
+		int[] last = TextSearch.last(p);
+		for (int i = 0; i < last.length; i++) {
+			if (i == 'a')
+				assertEquals(2, last[i]);
+			else if (i == 'b')
+				assertEquals(1, last[i]);
+			else if (i == 'c')
+				assertEquals(0, last[i]);
+			else
+				assertEquals(6, last[i]);
+		}
+
+	}
+
+	@Test
+	public void KMPFailTest() {
+		String p = "abcabc";
+		int[] fail = TextSearch.failure(p);
+		int[] expect = { -1, 0, 0, 0, 1, 2 };
+		for (int i = 0; i < fail.length; i++) {
+			assertEquals(expect[i], fail[i]);
+		}
+
+	}
+}

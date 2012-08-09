@@ -1,0 +1,91 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.Timer;
+
+public class ControlPanel extends JPanel {
+	private JButton step;
+	private JButton run_pause;
+	private JButton clear;
+	private JTextField rate;
+	private GameOfLife myLife;
+	private LifePanel lifeVisual;
+
+	public ControlPanel(LifePanel visual, GameOfLife life) {
+		myLife = life;
+		lifeVisual = visual;
+		step = new JButton("Step");
+		run_pause = new JButton("Run");
+		clear = new JButton("clear");
+		rate = new JTextField(3);
+		JLabel rateLabel = new JLabel("Hz Rate");
+
+		add(step);
+		add(clear);
+		add(run_pause);
+		add(rate);
+		add(rateLabel);
+
+		final Timer runTimer = new Timer(50, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				myLife.update();
+				lifeVisual.repaint();
+
+			}
+
+		});
+		run_pause.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (run_pause.getText().equals(("Run"))) {
+					run_pause.setText("Pause");
+					boolean valid=false;
+					while(!valid){
+						try{
+							int input=Integer.parseInt(rate.getText());
+							if(input<=1000)
+								valid=true;
+							else
+								JOptionPane.showMessageDialog(ControlPanel.this,"cant do more than 1000 hz");
+						}catch(Exception exc){
+							JOptionPane.showMessageDialog(ControlPanel.this,"Not valid hertz input");
+						}
+					}
+					
+					runTimer.setDelay(1000 / Integer.parseInt(rate.getText()));
+					runTimer.setRepeats(true);
+					runTimer.start();
+				} else {
+					int rateHz = Integer.parseInt(rate.getText());
+					run_pause.setText("Run");
+					runTimer.stop();
+				}
+
+			}
+
+		});
+
+		step.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				myLife.update();
+				lifeVisual.repaint();
+			}
+		});
+
+		clear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				myLife.reset();
+				lifeVisual.repaint();
+			}
+		});
+	}
+}

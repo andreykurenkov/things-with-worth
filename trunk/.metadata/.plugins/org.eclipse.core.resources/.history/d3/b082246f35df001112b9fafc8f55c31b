@@ -1,0 +1,6 @@
+package edu.gatech.GradeAwesome;
+
+//TODO:again, not certain as to needs for generics or better way to do this
+public interface Observable {
+	public void acceptObserver(Observer add);
+}

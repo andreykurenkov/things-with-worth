@@ -1,0 +1,145 @@
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+
+import javax.swing.*;
+
+public class GamePanel extends JPanel{
+	public static final int WIDTH = 500;
+	public static final int HEIGHT = 500;
+	private final int NUM_AST = 5;
+	private ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
+	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
+	
+	private javax.swing.Timer timer = new javax.swing.Timer(10, new TimerListener());
+	private Ship ship;
+	
+	public GamePanel(){
+		ship = new Ship (250,250);
+		
+		setPreferredSize(new Dimension(WIDTH,HEIGHT));
+		setFocusable(true);
+		addKeyListener(new ShipController());
+		
+		timer.start();
+		timer.setRepeats(true);
+		for(int i = 0; i< NUM_AST; i++)
+			asteroids.add(new Asteroid());
+	}
+	
+	public void paintComponent(Graphics g){
+		super.paintComponent(g);
+		for(int i = 0; i<asteroids.size(); i++){
+			asteroids.get(i).draw(g);
+		}
+		for(Bullet b: bullets)
+			b.draw(g);
+		
+		ship.draw(g);
+		
+	}
+	
+	private void checkCollisions(){
+		Bullet hitB = null;
+		Asteroid hitA=null;
+		for(Bullet b: bullets){
+			for(Asteroid a: asteroids){
+				if(b.hit(a)){
+					hitB = b;
+					hitA = a;
+				}
+			}
+		}
+		
+		if(hitB!=null){
+			bullets.remove(hitB);
+			asteroids.remove(hitA);
+			asteroids.addAll(hitA.split());
+		}
+		
+		for(Asteroid a: asteroids){
+			if(ship.crash(a)){
+				int n = JOptionPane.showConfirmDialog(this, "You lost :[ /n Play again?", "New game", JOptionPane.YES_NO_OPTION);
+				if(n==JOptionPane.NO_OPTION)
+					System.exit(0);
+				else
+					reset();
+			}
+		}
+	}
+	
+	public boolean win(){
+		return asteroids.size()==0;
+	}
+	
+	public void reset(){
+		asteroids.clear();
+		bullets.clear();
+		
+		ship = new Ship(250,250);
+		
+		for(int i = 0; i< NUM_AST; i++)
+			asteroids.add(new Asteroid());
+		
+		repaint();
+	}
+	
+	private void removeBullets(){
+		int bulletCount = bullets.size();
+		int count = 0;
+		while(count <bulletCount){
+			if(bullets.get(count).isOffScreen()){
+				bullets.remove(count);
+				bulletCount--;
+			}
+			count++;
+		}
+	}
+	private class TimerListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			for(int i = 0; i<asteroids.size(); i++)
+				asteroids.get(i).move();
+			
+			for(int i = 0; i< bullets.size(); i++)
+				bullets.get(i).move();
+			
+			checkCollisions();
+			removeBullets();
+			ship.move();
+			
+			if(win()){
+				int n = JOptionPane.showConfirmDialog(null, "You win! :] /n Play again?", "New game", JOptionPane.YES_NO_OPTION);
+				if(n==JOptionPane.NO_OPTION)
+					System.exit(0);
+				else
+					reset();
+			}
+			
+			repaint();
+		}
+	}
+	
+	
+	private class ShipController extends KeyAdapter{
+		public void keyPressed(KeyEvent e){
+			switch(e.getKeyCode()){
+				case KeyEvent.VK_DOWN:
+					ship.increaseVel(-2);
+					break;
+				case KeyEvent.VK_UP:
+					ship.increaseVel(2);
+					break;
+				case KeyEvent.VK_LEFT:
+					ship.rotate(false);
+					break;
+				case KeyEvent.VK_RIGHT:
+					ship.rotate(true);
+					break;
+				case KeyEvent.VK_SPACE:
+					bullets.add(ship.shoot());
+					break;
+			}
+			repaint();
+		}
+	}
+}

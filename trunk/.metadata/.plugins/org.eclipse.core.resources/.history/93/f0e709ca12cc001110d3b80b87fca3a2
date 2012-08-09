@@ -1,0 +1,150 @@
+package edu.gatech.GradeAwesome.GUI;
+
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+
+import edu.gatech.GradeAwesome.FileIO.ConfigManager;
+import edu.gatech.GradeAwesome.GUI.Helpers.Dialogs;
+import edu.gatech.GradeAwesome.Model.Student;
+import edu.gatech.GradeAwesome.Model.StudentSet;
+
+/**
+ * Monostate sort of intro thing
+ * 
+ * @author Andrey K.
+ * 
+ */
+public class NewUserDisplay {
+	private final static NewUserDisplay instance = new NewUserDisplay();
+	// TODO: put string constants into some sort of constants file? Maaaybe.
+	private static final String newPersonMessage = "Hello! You, hopefully, are a CS1331 TA. This is a thing made by a random 1331 TA for HW grading.\n"
+			+ "I got annoyed by the need to change directories and compile and run stuff manually, so I just wrote this!\n"
+			+ "I liked it so much, I decided to share. Hopefully it wont break. And will be useful.\n\n"
+			+ "To use: You need to set the current directory to be an extracted version of one of the TSquare homework folders. \n"
+			+ "This is after you set up your students, which will happen right after this. Other stuff is hopefully pretty clear.\n"
+			+ "So yeah, hopefully this will make grading less of a pain. Have fun!\n" + "-Random 1331 TA";
+	private static final String getStudentsMessage = "Hello again! Now you need to set up your students.\n"
+			+ "Go on TSquare and get the names and gtids of the members of your grading section.\n"
+			+ "Then simply enter each name, as on TSquare,\n in the first and second columns and the corresponding tsquare id in the third.";
+	private static final String setBaseDir = "Now to set the base directory.\n"
+			+ "This will simply make the program always start in this directory.\n"
+			+ "Trust me, it saves time to just have it start in the TA folder or such.";
+
+	private NewUserDisplay() {
+	}
+
+	public static File introduceAndGetFiles(Dimension dim) {
+		JFrame stuffFrame = new JFrame("Inro stuff!");
+		stuffFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		stuffFrame.setPreferredSize(dim);// TODO: figure out if this should be visible
+		introduce(stuffFrame, true);
+		// TODO:Haha. This looks terrible, probably change it.
+		getStudentsFile(stuffFrame, null);
+		File toReturn = getDirFile(stuffFrame);
+		stuffFrame.dispose();
+		return toReturn;
+	}
+
+	public static File getDirFile(Window in) {
+		return Dialogs.getFile(in, "Set base directory", "<html>" + setBaseDir + "</html>", null,
+				JFileChooser.DIRECTORIES_ONLY);
+	}
+
+	public static void introduce(Component in, boolean newGuy) {
+		boolean show = showIntro(in, newGuy);
+		if (newGuy)
+			ConfigManager.getInstance().setShowIntro(show);
+	}
+
+	private static boolean showIntro(Component in, boolean checkBox) {
+		JCheckBox checkbox = new JCheckBox("Do not show this message again?");
+		Object[] params = { newPersonMessage, checkbox };
+		if (checkBox)
+			JOptionPane.showMessageDialog(in, params, "New Person Message :)", JOptionPane.INFORMATION_MESSAGE);
+		else
+			JOptionPane.showMessageDialog(in, newPersonMessage, "New Person Message :)", JOptionPane.INFORMATION_MESSAGE);
+
+		return checkbox.isSelected();
+	}
+
+	private static void getStudentsFile(final Window in, StudentSet current) {
+		int temp = Dialogs.getIntSafely(in, "Student count", "How many students do you have?", 1, 50);
+		while (temp == -1) {
+			Dialogs.askIfExitApplication(in);
+			temp = Dialogs.getIntSafely(in, "Student count", "How many students do you have?", 1, 50);
+		}
+		final int numStudents = temp;
+		Object[] columnNames = { "First Name", "Last Name", "gtname(bperson3)" };
+		Object[][] input = new Object[numStudents][3];
+		if (current != null) {
+			Student[] students = current.getSet();
+			int num = Math.min(numStudents, students.length);
+			for (int i = 0; i < num; i++) {
+				String name = students[i].getName();
+				String[] nameParts = name.split(", ");
+				input[i][0] = nameParts[1];
+				input[i][1] = nameParts[0];
+				input[i][2] = students[i].getID();
+			}
+		}
+		final JTable studentsTable = new JTable(input, columnNames);
+		JScrollPane scroll = new JScrollPane(studentsTable);
+		studentsTable.setFillsViewportHeight(true);
+
+		Object[] params = { getStudentsMessage, scroll };
+		final JOptionPane pane = new JOptionPane(params, JOptionPane.QUESTION_MESSAGE);
+
+		final JDialog dialog = new JDialog(in, "Set up students", Dialog.ModalityType.APPLICATION_MODAL);
+
+		dialog.setContentPane(pane);
+		Dialogs.makeSafeToClose(dialog);
+
+		pane.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				String prop = e.getPropertyName();
+				/* Weird hack to keep this working for multiple presses of OK */
+				if (!pane.getValue().equals(JOptionPane.NO_OPTION))
+					if (dialog.isVisible() && (e.getSource() == pane) && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+						if (studentsTable.getCellEditor() != null)
+							studentsTable.getCellEditor().stopCellEditing();
+						String error = null;
+						String[][] out = new String[3][numStudents];
+						for (int col = 0; col < 3; col++) {
+							for (int row = 0; row < numStudents; row++) {
+								out[col][row] = (String) studentsTable.getModel().getValueAt(row, col);
+								// TODO: again, regex
+								if (out[col][row] == null || out[col][row].trim().length() == 0)
+									error = "Cannot leave cells empty";
+							}
+						}
+						if (error == null) {
+							ConfigManager.getInstance().setStudentSet(out);
+							dialog.setVisible(false);
+						} else {
+							pane.setValue(JOptionPane.NO_OPTION);
+							JOptionPane.showMessageDialog(in, error, "Error", JOptionPane.ERROR_MESSAGE);
+						}
+					}
+			}
+		});
+		dialog.pack();
+		dialog.setVisible(true);
+		while (dialog.isVisible()) {
+		}
+
+		dialog.dispose();
+	}
+}

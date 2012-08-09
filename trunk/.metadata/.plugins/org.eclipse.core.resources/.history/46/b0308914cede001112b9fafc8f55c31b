@@ -1,0 +1,77 @@
+package edu.gatech.GradeAwesome.FileIO;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+public class CompiledJavaFile extends SmartFile {
+
+	public CompiledJavaFile(File f) {
+		super(f);
+	}
+
+	public CompiledJavaFile(String s) {
+		super(s);
+	}
+
+	public boolean isRunnable() {
+		String name = this.getName();
+		int index = 0;
+		if ((index = name.indexOf('.')) <= 0)
+			return false;
+		if (!name.substring(index).equals(".class"))
+			return false;
+		try {
+			URL[] load = { new File(this.getAbsolutePath().substring(0, this.getAbsolutePath().indexOf(this.getName())))
+					.toURI().toURL() };
+			URLClassLoader loader = new URLClassLoader(load);
+			Class<?> myClass = loader.loadClass(this.getNonExtensionName());
+			myClass.getMethod("main", String[].class);
+		} catch (MalformedURLException e2) {
+			e2.printStackTrace();
+			return false;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		} catch (SecurityException e) {
+			e.printStackTrace();
+			return false;
+		} catch (NoSuchMethodException e) {
+			return false;
+		}
+		return true;
+	}
+	
+	public void run() {
+		if (this.isRunnable()) {
+			try {
+				URL[] load = { this.getParentFile().toURI().toURL() };
+				URLClassLoader loader = new URLClassLoader(load);
+				Class<?> myClass = loader.loadClass(this.getNonExtensionName());
+				Method main = myClass.getMethod("main", String[].class);
+				main.invoke(null, new Object[1]);
+			} catch (MalformedURLException e2) {
+				e2.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+
+		} else
+			System.err.println("Cannot run this file!");
+	}
+
+
+}

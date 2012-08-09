@@ -1,0 +1,165 @@
+package edu.gatech.fiveminutesleft;
+
+import java.util.Calendar;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
+import android.widget.Spinner;
+import android.widget.TimePicker;
+import edu.gatech.fiveminutesleft.model.Date;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+
+/**
+ * Allows the user to create a date/time-relative filter. (only show things before this date, after
+ * this date, or on this date).
+ * 
+ * @author g
+ */
+public class FilteringByTimeActivity extends Activity {
+
+	/**
+	 * Launches this activity.
+	 * 
+	 * @param source
+	 * @param filter
+	 *            - The master filter to work on.
+	 */
+	public static void launch(Activity source, FilterWrapper filter) {
+		Intent n = new Intent(source, FilteringByTimeActivity.class);
+		GUISpace.put(FilteringByTimeActivity.class, "filter", filter);
+		source.startActivity(n);
+	}
+
+	Spinner					typeSpin;
+	DatePicker				datePicker;
+	TimePicker				timePicker;
+
+	private static String[]	prepositions	= { "Before", "After", "Exactly" };
+
+	@Override
+	/**
+	 * Sets the layout and instantiates stuff.
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+
+		setContentView(R.layout.filtering_edit_date_layout);
+
+		typeSpin = (Spinner) findViewById(R.id.FilterDateSpinner);
+
+		datePicker = (DatePicker) findViewById(R.id.FilterDatePicker);
+		timePicker = (TimePicker) findViewById(R.id.FilterTimePicker);
+		timePicker.setIs24HourView(true);
+
+		FilterWrapper wrapper = (FilterWrapper) GUISpace.get(getClass(), "filter");
+
+		int typeTime = Integer.parseInt(wrapper.getMeta("typeTime"));
+
+		if (typeTime == TaskFilter.DATE_AND_TIME) {
+			datePicker.setVisibility(View.VISIBLE);
+			datePicker.setEnabled(true);
+			timePicker.setVisibility(View.VISIBLE);
+			timePicker.setEnabled(true);
+		}
+
+		else if (typeTime == TaskFilter.ONLY_TIME) {
+
+		} else if (typeTime == TaskFilter.ONLY_DATE) {
+
+		}
+
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, prepositions);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		typeSpin.setAdapter(adapter);
+
+		loadData();
+	}
+
+	@Override
+	/**
+	 * Loads saved data into GUI fields
+	 */
+	public void onResume() {
+		super.onResume();
+		loadData();
+	}
+
+	private void loadData() {
+		FilterWrapper wrapper = (FilterWrapper) GUISpace.get(getClass(), "filter");
+		if (wrapper.getFilter() != null) {
+			Calendar cal = Calendar.getInstance();
+			datePicker.updateDate(Integer.parseInt(wrapper.getMeta("year", String.valueOf(cal.get(Calendar.YEAR)))),
+					Integer.parseInt(wrapper.getMeta("month", String.valueOf(cal.get(Calendar.MONTH)))),
+					Integer.parseInt(wrapper.getMeta("day", String.valueOf(cal.get(Calendar.DAY_OF_MONTH)))));
+			timePicker.setCurrentHour(Integer.parseInt(wrapper.getMeta("hours",
+					String.valueOf(cal.get(Calendar.HOUR_OF_DAY)))));
+			timePicker
+					.setCurrentMinute(Integer.parseInt(wrapper.getMeta("minutes", String.valueOf(cal.get(Calendar.MINUTE)))));
+			String type = wrapper.getMeta("type", "Exactly");
+			if (type.equals("Before"))
+				typeSpin.setSelection(0);
+			else if (type.equals("After"))
+				typeSpin.setSelection(1);
+			else if (type.equals("Exactly"))
+				typeSpin.setSelection(2);
+		}
+	}
+
+	/**
+	 * Called when user presses "Cancel" to close the Activity
+	 * 
+	 * @param v
+	 */
+	public void cancel(View v) {
+		finish();
+	}
+
+	/**
+	 * Called when the user presses "Done" to save the date in the master filter and close the
+	 * Activity.
+	 * 
+	 * @param v
+	 */
+	public void done(View v) {
+		FilterWrapper wrapper = (FilterWrapper) GUISpace.get(getClass(), "filter");
+
+		int year = datePicker.getYear();
+		int month = datePicker.getMonth();
+		int day = datePicker.getDayOfMonth();
+		String typePrep = prepositions[typeSpin.getSelectedItemPosition()];
+		int hours = timePicker.getCurrentHour();
+		int minutes = timePicker.getCurrentMinute();
+
+		wrapper.setMeta("year", year);
+		wrapper.setMeta("month", month);
+		wrapper.setMeta("day", day);
+		wrapper.setMeta("typePrep", typePrep);
+		wrapper.setMeta("hours", hours);
+		wrapper.setMeta("minutes", minutes);
+
+		int typePreference = 0;
+		int typeTime = Integer.parseInt(wrapper.getMeta("typeTime"));
+		if (typePrep.equals("Before"))
+			typePreference = TaskFilter.BEFORE;
+		else if (typePrep.equals("After"))
+			typePreference = TaskFilter.AFTER;
+		else if (typePrep.equals("Exactly"))
+			typePreference = TaskFilter.ON;
+
+		if (typeTime == TaskFilter.DATE_AND_TIME)
+			wrapper.setText(typePrep + " " + hours + ":" + minutes + " on " + day + " " + Date.MONTHS[month] + " " + year);
+		else if (typeTime == TaskFilter.ONLY_TIME)
+			wrapper.setText(typePrep + " " + hours + ":" + minutes);
+		else if (typeTime == TaskFilter.ONLY_DATE)
+			wrapper.setText(typePrep + " " + day + " " + Date.MONTHS[month] + " " + year);
+
+		wrapper.setFilter(TaskFilter.createDateFilter(new int[] { year, month, day, hours, minutes }, typeTime,
+				typePreference));
+
+		finish();
+	}
+}

@@ -1,0 +1,62 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+
+/**
+ * Main class with frame and not much else.
+ * 
+ * @author andrey
+ * 
+ */
+public class Life {
+
+	public static void main(String[] args) {
+		int border = 800;
+		int numCol = 20;
+		int numRow = 20;
+		boolean wrap = false;
+		boolean simple = JOptionPane.showConfirmDialog(theFrame, "Simple version?", "For demo purpose",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+		if (!simple) {
+			border = getIntSafely("What border length would you like?");// Not necessary
+			numCol = getIntSafely("How many columns in the grid would you like?");// Not necessary?
+			numRow = getIntSafely("How many rows in the grid would you like?");// Not necessary?
+			wrap = JOptionPane.showConfirmDialog(theFrame, "Yo, you want it to wrap?", "Wrapping setting",
+					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+		}
+
+		GameOfLife life = new GameOfLife(numCol, numRow, wrap);
+		LifePanel lifePanel = new BetterLifePanel(life, new Dimension(border, border));
+
+		if (simple)
+			lifePanel = new LameLifePanel(life, new Dimension(border, border));
+
+		ControlPanel control = new ControlPanel(lifePanel, life, simple);
+
+		theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		theFrame.add(control, BorderLayout.NORTH);
+		theFrame.add(lifePanel, BorderLayout.CENTER);
+		theFrame.setResizable(false);
+		theFrame.pack();
+		theFrame.setVisible(true);
+
+	}
+
+	private static int getIntSafely(String checkMessage) {
+		boolean validInput = false;
+		int input = -1;
+		while (!validInput) {
+			try {
+				input = Integer.parseInt(JOptionPane.showInputDialog(checkMessage));
+				validInput = true;
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, ":(. Thats not a valid int input. Try again.");
+				validInput = false;
+			}
+		}
+		return input;
+	}
+}

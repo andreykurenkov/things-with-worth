@@ -1,0 +1,5 @@
+package edu.gatech.GradeAwesome;
+
+public interface Observer<Observed extends Observable<Observer<? extends Observed>>> {
+	public void acceptNotification(Observed source, Object arg, String code);
+}

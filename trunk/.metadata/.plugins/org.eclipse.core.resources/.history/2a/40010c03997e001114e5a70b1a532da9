@@ -1,0 +1,82 @@
+package edu.gatech.fiveminutesleft;
+
+import java.util.Hashtable;
+
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+
+/**
+ * This class extends and wraps around TaskFilter. It overrides
+ * the toString method so that it can display properly in a GUI
+ * list, and makes it easier to synchronize TaskFilters across
+ * multiple Activities.
+ * @author g
+ *
+ */
+public class FilterWrapper extends TaskFilter {
+
+	private int			type	= 0;
+	private String		text	= "";
+	private TaskFilter	filter;
+	
+	private Hashtable<String, String> meta;
+
+	public FilterWrapper(TaskFilter filter) {
+		this(0);
+		setFilter(filter);
+	}
+	
+	public FilterWrapper(int type) {
+		this.type = type;
+		meta = new Hashtable<String, String>();
+	}
+	
+	public String getMeta(String key) {
+		return meta.get(key);
+	}
+	
+	public boolean hasMeta(String key) {
+		return meta.containsKey(key);
+	}
+	
+	public void setMeta(String key, Object o) {
+		meta.put(key, o.toString());
+	}
+	
+	public String getMeta(String key, String def) {
+		if (hasMeta(key)) return getMeta(key);
+		setMeta(key, def);
+		return def;
+	}
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	@Override
+	public String toString() {
+		return getText();
+	}
+
+	public void setFilter(TaskFilter f) {
+		this.filter = f;
+	}
+
+	public TaskFilter getFilter() {
+		return filter;
+	}
+	
+	public int getType() {
+		return type;
+	}
+
+	@Override
+	public boolean accept(Task task) {
+		if (filter == null) return true;
+		return filter.accept(task);
+	}
+}

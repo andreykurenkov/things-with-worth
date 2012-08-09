@@ -1,0 +1,56 @@
+package edu.gatech.fiveminutesleft.storage.sqlite;
+
+import android.database.Cursor;
+import edu.gatech.fiveminutesleft.storage.EmailReference;
+import edu.gatech.fiveminutesleft.storage.Storage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+
+public class EmailReferenceImpl implements EmailReference {
+
+	private LocalSQLiteStorage		store;
+	private final StorageAddress	addr;
+
+	public EmailReferenceImpl(LocalSQLiteStorage store, StorageAddress addr) {
+		this.store = store;
+		this.addr = addr;
+	}
+
+	public EmailReferenceImpl(LocalSQLiteStorage store, String email) {
+		this.store = store;
+		this.addr = new StorageAddress(store.getServerAddress(), email);
+
+		store.db.execSQL("INSERT INTO pool (id, data) VALUES ('" + this.addr.getObjectAddress().toString() + "', '{}');");
+	}
+
+	public StorageAddress getAddress() {
+		return addr;
+	}
+
+	public String read() {
+		String[] columns = { "id", "data" };
+		Cursor c = store.db.query("pool", columns, "id = '" + this.addr.getObjectAddress().toString() + "'", null, null,
+				null, null);
+
+		if (c.getCount() == 0) {
+			return "";
+		}
+
+		c.moveToFirst();
+
+		return c.getString(1);
+	}
+
+	public void update(String data) {
+		store.db.execSQL("UPDATE pool SET data = '" + data + "' WHERE id = '" + this.addr.getObjectAddress().toString()
+				+ "';");
+	}
+
+	public void delete() {
+		store.db.execSQL("DELETE FROM pool WHERE id = '" + this.addr.getObjectAddress().toString() + "';");
+	}
+
+	public Storage getStorage() {
+		return store;
+	}
+
+}

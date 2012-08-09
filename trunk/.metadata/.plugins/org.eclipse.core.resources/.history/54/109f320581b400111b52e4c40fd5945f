@@ -1,0 +1,115 @@
+package edu.gatech.RecAwesome.Model;
+
+import java.util.ArrayList;
+
+import javax.swing.JComponent;
+
+/**
+ * Container for a set of questions that keeps track of mundane or important
+ * statistics.
+ * 
+ * @author Andrey K.
+ */
+public class QuestionSet implements ParsedObjectSet<QuestionSet, Question> {
+	private ArrayList<Question> set;
+	private double gradeTotal;
+	private int numAnswered;
+	private int numQuestions;
+	private double gradeAverage;
+	private String title;
+	private Interpreter<QuestionSet> interpreter;
+
+	public QuestionSet(ArrayList<Question> set, String title) {
+		interpreter = new QuestionsPanel();
+		this.set = set;
+		this.title = title;
+		numQuestions = set.size();
+		gradeTotal = 0;
+		gradeAverage = 0;
+	}
+
+	public QuestionSet(String title) {
+		this(new ArrayList<Question>(), title);
+	}
+
+	private void calculateAverage() {
+		gradeAverage = gradeTotal / (numQuestions * 100);
+	}
+
+	public void update() {
+		gradeTotal = 0;
+		numAnswered = 0;
+		for (Question q : set)
+			if (q.isAnswered()) {
+				numAnswered++;
+				gradeTotal += q.getGrade();
+			}
+		if (numAnswered != 0)
+			gradeAverage = gradeTotal / numAnswered;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public Question[] getQuestions() {
+		return set.toArray(new Question[1]);
+	}
+
+	public void saveScore() {
+
+	}
+
+	public void saveQuestionFile() {
+
+	}
+
+	public void reset() {
+		for (Question q : set)
+			q.reset();
+	}
+
+	public int getNumAnswered() {
+		return numAnswered;
+	}
+
+	public int getNumQuestions() {
+		return numQuestions;
+	}
+
+	public String getGrade() {
+		return String.format("%.2f/%d", gradeAverage, numQuestions * 100);
+	}
+
+	@Override
+	public JComponent getContainer() {
+		return interpreter.visualizeParsedObject(this);
+	}
+
+	@Override
+	public void setInterpreter(Interpreter<QuestionSet> set) {
+		interpreter = set;
+
+	}
+
+	@Override
+	public void add(Question question) {
+		if (!set.contains(question))
+			set.add(question);
+		numQuestions++;
+	}
+
+	@Override
+	public void setContained(Question[] setTo) {
+		set = new ArrayList<Question>();
+		for (Question q : setTo)
+			set.add(q);
+
+	}
+
+	@Override
+	public Question[] getContained() {
+		return set.toArray(new Question[1]);
+	}
+
+}

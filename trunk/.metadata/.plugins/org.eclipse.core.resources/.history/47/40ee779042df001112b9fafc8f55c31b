@@ -1,0 +1,79 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import javax.swing.JList;
+import javax.swing.filechooser.FileSystemView;
+
+import edu.gatech.GradeAwesome.Observable;
+import edu.gatech.GradeAwesome.Observer;
+
+public class JFileList extends JList implements Observable<Observer<JFileList>> {
+	private FileFilter filter;
+	private File currentDir;
+	private File[] files;
+	private File lastOpened;
+	private ArrayList<Observer<JFileList>> observers;
+
+	public JFileList(FileFilter filter, File startDir) {
+		this.filter = filter;
+		currentDir = startDir;
+		this.setListData(startDir.listFiles(filter));
+	}
+
+	public JFileList(FileFilter filter) {
+		this(filter, FileSystemView.getFileSystemView().getHomeDirectory());
+	}
+
+	public void changeDirectory(File toDir) {
+		this.currentDir = toDir;
+		this.updateFiles();
+		this.updateOpened(null);
+	}
+
+	public File getCurrentDirectory() {
+		return currentDir;
+	}
+
+	public void updateFiles() {
+		this.files = currentDir.listFiles(filter);
+		this.setListData(currentDir.listFiles(filter));
+	}
+
+	public void updateOpened(File updateTo) {
+		if (updateTo == null || Arrays.asList(files).contains(updateTo)) {
+			this.lastOpened = updateTo;
+			this.notifyObservers(updateTo);
+		}
+	}
+
+	private void notifyObservers(Object arg) {
+		for (Observer<JFileList> obv : observers)
+			obv.acceptNotification(this, arg);
+	}
+
+	@Override
+	public void acceptObserver(Observer<JFileList> add) {
+		this.observers.add(add);
+	}
+
+	@Override
+	public void deleteObserver(Observer<JFileList> add) {
+		this.observers.remove(add);
+
+	}
+
+	@Override
+	public void deleteObservers() {
+		observers = new ArrayList<Observer<JFileList>>();
+	}
+
+	@Override
+	public int countObservers() {
+		return observers.size();
+	}
+
+}

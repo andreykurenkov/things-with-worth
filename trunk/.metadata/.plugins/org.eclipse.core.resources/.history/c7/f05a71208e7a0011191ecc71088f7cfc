@@ -1,0 +1,325 @@
+package edu.gatech.fiveminutesleft;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.model.Account;
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.TaskList;
+
+/**
+ * Activity to view, edit, and otherwise interact with logged-in user's lists.
+ * 
+ * @author Garret Malmquist, Andrey Kurenkov, Nick Johnson
+ */
+public class ListsActivity extends Activity {
+
+	/**
+	 * Launch method to be used by other Activities to transition into this activity.
+	 * 
+	 * @param source
+	 *            the Activity that called launch
+	 * @param account
+	 *            the Account for which to display lists
+	 */
+	public static void launch(Activity source, Account account) {
+		Intent intent = new Intent(source.getApplicationContext(), ListsActivity.class);
+		GUISpace.put(ListsActivity.class, "account", account);
+		source.startActivity(intent);
+	}
+
+	private EditText		addListName;
+	private ListView		listsView;
+	private TaskListAdapter	listAdapter;
+
+	/**
+	 * Standard Android method. Called when Activity gets launched without already being in stopped
+	 * or paused state. Sets up the display of lists in storage for the provided account.
+	 */
+	@Override
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		Log.d("ListActivity.onCreate", "ListActivity Created");
+		setContentView(R.layout.lists_layout);
+
+		listsView = (ListView) findViewById(R.id.listsList);
+
+		addListName = (EditText) findViewById(R.id.newListName);
+
+		listAdapter = new TaskListAdapter();
+		listsView.setAdapter(listAdapter);
+	}
+
+	private Account getAccount() {
+		return (Account) GUISpace.get(getClass(), "account");
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		listAdapter.notifyDataSetChanged();
+	}
+
+	/**
+	 * onClick method for add List button. Creates a new list to the list stack and sets it into
+	 * editing state to write the name. Called when "Add List" is clicked.
+	 * 
+	 * @param view
+	 *            Android passed variable of the button clicked
+	 */
+	public void addList(View view) {
+		String name = addListName.getEditableText().toString();
+		addListName.setText("");
+
+		listAdapter.addItem(name);
+	}
+
+	/**
+	 * Method for transitioning into TaskListView though the normal launch() interface.
+	 * 
+	 * @param list
+	 *            the list for which to enter TaskListView and the tasks of which will be displayed
+	 */
+	private void viewList(TaskList list) {
+		if (list != null)
+			TaskListActivity.launch(this, list);
+	}
+
+	/**
+	 * Standard Android method. Called when the physical back button on Android pressed. Display
+	 * screen asking user if they would like to log out. If user responds with yes, finish this
+	 * activity and thus get back to the login screen. If no, keep this activity running but go to
+	 * the android home screen.
+	 */
+	@Override
+	public void onBackPressed() {
+		// Yes or No dialog displayed with Android provided AlertDialog - written as suggested by
+		// Android documentation
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage("Do you want to log out?").setCancelable(true)
+				.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						finish();
+					}
+				}).setNegativeButton("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						Intent intent = new Intent(Intent.ACTION_MAIN);
+						intent.addCategory(Intent.CATEGORY_HOME);
+						startActivity(intent);
+					}
+				});
+		AlertDialog alert = builder.create();
+		alert.setCanceledOnTouchOutside(true);
+		alert.show();
+	}
+
+	/**
+	 * Standard Android method. Called when the physical menu button pressed.
+	 * 
+	 * @return returns true to make the menu display (if false returned menu wont display)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.lists_menu, menu);
+		return true;
+	}
+
+	/**
+	 * Standard Android method. Called when one of the options on the android menu (collection of
+	 * options displayed after the physical menu button is pressed) is pressed. Currently logs out
+	 * if that option selected, and does nothing for other options.
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+			case R.id.settings:
+				SettingsActivity.launch(this, (Account) GUISpace.get(getClass(), "account"));
+				return true;
+			case R.id.log_out:
+				finish();
+				return true;
+
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+
+	private Activity self() {
+		return this;
+	}
+
+	/**
+	 * Adapter to enable dynamically displaying variable amount of lists in this activity.
+	 * 
+	 * @author Garret Malmquist
+	 */
+	class TaskListAdapter extends BaseAdapter {
+		private LayoutInflater	inflater;
+
+		/**
+		 * Adapter constructor that initializes the inflater.
+		 */
+		public TaskListAdapter() {
+			inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		}
+
+		/**
+		 * Add new lists to the display.
+		 * 
+		 * @param name
+		 *            the name of the new list
+		 */
+		public void addItem(String name) {
+			if (name == null)
+				return;
+			name = name.trim();
+			if (name.length() == 0)
+				return; // no empty strings
+
+			if (getAccount() == null)
+				return;
+
+			AccountLists lists = getAccount().getLists();
+
+			if (lists == null)
+				return;
+
+			String[] names = lists.getListNames();
+			if (names == null)
+				return;
+
+			// Checking that name is not duplicated done in Domain level
+			// Create and add a new TaskList here
+			getAccount().getLists().addTaskList(new TaskList(), name);
+
+			this.notifyDataSetChanged();
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the amount of items to display, which is
+		 * the amount of TaskLists stored by the used AccountLists.
+		 */
+		public int getCount() {
+			AccountLists lists = getAccount().getLists();
+			if (lists == null)
+				return 0;
+			return lists.getTaskLists().size();
+		}
+
+		/**
+		 * Standard android method for the adapter. Returns the item displayed at the given index.
+		 * 
+		 * @param i
+		 *            the index of the item to be retrieved
+		 */
+		public TaskList getItem(int i) {
+			AccountLists lists = getAccount().getLists();
+			if (lists == null)
+				return null;
+			return lists.getTaskLists().get(getIndexFromEnd(i));
+		}
+
+		/**
+		 * Return a unique id for the item displayed at that position. This id should remain the
+		 * same even as the item changed positions within the display.
+		 * 
+		 * @param position
+		 *            the hashcode of the item at the given index
+		 */
+		public long getItemId(int position) {
+			return getItem(position).hashCode();
+		}
+
+		/**
+		 * Helper method used to display tasks newest to olders
+		 * 
+		 * @return index from end of list of tasks
+		 */
+		private int getIndexFromEnd(int index) {
+			if (getAccount().getLists() == null)
+				return 0;
+			final ArrayList<TaskList> lists = getAccount().getLists().getTaskLists();
+			return lists.size() - (index + 1);
+		}
+
+		/**
+		 * Standard Android method for Adapter. Called whenever any visual element being displayed
+		 * is changed. Returns the View or Edit layout as appropriate for the TaskList with the
+		 * given index position.
+		 * 
+		 * @param position
+		 *            the position of the displayed item in the display
+		 * @param convert
+		 *            a possibly reusable old view
+		 * @param parent
+		 *            The parent that this view will eventually be attached to
+		 */
+		public View getView(int position, View convert, ViewGroup parent) {
+			AccountLists lists = getAccount().getLists();
+			if (lists == null)
+				return null;
+
+			String[] names = lists.getListNames();
+			if (names == null)
+				return null;
+
+			View view = inflater.inflate(R.layout.list_item, null);
+
+			ImageButton editButton = (ImageButton) view.findViewById(R.id.EditList);
+			View viewButton = view.findViewById(R.id.EditArrow);
+			final TextView listname = (TextView) view.findViewById(R.id.listNameView);
+			if (names != null) {
+
+				final String name = names[getIndexFromEnd(position)];
+				final TaskList list = lists.getTaskLists().get(getIndexFromEnd(position));
+				listname.setText(name);
+				OnClickListener loadViewListener = new OnClickListener() {
+					public void onClick(View v) {
+						viewList(list);
+					}
+				};
+				listname.setOnClickListener(loadViewListener);
+				viewButton.setOnClickListener(loadViewListener);
+
+				editButton.setOnClickListener(new OnClickListener() {
+					public void onClick(View v) {
+						EditListActivity.launch(self(), getAccount(), list);
+					}
+				});
+			} else {
+				listname.setText("Null List #" + position);
+			}
+
+			return view;
+		}
+	}
+}

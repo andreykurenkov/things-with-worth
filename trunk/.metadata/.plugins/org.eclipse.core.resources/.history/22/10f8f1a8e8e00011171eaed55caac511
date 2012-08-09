@@ -1,0 +1,40 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+
+public class HtmlFile extends SmartFile {
+	public static final String TYPE = "HTML";
+	public static final String[] EXTENSIONS = { "html" };
+	static {
+		SmartFileFactory.addSupport(EXTENSIONS, HtmlFile.class);
+	}
+
+	public HtmlFile(File f) {
+		super(f);
+	}
+
+	public HtmlFile(String s) {
+		super(s);
+	}
+
+	@Override
+	public String[] getValidExtensionRegex() {
+		return EXTENSIONS;
+	}
+
+	@Override
+	public String getType() {
+		return TYPE;
+	}
+
+	@Override
+	public boolean isReadable() {
+		return true;
+	}
+
+	@Override
+	protected SmartFile makeSmarter(File make) {
+		return new HtmlFile(make);
+	}
+
+}

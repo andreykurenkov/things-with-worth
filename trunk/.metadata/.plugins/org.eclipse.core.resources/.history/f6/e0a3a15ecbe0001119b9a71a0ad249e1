@@ -1,0 +1,14 @@
+package edu.gatech.GradeAwesome.GUI.Helpers;
+
+import java.util.ArrayList;
+
+import javax.swing.JPanel;
+
+import edu.gatech.GradeAwesome.Observable;
+import edu.gatech.GradeAwesome.Observer;
+import edu.gatech.GradeAwesome.GUI.Components.JFileList;
+
+public class ObservableJPanel extends JPanel implements Observable<Observer<? extends ObservableJPanel>> {
+
+	private ArrayList<Observer<ObservablePanel>> observers;
+}

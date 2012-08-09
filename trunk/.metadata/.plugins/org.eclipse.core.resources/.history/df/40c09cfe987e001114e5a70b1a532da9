@@ -1,0 +1,138 @@
+package edu.gatech.fiveminutesleft;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.config.AccountManager;
+
+/**
+ * Initial Activity for App. Allows user to login, register, and retrieve password.
+ * 
+ * @author Garret Malmquist
+ */
+public class LoginActivity extends Activity {
+
+	private TextView	userField, passField, statusField;
+
+	/**
+	 * Standard Android method. Called when Activity gets launched without already being in stopped
+	 * or paused state. Sets the layout of this activity and sets the TextView instance variables
+	 */
+	@Override
+	public void onCreate(Bundle saved) {
+		super.onCreate(saved);
+		Log.d("LoginActivity.onCreate", "Login Created");
+		setContentView(R.layout.login);
+
+		statusField = (TextView) findViewById(R.id.loginStatusLabel);
+		userField = (TextView) findViewById(R.id.loginUsername);
+		passField = (TextView) findViewById(R.id.loginPassword);
+	}
+
+	/**
+	 * Standard Android method. Called when this activity becomes displayed after being stopped or
+	 * paused. Resets display to starting state.
+	 */
+	@Override
+	public void onStart() {
+		super.onStart();
+		Log.d("LoginActivity.onStart", "Login Started");
+		statusField.setText("");
+		userField.setText("");
+		passField.setText("");
+	}
+
+	/**
+	 * Standard Android method. Called when this activity stops being displayed, but not actually
+	 * finished. Currently does nothing but aid debugging by logging activity flow.
+	 */
+	@Override
+	public void onStop() {
+		Log.d("LoginActivity.onStop", "Login Stopped");
+		super.onStop();
+	}
+
+	/**
+	 * Standard Android method. Called when Activity is truly finished and utterly gone from app
+	 * memory. Should be called when user exists out of app entirely.
+	 */
+	@Override
+	public void onDestroy() {
+		Log.d("LoginActivity.onDestroy", "Login Destroyed");
+
+		/*
+		 * This is the last function that is guaranteed to be called before the application is
+		 * terminated, and it is therefore critical that all caches be flushed before it completes.
+		 */
+		CacheManager.syncAll();
+
+		super.onDestroy();
+	}
+
+	/**
+	 * Transition method to go from Login to TasklistActivity.
+	 */
+	private void startTaskList() {
+		ListsActivity.launch(this, AccountManager.getLoggedIn());
+	}
+
+	/**
+	 * onClick method for Login button. Tries to log in with the information in userField and
+	 * passField using the AccountManager class. Called when the user clicks the "Login" button.
+	 * 
+	 * @param view
+	 *            Android-passed variable for the button that was clicked
+	 */
+	public void login(View view) {
+		String uname = userField.getText().toString();
+		String upass = passField.getText().toString();
+		statusField.setTextColor(R.color.todo_text);
+		statusField.setText("Logging in...");
+
+		String response = AccountManager.getInstance().login(uname, upass);
+
+		if (response == null) {
+			startTaskList();
+		} else {
+			statusField.setTextColor(R.color.todo_error);
+			statusField.setText(response);
+		}
+	}
+
+	/**
+	 * Starts the PasswordRecoveryActivity when the user clicks the "Forgot Password" button.
+	 * 
+	 * @param view
+	 *            Android passed variable for the button that was clicked
+	 */
+	public void forgotPassword(View view) {
+		PasswordRecoveryActivity.launch(this, userField.getText().toString());
+	}
+
+	/**
+	 * Standard Android method. Case when user presses physical back button - ends activity and app.
+	 */
+	@Override
+	public void onBackPressed() {
+		finish();
+	}
+
+	/**
+	 * onClick method for register button. Starts the RegisterActivity when the "Register" button is
+	 * clicked.
+	 * 
+	 * @param view
+	 *            Android passed variable for the button that was clicked
+	 */
+	public void register(View view) {
+		// Start RegisterActivity
+		Intent intent = new Intent(this, RegisterActivity.class);
+		intent.putExtra("userinfo", userField.getText().toString());
+		intent.putExtra("userpass", passField.getText());
+		startActivity(intent);
+	}
+}

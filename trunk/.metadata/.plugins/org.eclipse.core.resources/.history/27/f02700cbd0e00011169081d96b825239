@@ -1,0 +1,41 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+
+public class TxtFile extends SmartFile {
+	public static final String TYPE = "Txt";
+	public static final String[] EXTENSIONS = { "txt" };
+
+	public TxtFile(File f) {
+		super(f);
+	}
+
+	public TxtFile(String s) {
+		super(s);
+	}
+	
+	@Override
+	protected SmartFile makeSmarter(File make) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getValidExtensionRegex() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isReadable() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}

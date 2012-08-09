@@ -1,0 +1,20 @@
+import java.io.IOException;
+
+import wikipedia.Wiki;
+
+public class Test {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		Wiki wiki = new Wiki("en.wikipedia.org"); // create a new wiki connection to en.wikipedia.org
+		try {
+			String stuff=wiki.export("Stolen Babies");
+			System.out.println(stuff);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

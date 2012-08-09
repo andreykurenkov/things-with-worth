@@ -1,0 +1,119 @@
+/**
+ * This class represents a simple mathematical 2D vector that allows for efficient mathematical operations involving two
+ * doubles.
+ * 
+ * @author Andrey
+ * @verison 1.0
+ * 
+ */
+// Would be nice to extend Point, but confusing to students
+public class Vector2D {
+	// TODO: have students write entire class, or most of it? Pretty simple
+	// TODO: Miiiight consider writing with general Vector, though probably unnecessary
+	private double x;
+	private double y;
+
+	/**
+	 * Standard constructor taking in needed values
+	 * 
+	 * @param x
+	 *            the first double element
+	 * @param y
+	 *            the second double element
+	 */
+	public Vector2D(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	/**
+	 * Getter for x
+	 * 
+	 * @return x the first vector element
+	 */
+	public double getX() {
+		return x;
+	}
+
+	/**
+	 * Getter for y
+	 * 
+	 * @return y the second vector element
+	 */
+	public double getY() {
+		return y;
+	}
+
+	/**
+	 * Adds the given vector to the values of this vector and returns result. Note: Does not change values stored in either
+	 * vector.
+	 * 
+	 * @param toAdd
+	 *            Vector with values to add
+	 * @return Vector containing sum of given and this vector
+	 */
+	public Vector2D add(Vector2D toAdd) {
+		double x = this.x + toAdd.getX();
+		double y = this.y + toAdd.getY();
+		return new Vector2D(x, y);
+	}
+
+	/**
+	 * Subtract the given vector to the values of this vector and returns result. Note: Does not change values stored in
+	 * either vector.
+	 * 
+	 * @param toSub
+	 *            Vector with values to subtract
+	 * @return Vector containing difference of given and this vector
+	 */
+	public Vector2D subtract(Vector2D toSub) {
+		double x = this.x - toSub.getX();
+		double y = this.y - toSub.getY();
+		return new Vector2D(x, y);
+	}
+
+	/**
+	 * Multiply the given vector to the values of this vector and returns result. Note: Does not change values stored in
+	 * either vector.
+	 * 
+	 * @param toMul
+	 *            Vector with values to multiply
+	 * @return Vector containing multiplication of given and this vector
+	 */
+	public Vector2D multiply(Vector2D toMul) {
+		double x = this.x * toMul.getX();
+		double y = this.y * toMul.getY();
+		return new Vector2D(x, y);
+	}
+
+	/**
+	 * Dot product the given vector to the values of this vector and returns result. Note: Does not change values stored in
+	 * either vector.
+	 * 
+	 * @param toSub
+	 *            Vector with values for dot product
+	 * @return value containing dot product of given and this vector
+	 */
+	public double dotProduct(Vector2D toDot) {
+		Vector2D multiplied = this.multiply(toDot);
+		return multiplied.getX() + multiplied.getY();// Note: could use .x and .y since in class but wont for style
+	}
+
+	/**
+	 * Returns magnitude(standard math)
+	 * 
+	 * @return magnitude
+	 */
+	public double magnitude() {
+		return Math.sqrt(x * x + y * y);
+	}
+
+	/**
+	 * Returns angle(standard math)
+	 * 
+	 * @return angle
+	 */
+	public double angle() {
+		return Math.atan2(y, x);
+	}
+}

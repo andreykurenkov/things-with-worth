@@ -1,0 +1,18 @@
+import java.util.*;
+public class ShootTheTarget {
+	public static void main(String[] args){
+		Scanner scan=new Scanner(System.in);
+		int cases=scan.nextInt();
+		for(int caseNum=1;caseNum<=cases;caseNum++){
+			int x1=scan.nextInt();
+			int y1=scan.nextInt();
+			int x2=scan.nextInt();
+			int y2=scan.nextInt();
+			double thetaVertical=180.0/Math.PI*Math.atan2(y2-y1, x2-x1);
+			double thetaBoth=(90-thetaVertical);
+			double ideal=180-thetaBoth;
+			System.out.println(thetaVertical*2);
+		}
+		
+	}
+}

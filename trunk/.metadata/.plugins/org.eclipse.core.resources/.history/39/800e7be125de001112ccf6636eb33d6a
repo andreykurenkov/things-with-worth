@@ -1,0 +1,119 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.OutputStreamWriter;
+import java.util.Scanner;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+
+import edu.gatech.GradeAwesome.GUI.Helpers.Dialogs;
+
+public class ProcessTextArea extends ToolbaredTextArea {
+	private Process myProcess;
+
+	public ProcessTextArea(final JTextArea area, Process areaProcess, final JFrame frame) {
+		super(area);
+		myProcess = areaProcess;
+		OutputStreamWriter out = new OutputStreamWriter(myProcess.getOutputStream());
+		final InputListener inputListener = new InputListener(out);
+		final SwingWorker<String, Void> pipe = new SwingWorker<String, Void>() {
+			public String doInBackground() {
+				area.getDocument().addDocumentListener(inputListener);
+				boolean run = true;
+				Scanner scan = new Scanner(myProcess.getInputStream());
+				while (run) {
+					if (scan.hasNext()) {
+						updateTextArea(scan.next());
+						inputListener.setOffset(area.getDocument().getEndPosition().getOffset());
+					}
+					try {
+						int val = myProcess.exitValue();
+						run = false;
+						area.getDocument().removeDocumentListener(inputListener);
+						updateTextArea("Proccess terminated with value " + val);
+					} catch (Exception notClosed) {
+						run = true;
+					}
+				}
+				return null;
+			}
+		};
+		pipe.execute();
+
+		if (frame != null) {
+			Dialogs.makeSafeToClose(frame);
+			frame.add(this);
+			frame.pack();
+			frame.setVisible(true);
+		}
+		JButton close = new JButton("Close Process");
+		close.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				myProcess.destroy();
+				frame.dispose();
+			}
+		});
+
+		super.addToolbarComponent(close);
+	}
+
+	private void updateTextArea(final String newText) {
+
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				text.append(newText);
+			}
+		});
+	}
+
+	private class InputListener implements DocumentListener {
+		private OutputStreamWriter out;
+		private int offset;
+		private boolean inserting;
+
+		public InputListener(OutputStreamWriter out) {
+			this.out = out;
+			this.offset = 0;
+		}
+
+		public void setOffset(int offset) {
+			this.offset = offset;
+		}
+
+		public void setInserting(boolean inserting) {
+			this.inserting = inserting;
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent event) {
+		}
+
+		@Override
+		public void insertUpdate(DocumentEvent event) {
+			if(inserting){
+			Document doc = (Document) event.getDocument();
+			try {
+				String changeText = doc.getText(offset, event.getLength());
+				out.write(changeText);
+				out.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			}
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent event) {
+
+		}
+	}
+}

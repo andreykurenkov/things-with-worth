@@ -1,0 +1,34 @@
+package edu.gatech.GradeAwesome.FileIO.Files;
+
+import java.io.File;
+
+public class CSVFile extends SmartFile {
+
+	public CSVFile(File file){
+		super(file);
+	}
+
+	@Override
+	protected SmartFile makeSmarter(File make) {
+		return new CSVFile(make);
+	}
+
+	@Override
+	public String[] getValidExtensionRegex() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isReadable() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}

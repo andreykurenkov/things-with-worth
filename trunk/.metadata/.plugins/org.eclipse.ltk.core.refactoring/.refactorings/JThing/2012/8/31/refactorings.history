@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename type &apos;edu.gatech.GradeAwesome.GUI.Components.FolderBrowser&apos; to &apos;DirectoryBrowser&apos;&#x0A;- Original project: &apos;JThing&apos;&#x0A;- Original element: &apos;edu.gatech.GradeAwesome.GUI.Components.FolderBrowser&apos;&#x0A;- Renamed element: &apos;edu.gatech.GradeAwesome.GUI.Components.DirectoryBrowser&apos;&#x0A;- Update references to refactored element&#x0A;- Update textual occurrences in comments and strings" description="Rename type &apos;FolderBrowser&apos;" flags="589830" id="org.eclipse.jdt.ui.rename.type" input="/src&lt;edu.gatech.GradeAwesome.GUI.Components{FolderBrowser.java[FolderBrowser" matchStrategy="1" name="DirectoryBrowser" qualified="false" references="true" similarDeclarations="false" stamp="1344068077770" textual="false" version="1.0"/>
+</session>

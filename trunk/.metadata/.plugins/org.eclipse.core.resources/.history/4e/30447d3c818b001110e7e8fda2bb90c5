@@ -1,0 +1,70 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="5dp"
+     >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:gravity="center_horizontal"
+            android:text="@string/registerTitle"
+            android:textSize="46dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/registerUser"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/loginUserHint"
+            android:singleLine="true" />
+
+        <EditText
+            android:id="@+id/registerEmail"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/loginEmailHint"
+            android:singleLine="true" />
+
+        <EditText
+            android:id="@+id/registerPass"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:hint="@string/loginPassHint"
+            android:singleLine="true" />
+
+        <EditText
+            android:id="@+id/registerPassConfirm"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:hint="@string/loginPassConfirmHint"
+            android:singleLine="true" />
+
+        <Button
+            android:id="@+id/registerRegister"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:onClick="register"
+            android:text="Register"
+            style="@style/GreenButton" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="Default Status Text"
+             />
+    </LinearLayout>
+
+</ScrollView>

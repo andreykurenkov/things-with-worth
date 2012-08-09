@@ -1,0 +1,97 @@
+package edu.gatech.fiveminutesleft.storage.jsonfile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import android.util.Log;
+import edu.gatech.fiveminutesleft.storage.Storage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.TaskListReference;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+class TaskListReferenceImpl implements TaskListReference {
+
+	private final LocalJSONFileStorage	store;
+	private final StorageAddress		addr;
+
+	public TaskListReferenceImpl(LocalJSONFileStorage s) {
+		this.store = s;
+		this.addr = new StorageAddress(s.getServerAddress(), UUID.randomUUID().toString());
+	}
+
+	public TaskListReferenceImpl(LocalJSONFileStorage s, StorageAddress addr) throws ObjectNotFoundException {
+		this.store = s;
+		this.addr = addr;
+
+		Log.d("TaskListReferenceImpl", s.dbstate.toString());
+
+		if (!this.addr.getServerAddress().equals(s.getServerAddress())) {
+			throw new ObjectNotFoundException(addr);
+		}
+
+		if (!s.dbstate.has(addr.getObjectAddress())) {
+			throw new ObjectNotFoundException(addr);
+		}
+	}
+
+	public StorageAddress getAddress() {
+		return addr;
+	}
+
+	public List<StorageAddress> read() {
+		List<StorageAddress> data = new ArrayList<StorageAddress>();
+
+		try {
+			JSONArray jsonData = store.dbstate.getJSONArray(addr.getObjectAddress());
+
+			for (int i = 0; i < jsonData.length(); i++) {
+				data.add(new StorageAddress(jsonData.getString(i)));
+			}
+		} catch (Exception e) {
+			return new ArrayList<StorageAddress>();
+		}
+
+		return data;
+	}
+
+	public void update(List<StorageAddress> data) {
+		try {
+			JSONArray jsonData = new JSONArray();
+
+			for (StorageAddress a : data) {
+				jsonData.put(a.toString());
+			}
+
+			store.dbstate.put(this.addr.getObjectAddress(), jsonData);
+			try {
+				store.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (JSONException e) {
+			return;
+		}
+	}
+
+	public void delete() {
+		store.dbstate.remove(this.addr.getObjectAddress());
+
+		try {
+			store.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public Storage getStorage() {
+		return this.store;
+	}
+
+}

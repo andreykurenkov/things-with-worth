@@ -1,0 +1,121 @@
+public class TextSearch {
+	public static int comparision; // Increment this every time a comparision is
+									// made
+
+	public static int[] last(String p) {
+		int[] lastArr = new int[256];
+		boolean[] found = new boolean[256];
+		p = p.toLowerCase();
+		for (int i = p.length() - 1; i >= 0; i--) {
+			char c = p.charAt(i);
+			if (!found[c]) {
+				lastArr[c] = p.length() - i - 1;
+				found[c] = true;
+			}
+		}
+		for (int i = 0; i < lastArr.length; i++)
+			if (!found[i])
+				lastArr[i] = p.length();
+		return lastArr;
+	}
+
+	public static int[] failure(String p) {
+		int i = 0;
+		int[] fail = new int[p.length()];
+		fail[0] = -1;
+		fail[1] = 0;
+		for (int j = 2; j < p.length(); j++) {
+			if (p.charAt(j - 1) == p.charAt(i)) {
+				i++;
+				fail[j] = i;
+			} else {
+				i = 0;
+			}
+		}
+		return fail;
+	}
+
+	public static int runBruteForce(String t, String p) {
+		int matchAt = -1;
+		for (int i = 0; i < t.length() - p.length(); i++) {
+			boolean match = true;
+			for (int j = 0; j < p.length(); j++) {
+				comparision++;
+				if (t.charAt(i + j) != p.charAt(j)) {
+					match = false;
+					break;
+				}
+			}
+			if (match) {
+				matchAt = i;
+				break;
+			}
+		}
+		return matchAt;
+	}
+
+	public static int runBoyerMoore(String t, String p) {
+		int[] last = last(p);
+		int matchAt = -1;
+		int i = p.length();
+		int j = 0;
+		boolean match = false;
+		while (i < t.length() && !match) {
+			match = true;
+			for (j = 1; j <= p.length(); j++) {
+				comparision++;
+				if (p.charAt(p.length() - j) != t.charAt(i - j)) {
+					match = false;
+					break;
+				}
+			}
+			if (match) {
+				matchAt = i - p.length();
+			} else {
+				i += Math.max(last[t.charAt(i - j)], j);
+			}
+		}
+		return matchAt;
+	}
+
+	public static int runKMP(String t, String p) {
+		int[] fail = failure(p);
+		int matchAt = -1;
+		int i = 0;
+		int j = 0;
+		boolean match = false;
+		while (i < t.length() && !match) {
+			match = true;
+			for (; j < p.length(); j++) {
+				comparision++;
+				if (p.charAt(j) != t.charAt(i)) {
+					match = false;
+					break;
+				} else
+					i++;
+			}
+			if (match) {
+				matchAt = i - p.length() + 1;
+			} else {
+				if (j == 0)
+					i++;
+				else {
+					j = fail[j];
+				}
+			}
+			System.out.println(i + " " + j);
+		}
+		return matchAt;
+	}
+
+	// DO NOT edit code below this line
+
+	public static void resetComp() {
+		comparision = 0;
+	}
+
+	public static int getComp() {
+		return comparision;
+	}
+
+}

@@ -1,0 +1,28 @@
+package edu.gatech.fiveminutesleft.test;
+
+import org.junit.Test;
+
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import junit.framework.TestCase;
+
+public class RegisterTest extends TestCase {
+	
+	@Test
+	public void emptyFieldTest(){
+		String result=AccountManager.getInstance().register("", "testUsername", "testPassword", "testPassword", "testemail@test.test");
+		assertEquals(result,AccountManager.ERROR_FIELDS_NOT_FILLED);
+	}
+	
+	@Test
+	public void invalidPasswordTest(){
+		String result=AccountManager.getInstance().register("testName", "testUsername", "testP", "testP", "testemail@test.test");
+		assertEquals(result,AccountManager.ERROR_INVALID_PASSWORD);
+	}
+	
+	@Test
+	public void invalidEmailTest(){
+		String result=AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPassword", "invalidEmail");
+		assertEquals(result,AccountManager.ERROR_INVALID_EMAIL);
+	}
+
+}

@@ -1,0 +1,261 @@
+package edu.gatech.fiveminutesleft.config;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
+import android.util.Log;
+import edu.gatech.fiveminutesleft.model.Account;
+import edu.gatech.fiveminutesleft.model.AccountEmail;
+import edu.gatech.fiveminutesleft.model.AppAccount;
+import edu.gatech.fiveminutesleft.util.Mail;
+
+/**
+ * A Singleton Controller class that retrieves the stored accounts upon app start-up, verifies login
+ * input, handles forgotten password, and stores the active account
+ * 
+ * @author Andrey Kurenkov
+ */
+public class AccountManager {
+	private static AccountManager	classInstance;
+
+	public static final String		SUCCESSFUL								= null;
+	public static final String		ERROR_INCORRECT_USERNAME_OR_PASSWORD	= "Incorrect username or password";
+	public static final String		ERROR_USERNAME_NOT_FOUND				= "Username not found";
+	public static final String		ERROR_INCORRECT_USERNAME_OR_EMAIL		= "Incorrect username or email";
+	public static final String		ERROR_WRONG_PASSWORD					= "The password you input is incorrect.";
+	public static final String		ERROR_PASSWORD_DOES_NOT_MATCH_CONFIRM	= "Password does not match confirm password";
+	public static final String		ERROR_FIELDS_NOT_FILLED					= "Not all fields filled";
+
+	public static final String		ERROR_INVALID_EMAIL						= "Invalid email address";
+	public static final String		ERROR_INVALID_PASSWORD					= "Invalid password.These are the requirements for a password:\n"
+																					+ " A password must be at least 6 character in length";
+	public static final String		ERROR_USERNAME_TAKEN					= "The username you entered is already taken";
+	public static final String		ERROR_EMAIL_TAKEN						= "The email you entered is already taken";
+
+	public Account					loggedInAccount;
+
+	private AccountManager() {
+	}
+
+	public static AccountManager getInstance() {
+		if (classInstance == null)
+			classInstance = new AccountManager();
+		return classInstance;
+	}
+
+	/**
+	 * Checks if a user's input username and password correspond to any accounts stored locally on
+	 * the device. If the username and password are valid, loads the account and sets it to the
+	 * activeAccount.
+	 * 
+	 * @param username
+	 *            the user's input value for the account username
+	 * @param password
+	 *            the user's input value for the account password
+	 * @return SUCCESSFUL if logged in correctly, an ERROR code otherwise
+	 */
+	public String login(String username, String password) {
+		if (!validInput(username, password))
+			return ERROR_FIELDS_NOT_FILLED;
+		if (!AppAccount.exists(username))
+			return ERROR_INCORRECT_USERNAME_OR_PASSWORD;
+
+		Account account = AppAccount.locate(username);
+
+		if (account == null) {
+			return ERROR_INCORRECT_USERNAME_OR_EMAIL;
+		}
+
+		if (!account.isPassword(password)) {
+			return ERROR_INCORRECT_USERNAME_OR_PASSWORD;
+		}
+		loggedInAccount = account;
+		return SUCCESSFUL;
+	}
+
+	/**
+	 * Registers a new user account after confirming that the input is valid.
+	 * 
+	 * @param name
+	 *            The user's real name
+	 * @param username
+	 *            The user's username for the account
+	 * @param password
+	 *            The user's password for the account
+	 * @param passwordConfirm
+	 *            The user's password confirmation - should be identical to password
+	 * @param email
+	 *            The user's email
+	 * @return SUCCESSFUL if logged in correctly, an ERROR code otherwise
+	 */
+	public String register(String name, String username, String password, String passwordConfirm, String email) {
+		// Method call likely from outside trust boundaries, so parameter validity not assumed
+		if (!validInput(name, username, password, passwordConfirm, email))
+			return ERROR_FIELDS_NOT_FILLED;
+		// Check that provided username and email are not already associated with an existing
+		// account
+		if (AccountEmail.exists(email))
+			return ERROR_EMAIL_TAKEN;
+		if (AppAccount.exists(username))
+			return ERROR_USERNAME_TAKEN;
+
+		boolean validPassword = AppAccount.isPasswordValid(password);
+		if (!validPassword)
+			return ERROR_INVALID_PASSWORD;
+
+		if (!password.equals(passwordConfirm))
+			return ERROR_PASSWORD_DOES_NOT_MATCH_CONFIRM;
+
+		if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
+			return ERROR_INVALID_EMAIL;
+
+		loggedInAccount = new AppAccount(name, username, password, email);
+
+		/*
+		 * Account newAccount = new Account(name, username, password, email); String
+		 * registrationEmailTitle = "Welcome to Do It!"; String registrationEmailBody = "Hey " +
+		 * name + "! You have succesfully registered for Do It! Have a productive life."; String[]
+		 * sendTo = { email, "" }; EmailHandler.sendPlaintextEmail(sendTo, registrationEmailTitle,
+		 * registrationEmailBody);
+		 */
+
+		return SUCCESSFUL;
+
+	}
+
+	/**
+	 * If forgot password is clicked on logic screen, user has to input their account username and
+	 * email. If the input is valid, the password for their account is reset and sent to them.
+	 * 
+	 * @param username
+	 * @param email
+	 * @return SUCCESSFUL if logged in correctly, an ERROR code otherwise
+	 */
+	public String handleForgotPassword(String input) {
+		if (!validInput(input))
+			return ERROR_FIELDS_NOT_FILLED;
+		String username = null;
+		Account thisAccount = null;
+
+		// If input matches email pattern, try to get username with email. If succesful, retrive
+		// account with username.
+		if (android.util.Patterns.EMAIL_ADDRESS.matcher(input).matches()) {
+			AccountEmail email = AccountEmail.locate(input);
+			if (email != null)
+				username = email.getUsername();
+			if (validInput(username)) {
+				thisAccount = AppAccount.locate(username);
+			}
+		}
+
+		// If trying to retrive with input as email did not work, try retrieving with input as
+		// username
+		if (thisAccount == null) {
+			username = input;
+			thisAccount = AppAccount.locate(username);
+		}
+
+		// If neither attempt worked, return error
+		if (thisAccount == null)
+			return ERROR_INCORRECT_USERNAME_OR_EMAIL;
+
+		String newPassword = "";
+		while (newPassword.length() < 8) {
+			char charValue = (char) ('0' + (int) (Math.random() * 43));
+			if (charValue <= '9' || (charValue >= 'A' && charValue <= 'Z'))
+				newPassword += charValue;
+		}
+
+		// TODO: externalize these strings, and obtain an official email address
+		Mail m = new Mail("doitnotifier@gmail.com", "7_k:c|kQHf|Znx|)r!5oryKuRcS[r}c'}T&3Tq2@pPgn\\UDRo<&~C4&Bak>.z.k");
+
+		String passwordResetEmailTitle = "Do It! password reset";
+		String passwordResetEmailBody = "Do It! user " + username + ",\n"
+				+ "Your pasword has been reset because you have indicated "
+				+ "not being able to remember your password. \n\n" + "The pasword for your account is now: " + newPassword
+				+ "\n\n";
+		m.setSubject(passwordResetEmailTitle);
+		m.setFrom("doitnotifier@gmail.com");
+		m.setBody(passwordResetEmailBody);
+		m.setTo(new String[] { thisAccount.getEmail() });
+
+		thisAccount.setPassword(newPassword);
+		try {
+			m.send();
+		} catch (AddressException e) {
+			Log.e("AccountManager", "Address Exception");
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			Log.e("AccountManager", "Messaging Exception");
+			e.printStackTrace();
+		}
+
+		return SUCCESSFUL;
+
+	}
+
+	/**
+	 * Changes the password for the given accoutn
+	 * 
+	 * @param changeFor
+	 *            the Account to change password for
+	 * @param oldPass
+	 *            the old password
+	 * @param newPass
+	 *            the new password
+	 * @param confirmPass
+	 *            the confirmation input
+	 * @return null on success, error othewise
+	 */
+	public String changePassword(Account changeFor, String oldPass, String newPass, String confirmPass) {
+		if (!validInput(oldPass, confirmPass, newPass))
+			return ERROR_FIELDS_NOT_FILLED;
+		if (!changeFor.isPassword(oldPass))
+			return ERROR_WRONG_PASSWORD;
+		if (!confirmPass.equals(newPass))
+			return ERROR_PASSWORD_DOES_NOT_MATCH_CONFIRM;
+		if (!AppAccount.isPasswordValid(newPass))
+			return ERROR_INVALID_PASSWORD;
+		changeFor.setPassword(newPass);
+		return null;
+	}
+
+	/**
+	 * Changes the email of a given account if the email is valid
+	 * 
+	 * @param changeFor
+	 *            the account for which to change email
+	 * @param email
+	 *            the new email
+	 * @return null on success, otherwise error code
+	 */
+	public String changeEmail(Account changeFor, String email) {
+		email = email.trim();
+		if (email.equals(changeFor.getEmail()))
+			return null;
+
+		if (AccountEmail.exists(email))
+			return ERROR_EMAIL_TAKEN;
+
+		if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
+			return ERROR_INVALID_EMAIL;
+
+		return changeFor.setEmail(email);
+	}
+
+	/**
+	 * Checks that the user none of the input by the user is an empty string, i.e. that none of the
+	 * fields were left empty
+	 * 
+	 * @param input
+	 *            variable amount of strings to check for validity
+	 * @return false if any of the inputs is null or an empty String, true otherwise
+	 */
+	private boolean validInput(String... input) {
+		for (String s : input)
+			if (s == null || s.equals(""))
+				return false;
+		return true;
+	}
+
+}

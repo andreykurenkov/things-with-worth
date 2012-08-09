@@ -1,0 +1,37 @@
+package com.thingswithworth.genregetter.wikiio;
+
+import java.awt.Image;
+
+public class BandWikiParser extends WikiParser{
+	private final String[] infobox= {"name,image,genre,website"};
+	@Override
+	public String[] infoboxSupport() {
+		return infobox;
+	}
+
+	@Override
+	public Object[] getInfoboxInfo(String forType) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean imageSupport() {
+		return false;
+	}
+
+	
+
+	@Override
+	public String[] retrieveImageNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Image[] retrieveImages() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

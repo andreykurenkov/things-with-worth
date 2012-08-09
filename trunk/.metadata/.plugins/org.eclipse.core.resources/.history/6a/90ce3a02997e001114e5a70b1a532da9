@@ -1,0 +1,163 @@
+package edu.gatech.fiveminutesleft;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
+import edu.gatech.fiveminutesleft.R;
+import edu.gatech.fiveminutesleft.model.TaskRepeat;
+
+/**
+ * This is the Activity which displays a pop-up dialog that allows users to set how frequently a
+ * Task repeats.
+ * 
+ * @author g
+ */
+public class EditRepeatActivity extends Activity {
+
+	private Spinner	unitSpinner;
+	private Spinner	countSpinner;
+
+	/**
+	 * Launches this Activity given a past repeat value
+	 * 
+	 * @param source
+	 *            The activity that called launch
+	 * @param repeat
+	 *            - the default text of the repeat
+	 * @param set
+	 *            - the text view to store the updated value when this dialog closes
+	 */
+	public static void launch(Activity source, String repeat, ContentListener cl) {
+		Intent intent = new Intent(source, EditRepeatActivity.class);
+		GUISpace.put(EditRepeatActivity.class, "set", cl);
+		GUISpace.put(EditRepeatActivity.class, "repeat", new TaskRepeat(repeat));
+		source.startActivity(intent);
+	}
+
+	private TaskRepeat getRepeat() {
+		if (!GUISpace.has(getClass(), "repeat"))
+			return null;
+		return (TaskRepeat) GUISpace.get(getClass(), "repeat");
+	}
+
+	/**
+	 * Standard Android method. Sets up the layout and gui instance variables for this activity
+	 * 
+	 * @param b
+	 *            the Bungle passed to this activity
+	 */
+	@Override
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		setContentView(R.layout.edit_repeat_layout);
+
+		unitSpinner = (Spinner) findViewById(R.id.RepeatUnitSpinner);
+		countSpinner = (Spinner) findViewById(R.id.RepeatCountSpinner);
+
+		ArrayAdapter<String> unitAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
+				TaskRepeat.getUnitNames());
+		unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		unitSpinner.setAdapter(unitAdapter);
+
+		ArrayAdapter<Integer> countAdapter = new ArrayAdapter<Integer>(this, android.R.layout.simple_spinner_item,
+				createArray(30, 1));
+		countAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		countSpinner.setAdapter(countAdapter);
+	}
+
+	/**
+	 * Helper method to create an integer array
+	 * 
+	 * @param size
+	 *            - the number of elements in the array
+	 * @param start
+	 *            - the value of element 0
+	 * @return
+	 */
+	private static Integer[] createArray(int size, int start) {
+		Integer[] nums = new Integer[size];
+		for (int i = 0; i < size; i++) {
+			nums[i] = start + i;
+		}
+		return nums;
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		if (getRepeat() != null) {
+			getRepeat().setUnit(unitSpinner.getSelectedItemPosition());
+			getRepeat().setCount(countSpinner.getSelectedItemPosition() + 1);
+		}
+	}
+
+	/**
+	 * Update the GUI fields of this Activity
+	 */
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		updateValues();
+	}
+
+	/**
+	 * Changes values of displayed things to the latest selection.
+	 */
+	private void updateValues() {
+		unitSpinner.setSelection(getRepeat().getUnit());
+		countSpinner.setSelection(getRepeat().getCount() - 1);
+	}
+
+	/**
+	 * Converts the data in the GUI fields to a String using the TaskRepeat class.
+	 * 
+	 * @return String representation of the selected repetition
+	 */
+	private String getText() {
+		getRepeat().setUnit(unitSpinner.getSelectedItemPosition());
+		getRepeat().setCount(countSpinner.getSelectedItemPosition() + 1);
+		return getRepeat().toString();
+	}
+
+	/**
+	 * onClick method for "Close" button. Closes this Activity when the Cancel button is pressed.
+	 * 
+	 * @param v
+	 *            the button that was clicked
+	 */
+	public void cancel(View v) {
+		finish();
+	}
+
+	/**
+	 * Saves the repetition information in the TextView that was passed in by launch, then closes
+	 * the Activity.
+	 * 
+	 * @param v
+	 *            the button that was clicked to call this method
+	 */
+	public void done(View v) {
+		if (GUISpace.has(getClass(), "set")) {
+			ContentListener cl = (ContentListener) GUISpace.get(getClass(), "set");
+			cl.dataChanged(getText());
+		}
+		finish();
+	}
+	
+	/**
+	 * Clear out any remaining persistent data when this task is done.
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+
+}

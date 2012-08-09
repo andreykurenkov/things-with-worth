@@ -1,0 +1,37 @@
+package edu.gatech.GradeAwesome.FileIO;
+
+import java.io.File;
+
+public class SmartDirectory extends SmartFile {
+	public static final String TYPE = "Directory";
+	public static final String[] EXTENSIONS = { "" };
+
+	public SmartDirectory(File f) {
+		super(f);
+	}
+
+	public SmartDirectory(String s) {
+		super(s);
+	}
+
+	@Override
+	public String[] getValidExtensionRegex() {
+		return EXTENSIONS;
+	}
+
+	@Override
+	public String getType() {
+		return TYPE;
+	}
+
+	@Override
+	public boolean isReadable() {
+		return false;
+	}
+
+	@Override
+	protected SmartFile makeSmarter(File make) {
+		return new SmartDirectory(make);
+	}
+
+}

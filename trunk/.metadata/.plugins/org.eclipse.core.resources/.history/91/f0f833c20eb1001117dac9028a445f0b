@@ -1,0 +1,48 @@
+package edu.gatech.RecAwesome.IO;
+
+import java.util.ArrayList;
+
+import edu.gatech.RecAwesome.Model.Question.Question;
+
+/**
+ * Defines the default parsing method for .qsf documents.
+ * 
+ * @author andrey
+ * 
+ */
+public class DefaultParser extends QuestionParser {
+	public final String ANSWER_KEY = "Answer";
+	public final String ID_KEY = "ID";
+	public final String QUESTION_KEY = "Question";
+
+	/**
+	 * Parses a single question for a block containing key:value pairs. The
+	 * format for defining questions: definitions can optionally start with
+	 * "Interpreter:<class name>" to define a custom or non-default interpreter
+	 * for the question. After that, every successive row contains
+	 * "<key\>:<value\>" that will be utilized by the interpreter when making
+	 * the jpanel. Question, Answer, ID must be defined as keys with given
+	 * values. If used as MC, then key numOptions must be defined with an
+	 * integer value(max 6) and each option is Option<i\>:option.
+	 */
+	public Question parseQuestion(String parseFrom) {
+		String question, id, text;
+		String[] lines = parseFrom.split("\n");
+		int atLine = 0;
+
+		// making question string
+		String[] lineParts = lines[atLine++].split("_");
+		String id = lineParts[0];
+		String content = lineParts[1];
+
+		ArrayList<String> opts = new ArrayList<String>();
+		lineParts = lines[atLine++].split("_");
+		while (!lineParts[0].contains("Answer")) {
+			opts.add(lineParts[0]);
+			lineParts = lines[atLine++].split("_");
+		}
+		int answer = Integer.parseInt(lineParts[1]);
+		return new DefaultQuestion(id, content, answer, opts.toArray(lineParts));
+	}
+
+}

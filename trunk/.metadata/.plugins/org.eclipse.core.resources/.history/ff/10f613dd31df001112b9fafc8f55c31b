@@ -1,0 +1,19 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.io.File;
+import java.io.FileFilter;
+
+import javax.swing.JList;
+
+import edu.gatech.GradeAwesome.Observable;
+import edu.gatech.GradeAwesome.Observer;
+
+public class JFileList extends JList implements Observable<?> {
+	private FileFilter filter;
+	private File currentDir;
+	@Override
+	public void acceptObserver(Observer<?> add) {
+		
+	}
+
+}

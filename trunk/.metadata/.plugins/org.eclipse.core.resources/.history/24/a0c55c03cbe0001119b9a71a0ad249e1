@@ -1,0 +1,8 @@
+package edu.gatech.GradeAwesome.GUI.Helpers;
+
+import edu.gatech.GradeAwesome.Observable;
+import edu.gatech.GradeAwesome.Observer;
+
+public class ObservableJPanel extends JPanel implements Observable<Observer<? extends ObservableJPanel>>{
+
+}

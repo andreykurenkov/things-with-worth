@@ -1,0 +1,15 @@
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+public class SearchTest extends Assert {
+
+	@Test
+	public void bruteTest() {
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBruteForce(search, pattern));
+	}
+
+}

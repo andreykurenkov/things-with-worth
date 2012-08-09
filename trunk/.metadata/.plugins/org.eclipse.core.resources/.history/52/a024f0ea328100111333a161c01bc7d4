@@ -1,0 +1,74 @@
+package edu.gatech.fiveminutesleft.mock;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.TaskList;
+
+public class MockTaskList implements TaskList {
+
+	private ArrayList<Task> tasks;
+	private String name;
+	
+	public MockTaskList(String name){
+		this.name=name;
+	}
+	public void setName(String setTo) {
+		name=setTo;
+	}
+
+	
+	public String getName() {
+		return name;
+	}
+
+	
+	public void delete() {
+		tasks=null;
+		name=null;
+	}
+
+	
+	public Task getTask(int index) {
+		return tasks.get(index);
+	}
+
+	
+	public void setTask(int index, Task t) {
+		tasks.set(index,t);
+	}
+
+	
+	public void add(Task t) {
+		tasks.add(t);
+
+	}
+
+	
+	public void addFirst(Task t) {
+		tasks.add(0, t);
+	}
+
+	
+	public void remove(Task t) {
+		tasks.remove(t);
+
+	}
+
+	
+	public int size() {
+		return tasks.size();
+	}
+
+	
+	public Iterator<Task> iterator() {
+		return tasks.iterator();
+	}
+
+	
+	public Task makeTask() {
+		return new MockTask();
+	}
+
+}

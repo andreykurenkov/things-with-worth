@@ -1,0 +1,11 @@
+/**
+ * Main class with frame and not much else.
+ * 
+ * @author andrey
+ * 
+ */
+public class Life {
+	public static void main(String[] args) {
+		
+	}
+}

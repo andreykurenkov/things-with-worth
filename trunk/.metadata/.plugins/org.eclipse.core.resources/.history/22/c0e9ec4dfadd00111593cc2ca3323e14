@@ -1,0 +1,12 @@
+package com.thingswithworth.genregetter.io;
+
+import info.bliki.api.Page;
+
+public abstract class WikiParser {
+
+	public abstract String[] infoboxSupport();
+	public abstract boolean imageSupport();
+	public String renderToHTML(Page toRender){
+		
+	}
+}

@@ -1,0 +1,28 @@
+package edu.gatech.fiveminutesleft.test;
+
+import static org.junit.Assert.*;
+import android.app.Activity;
+import android.test.ActivityInstrumentationTestCase2;  
+import org.junit.Test;
+
+import edu.gatech.fiveminutesleft.RegisterActivity;
+
+public class RegisterTest extends  
+ActivityInstrumentationTestCase2<RegisterActivity>  {
+
+	private Activity myActivity;
+
+
+	public RegisterTest(Class<RegisterActivity> activityClass) {
+		super(activityClass);
+	}
+	public void setUp(){
+		myActivity=getActivity();
+	}
+	
+	@Test
+	public void test() {
+		assertTrue(true);
+	}
+
+}

@@ -1,0 +1,37 @@
+import java.awt.Color;
+
+public class Cell {
+	private int age;
+
+	public enum CellState {
+		ALIVE, DEAD
+	};
+
+	private CellState myState;
+
+	public Cell() {
+		age = 0;
+		myState = CellState.DEAD;
+	}
+
+	public void age() {
+		age++;
+	}
+
+	public void kill() {
+		myState = CellState.DEAD;
+		age = 0;
+	}
+
+	public void revive() {
+		myState = CellState.ALIVE;
+	}
+
+	public CellState getState() {
+		return myState;
+	}
+
+	public Color getColor() {
+		return new Color(age % 255, ((age / 255) * age) % 255, ((age / 510) * age) % 255);
+	}
+}

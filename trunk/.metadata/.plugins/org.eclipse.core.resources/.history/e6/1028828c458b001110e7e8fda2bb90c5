@@ -1,0 +1,35 @@
+package edu.gatech.geochat;
+
+import java.util.Timer;
+
+import android.content.Context;
+import android.opengl.GLSurfaceView;
+import android.view.Display;
+import android.view.WindowManager;
+
+public class RadarView extends GLSurfaceView {
+	private int deviceHeight;
+	private int deviceWidth;
+	private double sweepAngle;
+	private Timer sweepTimer;
+	public RadarView(Context c) {
+		super(c);
+		WindowManager wm = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+		deviceHeight=display.getHeight();
+		deviceWidth=display.getWidth();
+		setRenderer(new RadarRenderer(this));
+	}
+	
+	public double getAngle(){
+		return sweepAngle;
+	}
+	
+	public int getDeviceHeight(){
+		return deviceHeight;
+	}
+	
+	public int getDeviceWidth(){
+		return deviceWidth;
+	}
+}

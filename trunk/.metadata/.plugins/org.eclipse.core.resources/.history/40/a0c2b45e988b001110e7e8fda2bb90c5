@@ -1,0 +1,249 @@
+package edu.gatech.geochat.database;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
+import android.util.Base64;
+import android.util.Log;
+import edu.gatech.geochat.model.GeoMessage;
+import edu.gatech.geochat.model.User;
+
+public class PotatoStorage extends Storage {
+
+	private HttpClient client;
+
+	public PotatoStorage() {
+		client = new DefaultHttpClient();
+
+	}
+
+	private List<GeoMessage> parseNotes(String[] lines, int off) {
+		LinkedList<GeoMessage> messages = new LinkedList<GeoMessage>();
+
+		Hashtable<String, String> cmsg = new Hashtable<String, String>();
+		String field = null;
+		for (int i = off; i < lines.length; i++) {
+			if (lines[i].equals("[End Message]")) {
+				// add message
+				GeoMessage msg = new GeoMessage(cmsg.get("name"), null, cmsg.get("email"), cmsg.get("message"),
+						cmsg.get("location"), cmsg.get("range"));
+				msg.setId(cmsg.get("id"));
+				messages.add(msg);
+
+				cmsg.clear();
+				continue;
+			}
+
+			if (field == null) {
+				field = lines[i];
+			} else {
+				cmsg.put(field, lines[i].replaceAll("<br>", "\n").trim());
+				field = null;
+			}
+		}
+
+		return messages;
+	}
+
+	private String secureHash(String value) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+			digest.reset();
+			byte hash[] = digest.digest(value.getBytes());
+
+			return Base64.encodeToString(hash, Base64.NO_WRAP);
+		} catch (NoSuchAlgorithmException exception) {
+			throw new NullPointerException("SHA-256 has not on platfrom - App cannot continue");
+		}
+	}
+
+	private String sendData(String page, String... data) {
+		if (data.length % 2 != 0) {
+			return null;
+		}
+
+		HttpPost post = new HttpPost("http://abpotato.com/files/geochat/" + page + ".php");
+		List<NameValuePair> list = new ArrayList<NameValuePair>(data.length >> 1);
+
+		for (int i = 0; i < data.length; i += 2) {
+			list.add(new BasicNameValuePair(data[i], data[i + 1]));
+		}
+
+		try {
+			post.setEntity(new UrlEncodedFormEntity(list));
+
+			HttpResponse response = client.execute(post);
+			HttpEntity ent = response.getEntity();
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(ent.getContent()));
+
+			StringBuffer result = new StringBuffer(Math.max(1, (int) ent.getContentLength()));
+			String reads = null;
+			while (true) {
+				try {
+					reads = in.readLine();
+				} catch (Exception ex) {
+					break;
+				}
+				if (reads == null)
+					break;
+				if (result.length() > 0)
+					result.append("\n");
+				result.append(reads);
+			}
+			try {
+				in.close();
+			} catch (Exception e) {
+
+			}
+			return result.toString();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	@Override
+	public Iterable<GeoMessage> getNearbyLocations(User user, double maxDistance) {
+		String response = sendData("GetLocations", "user", user.getUsername(), "password", user.getPassword(), "latitude",
+				user.getLatitude(), "longitude", user.getLongitude(), "threshold", String.valueOf(maxDistance));
+		if (response == null) {
+			Log.d("PotatoStorage", "getNearbyLocations() had null response.");
+			return null;
+		}
+		if (!response.startsWith("Success")) {
+			Log.d("PotatoStorage", "getNearbyLocations() didn't start with \"Success\".");
+			return null;
+		}
+
+		String[] lines = response.split("\n");
+		return parseNotes(lines, 1);
+	}
+
+	@Override
+	public String addUser(String username, String password, String email) {
+		if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
+			return Storage.RESPONSE_INVALID_EMAIL;
+
+		String result = sendData("AddUser", "user", username, "password", secureHash(password), "email", email);
+		if (result == null)
+			return Storage.RESPONSE_CONNECTION_ERROR;
+		if (result.equals("User added."))
+			return Storage.RESPONSE_SUCCESS;
+		return result;
+	}
+
+	@Override
+	public String validateUser(String username, String password) {
+		String results = sendData("AuthUser", "user", username, "password", secureHash(password));
+		if (results == null)
+			return Storage.RESPONSE_CONNECTION_ERROR;
+		if (!results.equals("Valid User"))
+			return results;
+		return Storage.RESPONSE_SUCCESS;
+	}
+
+	@Override
+	public String addMessage(User user, GeoMessage message) {
+		String results = sendData("AddMessage", "user", user.getUsername(), "email", message.getEmail(), "password",
+				secureHash(user.getPassword()), "location", message.getLocation(), "message", message.getText(), "range",
+				message.getRange(), "anon", message.getAnon());
+		if (results == null)
+			return Storage.RESPONSE_CONNECTION_ERROR;
+		if (results.equals("Message added."))
+			return Storage.RESPONSE_SUCCESS;
+		return results;
+	}
+
+	@Override
+	public User getUser(String username, String password) {
+		String results = sendData("GetUser", "user", username, "password", secureHash(password));
+		if (results == null)
+			return null;
+		Log.d("PotatoStorage", "Server Results: " + results);
+
+		String[] lines = results.split("\n");
+		String email = lines[0].substring("Email: ".length()).trim();
+		String found = lines[1].substring("Found: ".length()).trim();
+		User user = new User(username, email, password);
+		user.setFound(found);
+		return user;
+	}
+
+	private GeoMessage getNote(User user, String id) {
+		String response = sendData("GetMessage", "user", user.getUsername(), "password", user.getPassword(), "id", id);
+		if (response == null)
+			return null;
+		if (response.startsWith("Success")) {
+			String[] lines = response.split("\n");
+			List<GeoMessage> notes = parseNotes(lines, 1);
+			if (notes.size() > 0)
+				return notes.get(0);
+		}
+		return null;
+	}
+
+	@Override
+	public List<GeoMessage> getFound(User user) {
+		List<GeoMessage> msg = new LinkedList<GeoMessage>();
+		for (String id : user.founds()) {
+			GeoMessage m = getNote(user, id);
+			if (m != null)
+				msg.add(m);
+		}
+		return msg;
+	}
+
+	@Override
+	public List<GeoMessage> getPlaced(User user) {
+		String results = sendData("GetMessages", "user", user.getUsername(), "password", user.getPassword());
+		if (results == null)
+			return null;
+		Log.d("PotatoStorage", "getPlaced(): " + results.substring(0, 20));
+		if (results.startsWith("Success")) {
+			return parseNotes(results.split("\n"), 1);
+		}
+		return null;
+	}
+
+	@Override
+	public void addFoundMessage(User user, GeoMessage add) {
+		user.found(add.getId());
+	}
+
+	public String update(User user) {
+		String results = sendData("UpdateUser", "user", user.getUsername(), "password", user.getPassword(), "email",
+				user.getEmail(), "found", user.getFoundText());
+		if (results == null)
+			return Storage.RESPONSE_CONNECTION_ERROR;
+		if (results.equals("Success"))
+			return Storage.RESPONSE_SUCCESS;
+		return results;
+	}
+
+	@Override
+	public String delete(User user, GeoMessage message) {
+		String results = sendData("DeleteMessage", "user", user.getUsername(), "password", user.getPassword(), "id",
+				message.getId());
+		if (results == null)
+			return Storage.RESPONSE_CONNECTION_ERROR;
+		if (results.equals("Success"))
+			return Storage.RESPONSE_SUCCESS;
+		return results;
+	}
+}

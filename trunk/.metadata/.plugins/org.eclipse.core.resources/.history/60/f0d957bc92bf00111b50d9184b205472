@@ -1,0 +1,140 @@
+package edu.gatech.RecAwesome.FileIO;
+
+import java.util.HashMap;
+import java.util.Scanner;
+
+public class CodeStringWrapper {
+	private static final CodeStringWrapper staticInstance = new CodeStringWrapper();
+
+	public enum Visibility {
+		Private, Public, Protected;
+	}
+
+	/**
+	 * Format: class:<class header> super:<class name OR null> numInterfaces:<int i>\ninterface1:<interface
+	 * name>\n...interfacei numFields:<int f>\nfield1:<field header>\n...fieldf:<field header> numConstructor:<int
+	 * m>\nconst1:<constructor header>\n...constm:<c h> numMethods:<int n>\nmethod1:<method header>\n...methodn:<method
+	 * header>
+	 * 
+	 * @param parseFrom
+	 * @return
+	 */
+	public static StringClass parse(String parseFrom) {
+		Scanner scan = new Scanner(parseFrom);
+		String classString = scan.nextLine();
+		return null;
+	}
+
+	public static StringClass parse(HashMap<String, String> extractFrom) {
+		return null;
+	}
+
+	public static StringClass parseClassHeader(String from) {
+		String[] parts = from.split(" ");
+		boolean isStatic = from.contains("static");
+		boolean isFinal = from.contains("final");
+		String name = parts[parts.length - 1];
+		String visString = parts[0];
+		Visibility visibility = Visibility.Public;
+		if (visString.equals("private")) {
+			visibility = Visibility.Private;
+		} else if (visString.equals("protected")) {
+			visibility = Visibility.Protected;
+		}
+		return staticInstance.new StringClass(name, isStatic, isFinal, visibility);
+	}
+
+	public static StringField parseField(String from) {
+		String[] parts = from.split(" ");
+		boolean isStatic = from.contains("static");
+		boolean isFinal = from.contains("final");
+		String name = parts[parts.length - 1];
+		name = name.substring(0, name.indexOf(';'));
+		String visString = parts[0];
+		String typeString = parts[1];
+		Visibility visibility = Visibility.Public;
+		if (visString.equals("private")) {
+			visibility = Visibility.Private;
+		} else if (visString.equals("protected")) {
+			visibility = Visibility.Protected;
+		}
+		return staticInstance.new StringField(name, isStatic, isFinal, visibility, typeString);
+	}
+
+	public static StringMethod parseMethodHeader(String from) {
+		String[] parts = from.split(" ");
+		boolean isStatic = from.contains("static");
+		boolean isFinal = from.contains("final");
+		String name = from.substring(0, from.indexOf('('));
+		name = name.substring(name.lastIndexOf(' ')).trim();
+		String returnType = parts[2].trim();
+		String[] params = from.substring(from.indexOf('(') + 1, from.indexOf(')')).split(",");
+		String visString = parts[0].trim();
+		Visibility visibility = Visibility.Public;
+		if (visString.equals("private")) {
+			visibility = Visibility.Private;
+		} else if (visString.equals("protected")) {
+			visibility = Visibility.Protected;
+		}
+		return staticInstance.new StringMethod(name, isStatic, isFinal, visibility, params, returnType);
+	}
+
+	private class BaseCodeClass {
+		protected String name;
+		protected boolean isStatic, isFinal;
+		protected Visibility vis;
+
+		protected BaseCodeClass(String name, boolean s, boolean f, Visibility vis) {
+			this.name = name;
+			this.isStatic = s;
+			this.isFinal = f;
+			this.vis = vis;
+		}
+	}
+
+	public class StringClass extends BaseCodeClass {
+		private StringClass superclass;
+		private StringInterface[] interfaces;
+		private StringConstructor[] constructors;
+		private StringField[] fields;
+		private StringMethod[] methods;
+
+		public StringClass(String name, boolean s, boolean f, Visibility vis) {
+			super(name, s, f, vis);
+		}
+	}
+
+	public class StringMethod extends StringConstructor {
+		protected StringMethod(String name, boolean s, boolean f, Visibility vis, String[] params, String returnType) {
+			super(name, s, f, vis, params);
+			this.returnType = returnType;
+		}
+
+		private String returnType;
+	}
+
+	public class StringConstructor extends BaseCodeClass {
+		protected StringConstructor(String constructorOf, boolean s, boolean f, Visibility vis, String[] params) {
+			super(constructorOf, s, f, vis);
+			this.args = params;
+		}
+
+		protected String[] args;
+	}
+
+	public class StringField extends BaseCodeClass {
+
+		protected StringField(String name, boolean s, boolean f, Visibility vis, String type) {
+			super(name, s, f, vis);
+			this.type = type;
+		}
+
+		private String type;
+
+	}
+
+	public class StringInterface {
+		private String name;
+		private StringMethod[] methods;
+	}
+}

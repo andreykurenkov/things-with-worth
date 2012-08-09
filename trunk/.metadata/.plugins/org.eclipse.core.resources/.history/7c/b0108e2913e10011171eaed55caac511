@@ -1,0 +1,57 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.io.File;
+import java.io.FileFilter;
+
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+public class FileBrowser extends JSplitPane {
+	private DirectoryBrowser browser;
+	private JFileList fileList;
+	private JScrollPane fileScroll;
+	private final double weightDominant = 10;
+	private final double weightDemanded = 0.1;
+	private final double weightNormal = 1;
+
+	public FileBrowser(FileFilter fileFilter) {
+		super(JSplitPane.VERTICAL_SPLIT);
+		browser = new DirectoryBrowser();
+		fileList = new JFileList(fileFilter, browser.getCurrentDirectory());
+		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		fileList.setLayoutOrientation(JList.VERTICAL);
+		fileScroll = new JScrollPane(fileList);
+
+		browser.getDirectoriesList().addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent event) {
+				JList list = (JList) event.getSource();
+				File newDir = (File) list.getSelectedValue();
+				fileList.changeDirectory(newDir);
+				FileBrowser.this.setResizeWeight((double) list.getVisibleRowCount()
+						/ (list.getVisibleRowCount() + fileList.getVisibleRowCount()));
+
+			}
+
+		});
+		fileList.setCellRenderer(new JFileList.FileNameRenderer());
+		this.setOneTouchExpandable(true);
+		this.setContinuousLayout(true);
+		this.setResizeWeight(0.8);
+		this.setTopComponent(browser);
+		this.setBottomComponent(fileScroll);
+	}
+
+	public JFileList getFileList() {
+		return fileList;
+	}
+
+	public DirectoryBrowser getBrowser() {
+		return browser;
+	}
+}

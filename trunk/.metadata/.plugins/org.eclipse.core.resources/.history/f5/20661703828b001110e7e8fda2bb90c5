@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.gatech.geochat"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-sdk android:minSdkVersion="10" />
+
+    <application
+        android:icon="@drawable/earth"
+        android:label="@string/GeoChat" >
+        <activity
+            android:name="GeoChatActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="LoginActivity"
+            android:label="@string/app_name"
+            android:theme="@style/GreenScreen" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="RegisterActivity"
+            android:label="@string/registerTitle"
+            android:theme="@style/GreenScreen" >
+        </activity>
+        <activity
+            android:name="TitleActivity"
+            android:label="@string/titleTitle"
+            android:theme="@style/GreenScreen" >
+        </activity>
+        <activity
+            android:name="ViewNoteActivity"
+            android:label="@string/viewNoteTitle"
+            android:theme="@style/GreenScreen" >
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,177 @@
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+//Ha, eclipse auto importing, isn't it great?
+/**
+ * This is the panel where the game happens. It has asteroids and things.
+ * 
+ * @author Elizabeth Johnson, Andrey K.
+ * @version 1.1
+ */
+public class GamePanel extends JPanel {
+	public static final int WIDTH = 500;
+	public static final int HEIGHT = 500;
+	public static final int FRAME_RATE = 20;
+	private final int NUM_AST = 5;
+	private ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
+	private ArrayList<Bullet> bullets = new ArrayList<Bullet>();
+
+	private Timer timer = new Timer((int) (1000 / FRAME_RATE), new TimerListener());
+	private Ship ship;
+
+	public GamePanel() {
+		setPreferredSize(new Dimension(WIDTH, HEIGHT));
+		System.out.println((int) (1000 / FRAME_RATE));
+		ship = new Ship(250, 250, 0, 0, this.getPreferredSize());
+
+		setFocusable(true);
+		addKeyListener(new ShipController());
+
+		timer.start();
+		timer.setRepeats(true);
+		for (int i = 0; i < NUM_AST; i++)
+			asteroids.add(new Asteroid(this.getPreferredSize(), (Math.min(WIDTH, HEIGHT) * 0.1) / FRAME_RATE));
+		// ^ arbitrarily makes it so Asteroids can only cross 1/10 of the screen per second
+		// TODO: make a constant too? Or lazy?
+	}
+
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		Calendar now = new GregorianCalendar();
+		now.setTimeInMillis(System.currentTimeMillis());
+		for (int i = 0; i < asteroids.size(); i++) {// TODO: for each loop please? Or too fancy?
+			asteroids.get(i).draw(g);
+			asteroids.get(i).setBounds(this.getSize());// Set boundaries each time
+		}
+		now = new GregorianCalendar();
+		now.setTimeInMillis(System.currentTimeMillis());
+		for (Bullet b : bullets)
+			b.draw(g);
+
+		ship.draw(g);
+
+	}
+
+	/**
+	 * Check for casualties of warfare, clean up if necessary. Private, since only the game should be able to do this and not
+	 * some cheating player.
+	 */
+	private void checkCollisions() {
+		ArrayList<Asteroid> KIA = new ArrayList<Asteroid>();
+		for (Bullet bullet : bullets) {
+			for (Asteroid asteroid : asteroids) {
+				if (bullet.hit(asteroid)) {
+					KIA.add(asteroid);
+				}
+			}
+		}
+
+		for (Asteroid casualty : KIA) {
+			asteroids.remove(casualty);
+			asteroids.addAll(casualty.split());
+		}
+		boolean reset = false;
+		for (Asteroid asteroid : asteroids) {
+			if (ship.crash(asteroid)) {
+				int n = JOptionPane.showConfirmDialog(this, "You lost :[ /n Play again?", "New game",
+						JOptionPane.YES_NO_OPTION);
+				if (n == JOptionPane.NO_OPTION)
+					System.exit(0);
+				else {
+					reset = true;
+					break;
+				}
+			}
+		}
+		if (reset)
+			this.reset();
+
+	}
+
+	public boolean win() {
+		return asteroids.size() == 0;
+	}
+
+	public void reset() {
+		asteroids.clear();
+		bullets.clear();
+
+		ship = new Ship(250, 250, 0, 0, this.getSize());
+
+		for (int i = 0; i < NUM_AST; i++)
+			asteroids.add(new Asteroid(this.getSize(), (Math.min(WIDTH, HEIGHT) * 1.0 / 30) / FRAME_RATE));
+
+		repaint();
+	}
+
+	private void removeBullets() {
+		int bulletCount = bullets.size();
+		int count = 0;
+		while (count < bulletCount) {
+			if (bullets.get(count).isOffScreen()) {
+				bullets.remove(count);
+				bulletCount--;
+			}
+			count++;
+		}
+	}
+
+	private class TimerListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			for (int i = 0; i < asteroids.size(); i++)
+				asteroids.get(i).move();
+
+			for (int i = 0; i < bullets.size(); i++)
+				bullets.get(i).move();
+
+			checkCollisions();
+			removeBullets();
+			ship.move();
+
+			if (win()) {
+				int n = JOptionPane.showConfirmDialog(null, "You win! :] /n Play again?", "New game",
+						JOptionPane.YES_NO_OPTION);
+				if (n == JOptionPane.NO_OPTION)
+					System.exit(0);
+				else
+					reset();
+			}
+
+			repaint();
+		}
+	}
+
+	private class ShipController extends KeyAdapter {
+		public void keyPressed(KeyEvent e) {
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_DOWN:
+				ship.accelerate(false);
+				break;
+			case KeyEvent.VK_UP:
+				ship.accelerate(true);
+				break;
+			case KeyEvent.VK_LEFT:
+				ship.rotate(false);
+				break;
+			case KeyEvent.VK_RIGHT:
+				ship.rotate(true);
+				break;
+			case KeyEvent.VK_SPACE:
+				bullets.add(ship.shoot());
+				break;
+			}
+			repaint();
+		}
+	}
+}

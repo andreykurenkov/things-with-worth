@@ -1,0 +1,23 @@
+import java.util.Collection;
+
+/**
+ * An abstract class whose only purpose in life is to run Kruskal's algorithm.
+ * 
+ * @author
+ * 
+ */
+public abstract class MST {
+
+	/**
+	 * Run kruskal's algorithm on the given EdgeList and return a collection of
+	 * edges.
+	 * 
+	 * @param edges
+	 * @return
+	 */
+	public static Collection<Edge> kruskal(EdgeList edges) {
+		// TODO
+		return null;
+	}
+
+}

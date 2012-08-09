@@ -1,0 +1,251 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+
+public class JColorableTextPane extends JTextPane {
+	private HashMap<String, Color> wordColorings;
+	private ArrayList<RegionColoring> regionColorings;
+	private AttributeSet inputAttributes;
+	private StyleContext styleContext;
+	private ArrayList<MemorizedColorChange> colorRegions;
+	private ArrayList<MemorizedRegionColorChange> regionColorRegions;
+
+	public JColorableTextPane() {
+		colorRegions = new ArrayList<MemorizedColorChange>();
+		regionColorRegions = new ArrayList<MemorizedRegionColorChange>();
+		wordColorings = new HashMap<String, Color>();
+		regionColorings = new ArrayList<RegionColoring>();
+		this.getDocument().addDocumentListener(new ColoredListener());
+		styleContext = StyleContext.getDefaultStyleContext();
+		inputAttributes = this.getInputAttributes();
+		styleContext.addAttribute(inputAttributes, StyleConstants.Foreground, Color.BLACK);
+		setCharacterAttributes(inputAttributes, true);
+		this.addCaretListener(new CaretListener() {
+
+			@Override
+			public void caretUpdate(CaretEvent arg0) {
+				setCharacterAttributes(inputAttributes, true);
+			}
+
+		});
+	}
+
+	public void addColoring(String word, Color color) {
+		wordColorings.put(word, color);
+	}
+
+	public void addRegionColoring(String start, String end, Color color) {
+		regionColorings.add(new RegionColoring(start, end, color));
+	}
+
+	public void append(Color color, String string) {
+		StyleContext sc = StyleContext.getDefaultStyleContext();
+		AttributeSet colorSet = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, color);
+		int len = getDocument().getLength(); // same value as getText().length();
+		try {
+			getStyledDocument().insertString(len, string, colorSet);
+			colorRegions.add(new MemorizedColorChange(len, len + string.length(), color, string));
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private class MemorizedColorChange {
+		public int start;
+		public int end;
+		public String colored;
+		public Color color;
+		public int length;
+
+		public MemorizedColorChange(int start, int end, Color color, String colored) {
+			this.start = start;
+			this.end = end;
+			this.color = color;
+			this.colored = colored;
+			length = end - start;
+		}
+	}
+
+	private class MemorizedRegionColorChange extends MemorizedColorChange {
+		public RegionColoring region;
+
+		public MemorizedRegionColorChange(int start, int end, String colored, RegionColoring region) {
+			super(start, end, region.color, colored);
+			this.region = region;
+		}
+
+	}
+
+	private class RegionColoring {
+		public String startString;
+		public String endString;
+		public Color color;
+
+		public RegionColoring(String start, String end, Color color) {
+			startString = start;
+			endString = end;
+			this.color = color;
+		}
+
+		public boolean equals(Object ob) {
+			if (ob instanceof RegionColoring) {
+				RegionColoring rc = (RegionColoring) ob;
+				return rc.endString.equals(endString) && rc.startString.equals(startString);
+			}
+			return false;
+		}
+	}
+
+	private class ColoredListener implements DocumentListener {
+		@Override
+		public void changedUpdate(DocumentEvent event) {
+		}
+
+		@Override
+		public void insertUpdate(final DocumentEvent event) {
+			handleWordColoring(event);
+			handleRegionColoring(event);
+			setCharacterAttributes(inputAttributes, true);
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent event) {
+
+		}
+
+		private void handleWordColoring(DocumentEvent event) {
+			final Document doc = event.getDocument();
+			try {
+				String str = doc.getText(event.getOffset(), event.getLength());
+				if (containsWhitespace(str)) {
+					for (Entry<String, Color> coloring : wordColorings.entrySet()) {
+						if (event.getOffset() - coloring.getKey().length() >= 0) {
+							final String fullString = doc.getText(event.getOffset() - coloring.getKey().length(), coloring
+									.getKey().length() + event.getLength());
+							String[] words = fullString.split(" |\t|\n");
+							for (String word : words) {
+								if (word.equals(coloring.getKey())) {
+									int index = fullString.indexOf(word);
+									final int length = word.length();
+									while (index != -1) {
+										final AttributeSet colorSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,
+												StyleConstants.Foreground, coloring.getValue());
+										final int offset = event.getOffset() - fullString.length() + 1 + index;
+										index = fullString.indexOf(word, index + 1);
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												getStyledDocument().setCharacterAttributes(offset, length, colorSet, false);
+											}
+
+										});
+									}
+								}
+							}
+						}
+					}
+				}
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private void handleRegionColoring(DocumentEvent event) {
+			final Document doc = event.getDocument();
+			try {
+				for (RegionColoring coloring : regionColorings) {
+					// if short then check for start (otherwise assume paste and so look for closings)
+					if (event.getLength() <= 2) {
+						if (event.getOffset() - coloring.startString.length() >= 0) {
+							final String fullString = doc.getText(event.getOffset() - coloring.startString.length(),
+									coloring.startString.length() + event.getLength());
+							int startIndex = fullString.indexOf(coloring.startString);
+							if (startIndex != -1) {
+								int endIndex = doc.getText(event.getOffset(), doc.getLength() - event.getOffset()).indexOf(
+										coloring.endString);
+								if (endIndex != -1) {
+									final AttributeSet colorSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,
+											StyleConstants.Foreground, coloring.color);
+									final int offset = event.getOffset() + event.getLength() - coloring.startString.length();
+									final int length = endIndex + 1;
+									SwingUtilities.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											getStyledDocument().setCharacterAttributes(offset, length, colorSet, false);
+										}
+									});
+								}
+							}
+						}
+					}
+					// Check for closings
+					if (event.getOffset() - coloring.endString.length() + 1 >= 0) {
+						int endOffset = event.getOffset() - coloring.endString.length() + 1;
+						final String fullString = doc
+								.getText(endOffset, event.getLength() + coloring.endString.length() - 1);
+
+						int endIndex = fullString.indexOf(coloring.endString);
+						while (endIndex != -1) {
+							int startIndex = endOffset + endIndex + 1;
+							int regionLength = 0;
+							while (startIndex >= 0) {
+								if ((startIndex + coloring.startString.length()) < doc.getLength()
+										&& doc.getText(startIndex, coloring.startString.length()).equals(
+												coloring.startString)) {
+									break;
+								} else {
+									startIndex--;
+									regionLength++;
+								}
+							}
+							if (startIndex != -1) {
+								if (!doc.getText(startIndex, regionLength - 1).contains(coloring.endString)) {
+									final AttributeSet colorSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY,
+											StyleConstants.Foreground, coloring.color);
+									final int offset = startIndex;
+									final int length = 1 + regionLength;
+									SwingUtilities.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											getStyledDocument().setCharacterAttributes(offset, length, colorSet, false);
+										}
+									});
+									endIndex = fullString
+											.indexOf(coloring.endString, endIndex + coloring.endString.length());
+
+								} else
+									endIndex = -1;
+							} else
+								endIndex = -1;
+						}
+
+					}
+				}
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+		}
+
+		private boolean containsWhitespace(String checkIn) {
+			return checkIn.contains("\n") || checkIn.contains(" ") || checkIn.contains("\t");
+		}
+
+	}
+
+}

@@ -1,0 +1,29 @@
+import gmusic.api.impl.GoogleMusicAPI;
+import gmusic.api.model.Song;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Collection;
+
+import org.apache.http.client.ClientProtocolException;
+
+public class MetaMusic {
+	public static void main(String[] args) {
+		GoogleMusicAPI api = new GoogleMusicAPI();
+		try {
+			api.login("andrey.sendme@gmail.com", "16253461");
+			Collection<Song> songs = api.getAllSongs();
+
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+}

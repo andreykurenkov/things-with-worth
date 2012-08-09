@@ -1,0 +1,8 @@
+package edu.gatech.GradeAwesome;
+
+import java.util.ArrayList;
+
+//TODO: not sure if generic restrictions needed? Maybe.
+public interface Observer<Observed extends Observable> {
+	public void acceptNotification(Observed source);
+}

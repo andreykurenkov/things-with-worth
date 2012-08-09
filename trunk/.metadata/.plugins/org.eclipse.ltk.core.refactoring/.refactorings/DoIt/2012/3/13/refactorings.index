@@ -1,0 +1,20 @@
+1332739204981	Change method 'addToTask'
+1332819208042	Rename type 'FilteringDateActivity'
+1332822801929	Rename package 'edu.gatech.fiveminutesleft'
+1332822850822	Move compilation units
+1332823246403	Move compilation units
+1332823254249	Delete element
+1332823268714	Rename package 'edu.gatech.fiveminutesleft.GUI'
+1332830092772	Rename type 'FilteringDueActivity'
+1332873392752	Rename type 'Time'
+1332873717451	Rename type 'FilteringDateActivity'
+1332873971322	Rename field 'modeType'
+1332873993527	Rename field 'modeTime'
+1332874023213	Rename local variable 'modeForType'
+1332874034833	Rename local variable 'modeForTime'
+1332875711970	Rename local variable 'dmode'
+1332877707197	Delete element
+1332912249422	Delete element
+1332913284192	Delete elements
+1332955095578	Rename local variable 'userTime'
+1332968295085	Infer generic type arguments

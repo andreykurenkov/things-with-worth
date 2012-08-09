@@ -1,0 +1,100 @@
+package edu.gatech.fiveminutesleft.test;
+
+import edu.gatech.fiveminutesleft.GUISpace;
+import junit.framework.TestCase;
+
+public class GUISpaceTest extends TestCase {
+
+	public void setUp() throws Exception {
+		
+	}
+	
+	public void testPut() {
+		Object foobar = new Object();
+		Object barfoo = new Object();
+		
+		assertFalse(GUISpace.has(getClass(), "foobar"));
+		assertTrue(GUISpace.get(getClass(), "foobar") == null);
+		
+		GUISpace.put(getClass(), "foobar", foobar);
+		
+		assertTrue(GUISpace.has(getClass(), "foobar"));
+		assertTrue(GUISpace.get(getClass(), "foobar") == foobar);
+		
+		assertFalse(GUISpace.has(getClass(), "barfoo"));
+		GUISpace.put(getClass(), "barfoo", barfoo);
+		assertTrue(GUISpace.has(getClass(), "barfoo"));
+		assertTrue(GUISpace.get(getClass(), "barfoo") == barfoo);
+		
+		
+		GUISpace.clearPrefix(System.class);
+		assertTrue(GUISpace.get(getClass(), "foobar") == foobar);
+		assertTrue(GUISpace.get(getClass(), "barfoo") == barfoo);
+		
+		GUISpace.clearPrefix(getClass());
+		assertFalse(GUISpace.has(getClass(), "foobar"));
+		assertFalse(GUISpace.has(getClass(), "barfoo"));
+	}
+	
+	public void testParse() {
+		String apples  = "Not actually apples.";
+		String number = "42";
+		
+		assertFalse(GUISpace.has(getClass(), "apples"));
+		GUISpace.put(getClass(), "apples", apples);
+		assertTrue(GUISpace.getString(getClass(), "apples").equals(apples));
+		
+		GUISpace.put(getClass(), "number", number);
+		assertTrue(GUISpace.getInt(getClass(), "number") == 42);
+		GUISpace.put(getClass(), "number", 37.25);
+		assertTrue(GUISpace.getDouble(getClass(), "number") == 37.25);
+		
+		GUISpace.put(getClass(), "7", false);
+		assertFalse(GUISpace.getBoolean(getClass(), "7"));
+		GUISpace.put(getClass(), "7", true);
+		assertTrue(GUISpace.getBoolean(getClass(), "7"));
+		GUISpace.toggle(getClass(), "7");
+		assertFalse(GUISpace.getBoolean(getClass(), "7"));
+		GUISpace.toggle(getClass(), "7");
+		assertTrue(GUISpace.getBoolean(getClass(), "7"));
+		
+		GUISpace.clearPrefix(getClass());
+
+		assertFalse(GUISpace.has(getClass(), "not-there"));
+		assertTrue(GUISpace.getString(getClass(), "not-there").equals(""));
+		assertTrue(GUISpace.getBoolean(getClass(), "not-there") == false);
+		assertTrue(GUISpace.getInt(getClass(), "not-there") == 0);
+		assertTrue(GUISpace.getDouble(getClass(), "not-there") == 0);
+		assertTrue(GUISpace.get(getClass(), "not-there") == null);
+		assertFalse(GUISpace.has(getClass(), "not-there"));
+	}
+	
+	public void testClear() {
+		GUISpace.put(getClass(), "6", 4);
+		GUISpace.put(getClass(), "7", 5);
+		GUISpace.put(System.class, "6", 8);
+		GUISpace.put(System.class, "7", 9);
+
+		assertFalse(GUISpace.getInt(getClass(), "6") == GUISpace.getInt(System.class, "6"));
+		assertFalse(GUISpace.getInt(getClass(), "7") == GUISpace.getInt(System.class, "7"));
+		
+		GUISpace.clear(getClass(), "7");
+		assertFalse(GUISpace.has(getClass(), "7"));
+		assertTrue(GUISpace.has(getClass(), "6"));
+		assertTrue(GUISpace.has(System.class, "6"));
+		assertTrue(GUISpace.has(System.class, "7"));
+		
+		GUISpace.clearPrefix(getClass());
+
+		assertFalse(GUISpace.has(getClass(), "6"));
+		assertFalse(GUISpace.has(getClass(), "7"));
+		assertTrue(GUISpace.has(System.class, "6"));
+		assertTrue(GUISpace.has(System.class, "7"));
+		
+		GUISpace.clearPrefix(System.class);
+		assertFalse(GUISpace.has(getClass(), "6"));
+		assertFalse(GUISpace.has(getClass(), "7"));
+		assertFalse(GUISpace.has(System.class, "6"));
+		assertFalse(GUISpace.has(System.class, "7"));
+	}
+}

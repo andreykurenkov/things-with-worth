@@ -1,0 +1,8 @@
+package edu.gatech.RecAwesome.GUI.Components;
+
+import javax.swing.*;
+
+public class TextLabelPanel extends JPanel {
+	private JTextField text;
+	private JLabel label;
+}

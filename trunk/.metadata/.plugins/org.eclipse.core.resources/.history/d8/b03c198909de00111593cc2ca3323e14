@@ -1,0 +1,16 @@
+import com.thingswithworth.genregetter.wikiio.BandWikiParser;
+
+public class BasicTest {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		BandWikiParser stolenParser = BandWikiParser.getParser("Stolen Babies")[0];
+		String[] genres = stolenParser.getGenres();
+		System.out.println(stolenParser.getInfobox());
+		for (String s : genres)
+			System.out.println(s);
+	}
+
+}

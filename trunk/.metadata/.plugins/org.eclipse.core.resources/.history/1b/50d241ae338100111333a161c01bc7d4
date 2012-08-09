@@ -1,0 +1,57 @@
+package edu.gatech.fiveminutesleft.mock;
+
+import java.util.ArrayList;
+
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.TaskList;
+
+public class MockAccountLists implements AccountLists {
+
+	ArrayList<TaskList> lists;
+	public MockAccountLists(){
+		lists=new ArrayList<TaskList>();
+	}
+	public String addTaskList(TaskList list, String name) {
+		if(lists.contains(list))
+			return AccountLists.ERROR_COULD_NOT_ADD_TASKLIST;
+		else 
+			lists.add(list);
+		return null;
+	}
+
+	public String addTaskList(String nameOfNewList) {
+		MockTaskList newList=new MockTaskList(nameOfNewList);
+		return addTaskList(newList, nameOfNewList);
+	}
+
+	public TaskList getTaskList(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ArrayList<TaskList> getTaskLists() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String[] getListNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public int getNumLists() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public TaskList deleteTaskList(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public TaskList makeTaskList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

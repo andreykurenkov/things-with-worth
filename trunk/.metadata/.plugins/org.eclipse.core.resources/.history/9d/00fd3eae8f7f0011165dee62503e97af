@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/FilterTasksCompleted"
+          android:title="Hide Completed"/>
+    <item android:id="@+id/DeleteCompletedTasks" android:title="Delete Completed" /><item android:id="@+id/FilterTasksAdvanced"
+          android:title="Apply Filters"/>
+    
+</menu>

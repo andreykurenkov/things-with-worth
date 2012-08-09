@@ -1,0 +1,15 @@
+package edu.gatech.GradeAwesome.tests.manual;
+
+import javax.swing.JPanel;
+
+public class JColorableTextPaneTestt {
+	private JPanel testPanel;
+	public static void main(String[] args){
+	
+	}
+	
+	public JColorableTExtPanel
+	
+	
+
+}

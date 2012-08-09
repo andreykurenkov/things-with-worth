@@ -1,0 +1,67 @@
+package edu.gatech.fiveminutesleft.model;
+
+/**
+ * A simple structurer for combining Date and Time into a single comparable unit.
+ * 
+ * @author Andrey Kurenkov
+ */
+public class TimeAndDate implements TimeUnit<TimeAndDate> {
+	private Date	myDate;
+	private Time	myTime;
+
+	/**
+	 * Straighforward constructor giving needed values
+	 * 
+	 * @param setDate
+	 * @param setTime
+	 */
+	public TimeAndDate(Date setDate, Time setTime) {
+		myDate = setDate;
+		myTime = setTime;
+	}
+
+	/**
+	 * Returns a TimeAndDate based on
+	 * 
+	 * @param getFrom
+	 *            the task to get TimeAndDate from
+	 * @return TimeAndDate corresponding to the given Task
+	 */
+	public static TimeAndDate getFromTask(Task getFrom) {
+		return new TimeAndDate(Date.getFromTask(getFrom), Time.getFromTask(getFrom));
+	}
+
+	/**
+	 * Returns the Date
+	 * 
+	 * @return date
+	 */
+	public Date getDate() {
+		return myDate;
+	}
+
+	/**
+	 * Returns the Time
+	 * 
+	 * @return time
+	 */
+	public Time getTime() {
+		return myTime;
+	}
+
+	/**
+	 * Standard compareTo method that returns a positive integer if this TimeAndDate is later than
+	 * the given TimeAndDate, a zero if they are exactly the same, and a negative integer otherwise
+	 */
+	public int compareTo(TimeAndDate another) {
+		if (myDate.compareTo(another.getDate()) != 0)
+			return myDate.compareTo(another.getDate());
+		return myTime.compareTo(another.getTime());
+	}
+
+	public void setInTask(Task setIn) {
+		myDate.setInTask(setIn);
+		myTIme.setInTask(setIn);
+		
+	}
+}

@@ -1,0 +1,8 @@
+/**
+ * Model representation of game of life.
+ * 
+ * @author Andrey
+ */
+public class GameOfLife {
+
+}

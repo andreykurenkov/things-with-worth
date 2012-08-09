@@ -1,0 +1,10 @@
+package edu.gatech.fiveminutesleft.GUI;
+
+/**
+ * Interface that makes it easier to keep things synchronized across Activities.
+ * @author g
+ *
+ */
+public interface ContentListener {
+	public void dataChanged(String data);
+}

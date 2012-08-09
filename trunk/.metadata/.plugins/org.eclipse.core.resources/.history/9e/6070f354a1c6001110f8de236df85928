@@ -1,0 +1,14 @@
+import java.awt.Dimension;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+public class LifePanel extends JPanel {
+	private JButton[][] visibleCells;
+	private GameOfLife myLife;
+
+	public LifePanel(GameOfLife life, Dimension myDim) {
+		this.setPreferredSize(myDim);
+		myLife = life;
+	}
+}

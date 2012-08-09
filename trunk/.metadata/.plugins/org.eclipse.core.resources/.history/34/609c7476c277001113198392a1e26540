@@ -1,0 +1,31 @@
+package edu.gatech.fiveminutesleft.model;
+
+public class TimeAndDate implements Comparable<TimeAndDate> {
+	private Date myDate;
+	private Time myTime;
+	
+	public TimeAndDate(Date setDate,Time setTime){
+		myDate=setDate;
+		myTime=setTime;
+	}
+	
+	public static TimeAndDate getFromTask(Task getFrom){
+		return new TimeAndDate(Date.getFromTask(getFrom),Time.getFromTask(getFrom));
+	}
+	
+	public Date getDate(){
+		return myDate;
+	}
+	
+	public TIme getTime(){
+		return myTime;
+	}
+	
+	
+	public int compareTo(TimeAndDate another) {
+		if(myDate.compareTo(another.)!=0)
+			return myDate.compareTo(another)
+		return 0;
+	}
+
+}

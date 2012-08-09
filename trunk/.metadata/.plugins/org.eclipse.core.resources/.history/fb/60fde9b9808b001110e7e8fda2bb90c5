@@ -1,0 +1,94 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="5dp" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+    
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center_horizontal"
+            android:text="@string/add_note_screen"
+            android:textSize="24dp"
+            android:textStyle="bold" />
+    
+    <EditText
+            android:layout_marginTop="15dp"
+            android:id="@+id/writeNoteField"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:lines="4"
+            android:inputType="textMultiLine"
+            android:hint="Write Note Here" />
+    
+    <CheckBox 
+        android:id="@+id/showNameBox"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text=" Show signature"        
+        />
+    
+     <CheckBox 
+        android:id="@+id/showEmailBox"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text=" Show Email"        
+        />
+	<LinearLayout
+	   	android:layout_width="fill_parent"
+	   	android:layout_height="wrap_content"
+	   	android:orientation="horizontal" >
+	 
+	    <TextView
+	        android:text="Visibility: "
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="left"
+	        android:textSize="20dp"
+	        android:textSize="24dp"
+	         android:layout_weight="0.5" 
+	        />
+	    
+		<Spinner
+            android:id="@+id/Visibility"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_weight="0.5" 
+            />
+			
+	</LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"   
+        >
+        
+        <Button
+	        style="@style/GreenButton"
+	        android:text="Cancel"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:paddingRight="2dp"
+	        android:layout_weight="0.5"
+	        android:onClick="cancelAddNote"
+        />
+        
+   		 <Button
+	        style="@style/GreenButton"
+	        android:text="Save"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:paddingLeft="2dp"
+	        android:layout_weight="0.5"
+	        android:onClick="addNote"
+        />
+</LinearLayout>
+</LinearLayout>
+</ScrollView>

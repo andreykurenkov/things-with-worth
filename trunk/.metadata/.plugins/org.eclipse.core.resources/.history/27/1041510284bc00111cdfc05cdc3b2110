@@ -1,0 +1,35 @@
+import java.io.IOException;
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.ChatManager;
+import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.SASLAuthentication;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
+
+public class Gmail{
+public static void main(String[] args){
+ConnectionConfiguration connConfig = new ConnectionConfiguration(server, 5222, "gmail.com"); 
+XMPPConnection connection = new XMPPConnection(connConfig); 
+int count=0;
+while(true){
+try { 
+        connection.connect(); 
+                 
+        SASLAuthentication.supportSASLMechanism("PLAIN", 0); 
+        //Login with Username and password 
+        connection.login("andrey.sendme", "16253461", "Talk.v80"); 
+        // set presence status info 
+        Presence presence = new Presence(Presence.Type.available); 
+        presence.setStatus("I can count up to "+count); 
+        //Highest priority sets it to the status text 
+        presence.setPriority(24); 
+        connection.sendPacket(presence); 
+	count++;
+} 
+catch(Exception e){}
+}
+}
+}

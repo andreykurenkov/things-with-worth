@@ -1,0 +1,55 @@
+package edu.gatech.geochat.model;
+
+import android.location.Location;
+import android.location.LocationManager;
+
+public class GeoMessage {
+	
+	private String user, email, text, location, password, range;
+	private Location loc;
+	
+	public GeoMessage(String user, String password, String email, String text, String location, String range) {
+		this.user = user;
+		this.password = password;
+		this.email = email;
+		this.text = text;
+		this.location = location;
+		this.range = range;
+		
+		String[] coord=location.split(",");
+		double longt=Double.parseDouble(coord[1]);
+		double lat=Double.parseDouble(coord[0]);
+		loc=new Location(LocationManager.GPS_PROVIDER);
+		loc.setLatitude(lat);
+		loc.setLongitude(longt);
+	}
+	
+	public String getUser() {
+		return user;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public String getText() {
+		return text;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+	
+	public String getRange(){
+		return range;
+	}
+	
+	public Location getLoc(){
+		return loc;
+	}
+	
+}

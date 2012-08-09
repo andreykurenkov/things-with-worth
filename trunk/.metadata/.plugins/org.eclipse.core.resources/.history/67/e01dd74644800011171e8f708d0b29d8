@@ -1,0 +1,34 @@
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+public class SearchTest extends Assert {
+
+	public void setUp() {
+		TextSearch.resetComp();
+	}
+
+	@Test
+	public void bruteTest() {
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBruteForce(search, pattern));
+	}
+
+	@Test
+	public void BoyerMoyerTest() {
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBoyerMoore(search, pattern));
+	}
+	
+	@Test
+	public void BoyerMoyerSimpleTest() {
+		String search = "abcbegfansmfsgmasdojfnadspfinsadpifpiojsadnfoinpiasdmfpkdasmppiadjaierhniangpoofghedla fa, casnmdfklanalkgnasd;fomaflknasldgnmlz./.mzxcm/v,mas;dlm";
+		String pattern = "ghedla fa, c";
+		assertEquals(search.indexOf(pattern),
+				TextSearch.runBoyerMoore(search, pattern));
+	}
+}

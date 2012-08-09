@@ -1,0 +1,118 @@
+package edu.gatech.fiveminutesleft.model;
+
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.cache.EmailCache;
+import edu.gatech.fiveminutesleft.storage.EmailReference;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.exception.ObjectNotFoundException;
+
+/**
+ * A model object for an email address. This object is used purely to find a
+ * the username of the user that registered a specific email address, and to
+ * ensure that an email address is not used twice.
+ * 
+ * AccountEmail objects are always preserved in the local storage location.
+ * 
+ * @author Nick Johnson
+ */
+public class AccountEmail {
+
+	/**
+	 * Cache object for storage.
+	 */
+	private EmailCache	cache;
+
+	/**
+	 * Create a new AccountEmail model object.
+	 * 
+	 * @param email Email address
+	 * @param username Username
+	 */
+	public AccountEmail(String email, String username) {
+		this(StorageManager.createEmail(email));
+		this.setUsername(username);
+	}
+
+	/**
+	 * Create a model object around the given reference.
+	 * 
+	 * @param ref An AccountEmail storage reference
+	 */
+	private AccountEmail(EmailReference ref) {
+		this.cache = CacheManager.getEmailCache(ref);
+	}
+
+	/**
+	 * Retrieve the AccountEmail model object with the given email address.
+	 * 
+	 * @param email Email address
+	 * @throws ObjectNotFoundException Object not found
+	 */
+	private AccountEmail(String email) throws ObjectNotFoundException {
+		EmailReference ref = StorageManager.getEmail(email);
+
+		if (ref == null) {
+			throw new ObjectNotFoundException();
+		}
+
+		this.cache = CacheManager.getEmailCache(ref);
+	}
+
+	/**
+	 * Find an AccountEmail object by email address.
+	 * 
+	 * @param email Email address
+	 * @return The found object if it exists, null otherwise.
+	 */
+	public static AccountEmail locate(String email) {
+
+		if (!AccountEmail.exists(email)) {
+			return null;
+		}
+
+		try {
+			return new AccountEmail(email);
+		} catch (ObjectNotFoundException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * @param email Email address
+	 * @return True if the given email address has a matching AccountEmail 
+	 * object.
+	 */
+	public static boolean exists(String email) {
+		return CacheManager.hasEmail(email);
+	}
+
+	/**
+	 * @return The username currently associated with this object
+	 */
+	public String getUsername() {
+		return this.cache.getUsername();
+	}
+
+	/**
+	 * @param username The new username to be associated with this object
+	 */
+	public void setUsername(String username) {
+		this.cache.setUsername(username);
+	}
+
+	/**
+	 * @return The email address associated with this object
+	 */
+	public String getEmail() {
+		return this.cache.getAddress().getObjectAddress();
+	}
+
+	/**
+	 * @return Storage address of this object
+	 */
+	public StorageAddress getAddress() {
+		return this.cache.getAddress();
+	}
+
+}

@@ -1,0 +1,26 @@
+public class Cell {
+	private int age;
+
+	public enum CellState {
+		ALIVE, DEAD
+	};
+
+	private CellState myState;
+
+	public Cell() {
+		age = 0;
+		myState = CellState.DEAD;
+	}
+
+	public void age() {
+		age++;
+	}
+
+	public void kill() {
+		myState = CellState.DEAD;
+	}
+
+	public void revive() {
+		myState = CellState.ALIVE;
+	}
+}

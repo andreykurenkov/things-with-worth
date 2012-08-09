@@ -1,0 +1,11 @@
+import javax.swing.JButton;
+import javax.swing.JPanel;
+
+public class LifePanel extends JPanel {
+	private JButton[][] visibleCells;
+	private GameOfLife myLife;
+
+	public LifePanel(GameOfLife life) {
+		myLife = life;
+	}
+}

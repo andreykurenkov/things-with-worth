@@ -1,0 +1,11 @@
+package edu.gatech.geochat;
+
+import android.content.Context;
+import android.opengl.GLSurfaceView;
+
+public class RadarView extends GLSurfaceView {
+	public RadarView(Context c) {
+		super(c);
+		setRenderer(new RadarRenderer());
+	}
+}

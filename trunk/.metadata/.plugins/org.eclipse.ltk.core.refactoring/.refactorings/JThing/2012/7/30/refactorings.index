@@ -1,0 +1,9 @@
+1343402636654	Delete element
+1343402718346	Delete elements
+1343402743583	Delete elements
+1343404391442	Rename type 'BackResetNextButtons'
+1343404406895	Rename field 'reset'
+1343404442837	Rename method 'addResetActionListener'
+1343404451749	Rename method 'addNextActionListener'
+1343404467737	Rename method 'addBackActionListener'
+1343404483344	Rename method 'setResetText'

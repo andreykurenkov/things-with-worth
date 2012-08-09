@@ -1,0 +1,13 @@
+1340071764153	Copy compilation unit
+1340116968528	Rename method 'getNotified'
+1340153498219	Move compilation unit
+1340204673590	Rename type 'StringBridge'
+1340205306429	Rename type 'CodeStringBuffer'
+1340245538064	Infer generic type arguments
+1340246583694	Delete element
+1340246662435	Rename field 'storedInterpreter'
+1340247148814	Move compilation units
+1340247156393	Delete element
+1340247199888	Move compilation units
+1340247645933	Move compilation units
+1340311437781	Rename package 'edu.gatech.RecAwesome.IO'

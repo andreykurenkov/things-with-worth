@@ -1,0 +1,230 @@
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
+
+public class FileBrowser extends JPanel {
+	private final String exten = "Submission Attachment(s)";
+	private JList dirChooser, fileChooser;
+	private File currentDir;
+	private String baseDir;
+	private JButton view, compile, run;
+	private ArrayList<SmartFile> currentFiles;
+	private JTabbedPane filePane;
+
+	public FileBrowser(Dimension dim, final JTabbedPane fileDisplay) {
+		filePane = fileDisplay;
+		currentFiles = new ArrayList<SmartFile>();
+		fileChooser = new JList();
+		fileChooser.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		fileChooser.setLayoutOrientation(JList.VERTICAL);
+
+		dirChooser = new JList();
+		dirChooser.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		dirChooser.setLayoutOrientation(JList.VERTICAL);
+		dirChooser.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				if (e.getValueIsAdjusting() == false) {
+
+					if (dirChooser.getSelectedIndex() == -1) {
+						currentDir = null;
+						fileChooser.setListData(new File[0]);
+
+					} else {
+						FileBrowser.this.updateFiles();
+					}
+				}
+			}
+		});
+
+		fileChooser.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				currentFiles = new ArrayList<SmartFile>();
+				Object[] files = fileChooser.getSelectedValues();
+				boolean readable, compilable, runnable;
+				readable = compilable = runnable = files.length > 0;
+				for (Object o : files) {
+					SmartFile cur = (SmartFile) o;
+					currentFiles.add(cur);
+					if (!cur.isReadable()) {
+						readable = false;
+					}
+					if (!cur.isRunnable()) {
+						runnable = false;
+					}
+					if (!cur.isCompilable()) {
+						compilable = false;
+					}
+
+				}
+				view.setEnabled(readable);
+				compile.setEnabled(compilable);
+				run.setEnabled(runnable);
+			}
+
+		});
+		JScrollPane dirChooserScroller = new JScrollPane(dirChooser);
+		JScrollPane fileChooserScroller = new JScrollPane(fileChooser);
+
+		dirChooserScroller.setPreferredSize(new Dimension((int) dim.getWidth() / 2, (int) dim.getHeight()));
+		fileChooserScroller.setPreferredSize(new Dimension((int) dim.getWidth() / 2, (int) dim.getHeight()));
+		this.setLayout(new GridBagLayout());
+		GridBagConstraints c = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.BOTH, 0.5, 1,
+				GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+		this.add(dirChooserScroller, c);
+		c = ConstraintsHelper.makeConstraints(1, 0, GridBagConstraints.BOTH, 0.5, 1, GridBagConstraints.RELATIVE,
+				GridBagConstraints.REMAINDER, GridBagConstraints.EAST);
+		JSeparator sep = new JSeparator();
+		sep.setVisible(true);
+		sep.setEnabled(true);
+		this.add(sep, c);
+		c = ConstraintsHelper.makeConstraints(2, 0, GridBagConstraints.BOTH, 0.5, 30, GridBagConstraints.REMAINDER,
+				GridBagConstraints.RELATIVE, GridBagConstraints.WEST);
+		this.add(fileChooserScroller, c);
+		this.add(new JSeparator(), ConstraintsHelper.makeConstraints(2, 1, GridBagConstraints.HORIZONTAL, 0.5, 0.3));
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(3, 1));
+		view = new JButton("read");
+		view.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				int i = filePane.getTabCount();
+				for (SmartFile file : currentFiles) {
+					String contents = file.read();
+					if (contents != null) {
+						JScrollPane pane = file.getVisibleText(false);
+						filePane.addTab(pane.getName(), pane);
+					}
+				}
+				for (; i < filePane.getTabCount(); i++) {
+					filePane.setTabComponentAt(i, new TabCloseComponent(filePane));
+				}
+			}
+		});
+		buttonPanel.add(view);
+		compile = new JButton("compile");
+		compile.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				ArrayList<String> classes = new ArrayList<String>(currentFiles.size());
+				for (int i = 0; i < currentFiles.size(); i++) {
+					classes.add(currentFiles.get(i).getAbsolutePath());
+				}
+				JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+				DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+				StandardJavaFileManager fm = compiler.getStandardFileManager(diagnostics, null, null);
+				List<File> dir = new ArrayList<File>();
+				dir.add(currentDir);
+				try {
+					fm.setLocation(StandardLocation.CLASS_PATH, dir);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				JTextAreaWriter writer = new JTextAreaWriter(((JTextArea) filePane.getComponentAt(0)));
+				JavaCompiler.CompilationTask task = null;
+				task = compiler.getTask(writer, fm, diagnostics, null, null, fm.getJavaFileObjectsFromFiles(currentFiles));
+
+				boolean success = task.call();
+				if (success) {
+					FileBrowser.this.updateFiles();
+				} else {
+					JOptionPane.showMessageDialog(FileBrowser.this, "Compilation not succesful", "Compilation error",
+							JOptionPane.ERROR_MESSAGE);
+					for (Diagnostic<? extends JavaFileObject> d : diagnostics.getDiagnostics())
+						try {
+							writer.append(d.toString());
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+				}
+			}
+		});
+		buttonPanel.add(compile, c);
+		run = new JButton("run");
+		run.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				final Runnable[] running = new Runnable[currentFiles.size()];
+				int i = 0;
+				for (SmartFile file : currentFiles) {
+					Runnable thread = file.run();
+					running[i++] = thread;
+					thread.run();
+
+				}
+				run.setText("stop");
+				final ActionListener runAL = this;
+				run.removeActionListener(runAL);
+				run.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						for (Runnable r : running){
+							try {
+								r.wait();
+							
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						run.removeActionListener(this);
+						run.addActionListener(runAL);
+					}
+					
+
+				});
+			}
+
+		});
+		buttonPanel.add(run, c);
+		c = ConstraintsHelper.makeConstraints(2, 2, GridBagConstraints.HORIZONTAL, 0.5, 0.3, GridBagConstraints.REMAINDER,
+				GridBagConstraints.REMAINDER, GridBagConstraints.SOUTH);
+		this.add(buttonPanel, c);
+
+	}
+
+	public void setBaseDir(String set) {
+		baseDir = set;
+	}
+
+	public void setStudents(Student[] setTo) {
+		dirChooser.setListData(setTo);
+	}
+
+	private void updateFiles() {
+		Student selected = (Student) dirChooser.getSelectedValue();
+		String dir = selected.getName() + "(" + selected.getID() + ")/" + exten;
+		currentDir = new File(baseDir + "/" + dir);
+		if (currentDir.listFiles() == null)
+			JOptionPane.showMessageDialog(this, "Not a valid directory!\nMust contain unzipped HW folder.",
+					"Directory error", JOptionPane.ERROR_MESSAGE);
+		else
+			fileChooser.setListData(SmartFile.makeSmarter(currentDir.listFiles()));
+	}
+}

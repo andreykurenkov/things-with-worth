@@ -1,0 +1,34 @@
+package edu.gatech.GradeAwesome.GUI;
+
+import java.awt.BorderLayout;
+import java.io.FileFilter;
+
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+
+import edu.gatech.GradeAwesome.GUI.Components.DirectoryBrowser;
+import edu.gatech.GradeAwesome.GUI.Components.JFileList;
+import edu.gatech.GradeAwesome.GUI.Helpers.ObservableJPanel;
+
+public class FileBrowser extends ObservableJPanel {
+	private DirectoryBrowser browser;
+	private JFileList fileList;
+	private JScrollPane fileScroll;
+	private JButton view, compile, run, viewAll, compileAll, runAll, tabClose;
+	private final double weightDominant = 10;
+	private final double weightDemanded = 0.1;
+	private final double weightNormal = 1;
+
+	public FileBrowser(FileFilter fileFilter) {
+		browser = new DirectoryBrowser();
+		fileList = new JFileList(fileFilter, browser.getCurrentDirectory());
+		fileList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		fileList.setLayoutOrientation(JList.VERTICAL);
+		fileScroll = new JScrollPane(fileList);
+		super.setLayout(new GridLayout(1,2));
+		super.add(browser);
+		super.add(fileList);
+	}
+}

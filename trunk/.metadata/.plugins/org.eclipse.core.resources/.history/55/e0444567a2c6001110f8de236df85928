@@ -1,0 +1,39 @@
+import java.awt.Color;
+
+public class Cell {
+	private int age;
+	private boolean state;
+	public final static boolean DEAD=false;
+	public final static boolean ALIVE=true;
+
+
+	public Cell() {
+		age = 0;
+		state=false;
+	}
+
+	public void age() {
+		age++;
+	}
+
+	public void kill() {
+		state=DEAD;
+		age = 0;
+	}
+
+	public void revive() {
+		state=ALIVE;
+	}
+
+	public boolean getState() {
+		return state;
+	}
+
+	public boolean isAlive() {
+		return myState == CellState.ALIVE;
+	}
+
+	public Color getColor() {
+		return new Color(age % 255, ((age / 255) * age) % 255, ((age / 510) * age) % 255);
+	}
+}

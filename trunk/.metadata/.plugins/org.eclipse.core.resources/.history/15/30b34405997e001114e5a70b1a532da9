@@ -1,0 +1,116 @@
+package edu.gatech.fiveminutesleft.storage.sqlite;
+
+import java.io.IOException;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+import edu.gatech.fiveminutesleft.storage.AccountReference;
+import edu.gatech.fiveminutesleft.storage.EmailReference;
+import edu.gatech.fiveminutesleft.storage.LocalStorage;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+import edu.gatech.fiveminutesleft.storage.TaskListReference;
+import edu.gatech.fiveminutesleft.storage.TaskReference;
+
+public class LocalSQLiteStorage implements LocalStorage {
+
+	private DoItSQLiteOpenHelper	helper;
+	String							address;
+	SQLiteDatabase					db;
+
+	public LocalSQLiteStorage(Context c) {
+		this.helper = new DoItSQLiteOpenHelper(c, "doit.db");
+		this.db = helper.getWritableDatabase();
+		this.address = "db:doit.db";
+	}
+
+	private boolean contains(StorageAddress addr) {
+
+		if (addr.getServerAddress().compareTo(this.address) != 0) {
+			return false;
+		}
+
+		if (db.query("pool", new String[] { "id", "data" }, "id = '" + addr.getObjectAddress() + "'", null, null, null, null)
+				.getCount() == 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public TaskReference getTask(StorageAddress addr) {
+
+		if (!this.contains(addr))
+			return null;
+
+		return new TaskReferenceImpl(this, addr);
+	}
+
+	public TaskReference createTask() {
+		return new TaskReferenceImpl(this);
+	}
+
+	public TaskListReference getTaskList(StorageAddress addr) {
+
+		if (!this.contains(addr))
+			return null;
+
+		return new TaskListReferenceImpl(this, addr);
+	}
+
+	public TaskListReference createTaskList() {
+		return new TaskListReferenceImpl(this);
+	}
+
+	public String getServerAddress() {
+		return address;
+	}
+
+	public void flush() throws IOException {
+	}
+
+	public AccountReference getAccount(String username) {
+		StorageAddress addr = new StorageAddress(this.getServerAddress(), username);
+
+		Log.d("LocalSQLiteStorage:getAccount", addr.toString());
+
+		if (!this.contains(addr))
+			return null;
+
+		return new AccountReferenceImpl(this, addr);
+	}
+
+	public AccountReference createAccount(String username) {
+		StorageAddress addr = new StorageAddress(this.getServerAddress(), username);
+
+		if (this.contains(addr)) {
+			return new AccountReferenceImpl(this, addr);
+		}
+
+		return new AccountReferenceImpl(this, username);
+	}
+
+	public EmailReference getEmail(String email) {
+		StorageAddress addr = new StorageAddress(this.getServerAddress(), email);
+
+		if (!this.contains(addr))
+			return null;
+
+		return new EmailReferenceImpl(this, addr);
+	}
+
+	public EmailReference createEmail(String email) {
+		StorageAddress addr = new StorageAddress(this.getServerAddress(), email);
+
+		if (this.contains(addr)) {
+			return new EmailReferenceImpl(this, addr);
+		}
+
+		return new EmailReferenceImpl(this, email);
+	}
+
+	public void delete() {
+		this.db.execSQL("DELETE FROM pool WHERE '1' = '1'");
+	}
+
+}

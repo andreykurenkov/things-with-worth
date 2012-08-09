@@ -1,0 +1,108 @@
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.Set;
+
+public class Graph implements Iterable<Edge> {
+
+	private Set<Vertex> vertices;
+	private Collection<Edge> edges;
+	private Vertex source;
+	private Vertex sink;
+
+	/**
+	 * Builds a Graph from a string fully describing the edges in the graph as
+	 * follows: N v1_1 v1_2 c1 v2_1 v2_2 c2 ... Where vX_1 vX_2 cX represents an
+	 * 
+	 * vertices (including source and sink). Vertices can have any name, but you
+	 * are guaranteed that the source will be name "S", and the sink will be
+	 * named "T".
+	 * 
+	 * Example input: "4 S B .1 S C .1 B C .00001 B T .1 C T .1"
+	 * 
+	 * This describes 4 total nodes (NOT the number of edges). There is an edge
+	 * from S to B with capacity .1, an edge from B to C with capacity .00001,
+	 * etc.
+	 * 
+	 * You may assume that both a source and a sink will ALWAYS be included.
+	 * 
+	 * @param str
+	 *            the description of the graph, in the format as described
+	 *            above.
+	 */
+	public Graph(String str) {
+		edges = new ArrayList<Edge>();
+		Scanner sc = new Scanner(str);
+		int count = sc.nextInt();
+		for (int i = 0; i < count; i++) {
+			Vertex u = new Vertex(sc.nextInt());
+			if (u.getId() == 'S')
+				source = u;
+			Vertex v = new Vertex(sc.nextInt());
+			if (v.getId() == 'T')
+				sink = v;
+			int c = sc.nextInt();
+			// Sets don't allow duplicates. Just add them.
+			vertices.add(u);
+			vertices.add(v);
+			edges.add(new Edge(u, v, c));
+		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder ret = new StringBuilder("");
+		for (Edge e : edges) {
+			ret.append(e.toString() + "\n");
+		}
+		return ret.toString();
+	}
+
+	public Collection<Edge> getEdges() {
+		return edges;
+	}
+
+	public Set<Vertex> getVertices() {
+		return vertices;
+	}
+
+	public void setVertices(Set<Vertex> vertices) {
+		this.vertices = vertices;
+	}
+
+	public void setEdges(Collection<Edge> edges) {
+		this.edges = edges;
+	}
+
+	public Vertex getSink() {
+		return sink;
+	}
+
+	public Vertex getSource() {
+		return source;
+	}
+
+	public Collection<Edge> findPath(){
+		return this.getPath(source,sink,new ArrayList<Edge>());
+	}
+	private Collection<Edge> getPath(Vertex source, Vertex sink, Collection<Edge> path) {
+		if (source.equals(sink))
+			return path;
+		for (Edge e : edges) {
+			int residual = e.cap() - e.flow();
+			if (residual > 0 && !path.contains(e)) {
+				path.add(e);
+				Collection<Edge> result = this.getPath(e.vertices()[1], sink, path);
+				if (result != null)
+					return result;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public Iterator<Edge> iterator() {
+		return edges.iterator();
+	}
+}

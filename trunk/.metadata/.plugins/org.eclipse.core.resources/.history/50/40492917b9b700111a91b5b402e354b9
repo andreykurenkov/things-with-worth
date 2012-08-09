@@ -1,0 +1,42 @@
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
+import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+public class TextStdInputArea extends JTextArea {
+	private InputStream redirect;
+
+	public TextStdInputArea() {
+		PipedOutputStream redirectFrom = new PipedOutputStream();
+		redirect = new PipedInputStream();
+		System.setIn(redirect);
+		try {
+			((PipedInputStream) redirect).connect(redirectFrom);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.setEditable(true);
+		this.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent de) {
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+
+			}
+
+		});
+	}
+
+}

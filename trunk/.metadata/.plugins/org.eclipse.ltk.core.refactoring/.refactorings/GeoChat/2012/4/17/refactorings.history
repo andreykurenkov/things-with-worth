@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Move 2 elements to &apos;GeoChat/src/edu.gatech.geochat.opengl&apos;&#x0A;- Original project: &apos;GeoChat&apos;&#x0A;- Destination element: &apos;GeoChat/src/edu.gatech.geochat.opengl&apos;&#x0A;- Original elements:&#x0A;     edu.gatech.geochat.OpenGLSquare.java&#x0A;     edu.gatech.geochat.OpenGLTriangle.java&#x0A;- Update references to refactored element" description="Move compilation units" destination="/src&lt;edu.gatech.geochat.opengl" element1="/src&lt;edu.gatech.geochat{OpenGLSquare.java" element2="/src&lt;edu.gatech.geochat{OpenGLTriangle.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.move" patterns="*" policy="org.eclipse.jdt.ui.moveResources" qualified="false" references="true" stamp="1335230699674" units="2" version="1.0"/>
+</session>

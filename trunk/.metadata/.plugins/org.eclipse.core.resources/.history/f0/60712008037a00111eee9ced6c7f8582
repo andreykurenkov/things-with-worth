@@ -1,0 +1,153 @@
+package edu.gatech.fiveminutesleft.test;
+
+import edu.gatech.fiveminutesleft.model.Date;
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.TaskFilter;
+import junit.framework.TestCase;
+
+public class FilterTest extends TestCase {
+
+	public FilterTest() {
+		
+	}
+	
+	protected void setUp() throws Exception {
+		super.setUp();
+	}
+	
+	public void testDateBounds() {
+		Date date;
+		
+		date = new Date(2012, 11, 1);
+		assertTrue("Month 11 should be December!", date.toString().equals("1 December 2012"));
+		
+		date = new Date(2012, 0, 1);
+		assertTrue("Month 0 should be January!", date.toString().equals("1 January 2012"));
+	}
+	
+	public void testBeforeDate() {
+		Task task = new Task();
+		
+		TaskFilter before = TaskFilter.createDateFilter(
+				new int[] {2012, 10, 2}, TaskFilter.BEFORE);
+
+		task.setDate(new Date(2012, 10, 2).toString());
+		assertFalse("2012-10-2 should not be before itself", before.accept(task));
+		
+		task.setDate(new Date(2012, 10, 1).toString());
+		assertTrue("2012-10-1 should be before 2012-10-2", before.accept(task));
+		
+		task.setDate(new Date(2012, 11, 2).toString());
+		assertFalse("2012-11-2 should not be before 2012-10-2", before.accept(task));
+		
+		task.setDate(new Date(2012, 9, 2).toString());
+		assertTrue("2012-9-2 should be before 2012-10-2", before.accept(task));
+		
+		task.setDate(new Date(2013, 9, 8).toString());
+		assertFalse("2013-9-8 should not be before 2012-10-2", before.accept(task));
+		
+		task.setDate(new Date(2011, 11, 2).toString());
+		assertTrue("2011-11-12 should be before 2012-10-2", before.accept(task));
+	}
+	
+	public void testAfterDate() {
+		Task task = new Task();
+
+		TaskFilter after = TaskFilter.createDateFilter(
+				new int[] {2012, 6, 5}, TaskFilter.AFTER);
+		
+		task.setDate(new Date(2012, 6, 5).toString());
+		assertTrue("2012-6-5 should count as after itself.", after.accept(task));
+
+		task.setDate(new Date(2012, 6, 4).toString());
+		assertFalse("2012-6-4 < 2012-6-5", after.accept(task));
+		
+		task.setDate(new Date(2012, 6, 6).toString());
+		assertTrue("2012-6-6 > 2012-6-6", after.accept(task));
+
+		task.setDate(new Date(2012, 5, 5).toString());
+		assertFalse("2012-5-5 < 2012-5-5", after.accept(task));
+
+		task.setDate(new Date(2012, 7, 5).toString());
+		assertTrue("2012-7-5 > 2012-7-5", after.accept(task));
+
+		task.setDate(new Date(2011, 6, 5).toString());
+		assertFalse("2011-6-5 < 2012-6-5", after.accept(task));
+
+		task.setDate(new Date(2013, 6, 5).toString());
+		assertTrue("2013-6-5 > 2012-6-5", after.accept(task));
+	}
+	
+	public void testOnDate() {
+		Task task = new Task();
+		TaskFilter on = TaskFilter.createDateFilter(
+				new int[] {1000, 1, 15}, TaskFilter.ON);
+		
+		for (int y = 990; y < 1010; y++) {
+			for (int m = 0; m <= 11; m++) {
+				for (int d = 1; d <= 31; d++) {
+					task.setDate(new Date(y, m, d).toString());
+					if (y==1000 && m==1 && d==15) {
+						assertTrue("Date's should match!", on.accept(task));
+					} else {
+						assertFalse(y + "-" + m + "-" + d + " =/= 1000-1-15", 
+								on.accept(task));
+					}
+				}
+			}
+		}
+	}
+	
+	public void testCategories() {
+		Task task = new Task();
+
+		TaskFilter filterAnd = TaskFilter.createCategoryFilter(
+				new String[] {"a", "b", "c"},
+				TaskFilter.COMBO_MODE_AND);
+		TaskFilter filterOr = TaskFilter.createCategoryFilter(
+				new String[] {"a", "b", "c"},
+				TaskFilter.COMBO_MODE_OR);
+
+		TaskFilter filterNand = TaskFilter.createCategoryFilter(
+				new String[] {"a", "b", "c"},
+				TaskFilter.COMBO_MODE_NAND);
+		TaskFilter filterNor = TaskFilter.createCategoryFilter(
+				new String[] {"a", "b", "c"},
+				TaskFilter.COMBO_MODE_NOR);
+
+		assertFalse(filterAnd.accept(task));
+		assertFalse(filterOr .accept(task));
+		assertTrue (filterNand.accept(task));
+		assertTrue (filterNor .accept(task));
+		
+		task.setTags("z, x, y");
+		assertFalse(filterAnd.accept(task));
+		assertFalse(filterOr .accept(task));
+		assertTrue (filterNand.accept(task));
+		assertTrue (filterNor .accept(task));
+		
+		task.setTags("a");
+		assertFalse(filterAnd.accept(task));
+		assertTrue (filterOr .accept(task));
+		assertTrue (filterNand.accept(task));
+		assertFalse(filterNor .accept(task));
+		
+		task.setTags("a, c");
+		assertFalse(filterAnd.accept(task));
+		assertTrue (filterOr .accept(task));
+		assertTrue (filterNand.accept(task));
+		assertFalse(filterNor.accept(task));
+		
+		task.setTags("c, b, a");
+		assertTrue(filterAnd.accept(task));
+		assertTrue(filterOr.accept(task));
+		assertFalse(filterNand.accept(task));
+		assertFalse(filterNor.accept(task));
+		
+		task.setTags("c, b, z, a");
+		assertTrue(filterAnd.accept(task));
+		assertTrue(filterOr.accept(task));
+		assertFalse(filterNand.accept(task));
+		assertFalse(filterNor.accept(task));
+	}
+}

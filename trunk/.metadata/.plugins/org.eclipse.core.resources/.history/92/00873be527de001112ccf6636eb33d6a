@@ -1,0 +1,78 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.Scanner;
+
+import javax.swing.JButton;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+
+public class ProcessTextArea extends ToolbaredTextArea {
+	private Process myProcess;
+	private boolean finished;
+
+	public ProcessTextArea(final JTextArea area, Process areaProcess, boolean closeButton) {
+		super(area);
+		myProcess = areaProcess;
+		final OutputStreamWriter out = new OutputStreamWriter(myProcess.getOutputStream());
+		area.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent evt) {
+				try {
+					if (!finished) {
+						out.write(evt.getKeyChar());
+						out.flush();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		final SwingWorker<String, Void> pipe = new SwingWorker<String, Void>() {
+			public String doInBackground() {
+				boolean run = true;
+				Scanner scan = new Scanner(myProcess.getInputStream());
+				while (run) {
+					if (scan.hasNext()) {
+						updateTextArea(scan.next());
+					}
+					try {
+						int val = myProcess.exitValue();
+						finished = true;
+						run = false;
+						updateTextArea("Proccess terminated with value " + val);
+					} catch (Exception notClosed) {
+						run = true;
+					}
+				}
+				return null;
+			}
+		};
+		pipe.execute();
+
+		if (closeButton) {
+			JButton close = new JButton("Close Process");
+			close.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					myProcess.destroy();
+				}
+			});
+			super.addToolbarComponent(close);
+		}
+	}
+
+	private void updateTextArea(final String newText) {
+
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				text.append(newText);
+			}
+		});
+	}
+}

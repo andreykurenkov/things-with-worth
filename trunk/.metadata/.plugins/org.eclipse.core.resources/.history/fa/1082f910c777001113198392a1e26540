@@ -1,0 +1,85 @@
+package edu.gatech.fiveminutesleft.GUI;
+
+import java.util.Hashtable;
+import java.util.LinkedList;
+
+/**
+ * This is a more persistent storage than ObjectLocker which is enormously
+ * useful for keeping track of GUI data. It is the responsibility of
+ * each activity to call the clearPrefix() method on the destruction of
+ * said activity to avoid leaving excess data.
+ * @author g
+ *
+ */
+public class GUISpace {
+	private static Hashtable<String, Object> values = new Hashtable<String, Object>();
+	
+	/** Gets the key associated with the given class */
+	public static Object get(Class c, String key) {
+		return values.get(getKey(c, key));
+	}
+
+	
+	public static boolean has(Class c, String key) {
+		return values.containsKey(getKey(c, key)) && values.get(getKey(c, key)) != null;
+	}
+	
+	public static void put(Class c, String key, Object o) {
+		values.put(getKey(c, key), o);
+	}
+	
+	public static String getString(Class c, String key) {
+		if (!has(c, key)) 
+			return "";
+		return get(c, key).toString();
+	}
+	
+	public static int getInt(Class c, String key) {
+		if (!has(c, key)) return 0;
+		return Integer.parseInt(getString(c, key));
+	}
+	
+	public static boolean getBoolean(Class c, String key) {
+		if (!has(c, key)) return false;
+		return Boolean.parseBoolean(getString(c, key));
+	}
+	
+	public static double getDouble(Class c, String key) {
+		if (!has(c, key)) return 0;
+		return Double.parseDouble(getString(c, key));
+	}
+	
+	public static boolean toggle(Class c, String key) {
+		boolean b = !getBoolean(c, key);
+		put(c, key, b);
+		return b;
+	}
+	
+	public static void clear(Class c, String key) {
+		clear(getKey(c, key));
+	}
+	
+	
+	private static String getKey(Class c, String key) {
+		return c.getName() + "." + key;
+	}
+	
+	private static void clear(String key) {
+		values.remove(key);
+	}
+	
+	public static void clearPrefix(Class c, String pref) {
+		String prefix = getKey(c, pref);
+		LinkedList<String> keys = new LinkedList<String>();
+		for (String k : values.keySet()) {
+			if (k.startsWith(prefix))
+				keys.add(k);
+		}
+		for (String k : keys)
+			clear(k);
+	}
+	
+	public static void clearPrefix(Class c) {
+		clearPrefix(c, "");
+	}
+}

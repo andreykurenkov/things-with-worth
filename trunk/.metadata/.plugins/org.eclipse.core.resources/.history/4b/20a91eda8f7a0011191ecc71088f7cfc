@@ -1,0 +1,62 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+import android.util.Log;
+import edu.gatech.fiveminutesleft.cache.AccountCache;
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+
+public interface AccountLists<T extends TaskList> {
+	
+	/**
+	 * Associates the given serverAddress and localAddress for a TaskList with this account and
+	 * stores it
+	 * 
+	 * @param address
+	 *            the address of the taskList to add as owned to this account
+	 */
+	public String addTaskList(TaskList list, String name);
+
+	/**
+	 * Returns a list with a specific name
+	 * 
+	 * @param name
+	 *            the name of the list to get
+	 * @return the TaskList with the specifed name
+	 */
+	public TaskList getTaskList(String name);
+
+	/**
+	 * Retrieves from storage and returns all the TaskLists owned or associated with the account
+	 * 
+	 * @return an ArrayList containing all the TaskLists belonging to this account
+	 */
+	public ArrayList<TaskList> getTaskLists();
+	
+
+	/**
+	 * Returns the names of all the tasklists that belong to this account
+	 * 
+	 * @return a string array with the lists' names
+	 */
+	public String[] getListNames();
+
+	/**
+	 * Returns the number of lists currently in storage
+	 * 
+	 * @return 0 if no lists stored previously, number of lists otherwise
+	 */
+	public int getNumLists();
+
+	/**
+	 * Deletes tha TaskList with the given name
+	 * 
+	 * @param name
+	 *            The name of the tasklist to delete
+	 * @return the deleted TaskList
+	 */
+	public TaskList deleteTaskList(String name);
+
+}

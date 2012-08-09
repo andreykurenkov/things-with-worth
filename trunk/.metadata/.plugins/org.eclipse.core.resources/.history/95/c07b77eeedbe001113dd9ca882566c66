@@ -1,0 +1,71 @@
+/**
+ * This class represents a simple mathematical 2D vector that allows for efficient mathematical operations involving two
+ * doubles.
+ * 
+ * @author Andrey
+ * @verison 1.0
+ * 
+ */
+// Would be nice to extend Point, but confusing to students
+public class Vector2D {
+	// TODO: have students write entire class, or most of it? Pretty simple
+	// TODO: Miiiight consider writing with general Vector, though probably unnecessary
+	private double x;
+	private double y;
+
+	/**
+	 * Standard constructor taking in needed values
+	 * 
+	 * @param x
+	 *            the first double element
+	 * @param y
+	 *            the second double element
+	 */
+	public Vector2D(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	/**
+	 * Getter for x
+	 * 
+	 * @return x the first vector element
+	 */
+	public double getX() {
+		return x;
+	}
+
+	/**
+	 * Getter for y
+	 * 
+	 * @return y the second vector element
+	 */
+	public double getY() {
+		return y;
+	}
+
+	/**
+	 * Adds the given vector to this vector
+	 * @param toAdd
+	 */
+	public Vector2D add(Vector2D toAdd) {
+		double x=this.x+toAdd.getX();
+		double y=this.y+toAdd.getY();
+		return new Vector2D(x,y);
+	}
+
+	public void subtract(Vector2D toSub) {
+		x -= toSub.getX();
+		y -= toSub.getY();
+	}
+	
+	public void multiply(Vector2D )
+
+	public double magnitude() {
+		return Math.sqrt(x * x + y * y);
+	}
+
+	public double angle() {
+		return Math.atan2(y, x);
+	}
+}

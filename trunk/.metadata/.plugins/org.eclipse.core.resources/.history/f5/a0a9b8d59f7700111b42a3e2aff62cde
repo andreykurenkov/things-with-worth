@@ -1,0 +1,25 @@
+package edu.gatech.fiveminutesleft.test;
+
+import org.junit.Test;
+
+import android.app.Activity;
+
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import junit.framework.TestCase;
+
+public class RegisterTest extends TestCase {
+
+	private Activity logicActivity;
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		loginActivity=getActivity();
+		AccountManager.getInstance().register("testName", "testUsername", "testPassword", "testPassword", "testemail@test.test");
+	}
+	
+	@Test
+	public void invalidUsernameTest(){
+		
+	}
+
+}

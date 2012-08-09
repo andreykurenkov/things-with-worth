@@ -1,0 +1,102 @@
+package edu.gatech.fiveminutesleft.model;
+
+import java.util.Calendar;
+/**
+ * Model representation of a date (i.e. a due date used by a task). Used for parsing strings into dates and vice versa.
+ * @author andrey
+ *
+ */
+public class Date {
+	private int year;
+	private int month;
+	private int day;
+	
+	public static final String[]	MONTHS			= { "January", "February", "March", "April", "May", "June", "July",
+		"August", "October", "November", "December" };
+	
+	/**
+	 * Standard constructor for a date given the appropriate info.
+	 * @param year
+	 * @param month
+	 * @param day
+	 */
+	public Date(int year, int month, int day){
+		this.year=year;
+		this.month=month;
+		this.day=day;
+	}
+	
+	public void addToTask(Task addTo){
+		addTo.setDate(toString());
+	}
+	
+	public static Date getFromTask(Task getFrom){
+		int day=Date.parseDateDay(getFrom.getDate());
+		int month=Date.parseDateDay(getFrom.getDate());
+		int year=Date.parseDateDay(getFrom.getDate());
+		return new Date(day,month,year);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getDay(){
+		return day;
+	}
+	
+	public int getYear(){
+		return year;
+	}
+	
+	public int getMonth(){
+		return month;
+	}
+	
+	public void setDay(int day){
+		this.day=day;
+	}
+	
+	public void setMonth(int month){
+		this.month=month;
+	}
+	
+	public void setYear(int year){
+		this.year=year;
+	}
+	
+	
+	private static int parseDateDay(String date) {
+		if (date == null || date.length() == 0)
+			return Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+		return Integer.parseInt(date.substring(0, date.indexOf(' ')));
+	}
+
+	private static int parseDateYear(String date) {
+		if (date == null || date.length() == 0)
+			return Calendar.getInstance().get(Calendar.YEAR);
+		return Integer.parseInt(date.substring(date.lastIndexOf(' ') + 1));
+	}
+
+	private static int parseDateMonth(String date) {
+		if (date == null || date.length() == 0)
+			return Calendar.getInstance().get(Calendar.MONTH);
+		String[] parts = date.split(" ");
+		for (int m = 0; m < MONTHS.length; m++) {
+			if (parts[1].equals(MONTHS[m])) {
+				return m;
+			}
+		}
+		return 0;
+	}
+	
+	public String toString(){
+		StringBuffer sb = new StringBuffer(8 + MONTHS[month].length());
+		sb.append(day);
+		sb.append(" ");
+		sb.append(MONTHS[month]);
+		sb.append(" ");
+		sb.append(year);
+		return sb.toString();
+	}
+}

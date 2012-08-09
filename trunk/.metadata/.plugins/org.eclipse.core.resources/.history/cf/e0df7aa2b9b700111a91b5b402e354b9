@@ -1,0 +1,66 @@
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
+import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+
+public class TextStdInputArea extends JTextArea {
+	private InputStream redirect;
+	private static TextStdInputArea instance;
+
+	public static TextStdInputArea getInstance() {
+		if (instance == null)
+			instance = new TextStdInputArea();
+		return instance;
+	}
+
+	private TextStdInputArea() {
+		final PipedOutputStream redirectFrom = new PipedOutputStream();
+		redirect = new PipedInputStream();
+		System.setIn(redirect);
+		try {
+			((PipedInputStream) redirect).connect(redirectFrom);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.setEditable(true);
+		this.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				try {
+					String inserted = de.getDocument().getText(de.getOffset(), de.getLength());
+					redirectFrom.write(inserted.getBytes());
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent de) {
+				try {
+					String inserted = de.getDocument().getText(de.getOffset(), de.getLength());
+					redirectFrom.write(inserted.getBytes());
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+
+			}
+
+		});
+	}
+
+}

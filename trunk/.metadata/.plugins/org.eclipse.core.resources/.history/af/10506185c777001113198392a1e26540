@@ -1,0 +1,74 @@
+package edu.gatech.fiveminutesleft;
+
+import android.app.Application;
+import android.util.Log;
+import edu.gatech.fiveminutesleft.cache.CacheManager;
+import edu.gatech.fiveminutesleft.config.AccountManager;
+import edu.gatech.fiveminutesleft.model.Account;
+import edu.gatech.fiveminutesleft.model.Task;
+import edu.gatech.fiveminutesleft.model.TaskList;
+import edu.gatech.fiveminutesleft.storage.StorageManager;
+import edu.gatech.fiveminutesleft.storage.jsonfile.LocalJSONFileStorage;
+
+/**
+ * Application Class to act as the overall Do It! App and its lifetime
+ * 
+ * @author Nick Johnson
+ */
+public class DoItApplication extends Application {
+
+	private final boolean	DOTESTS	= true;
+
+	/**
+	 * Standard Android method. Called when App first created. Sets up storage.
+	 */
+	@Override
+	public void onCreate() {
+
+		StorageManager.setActiveContext(this);
+		Log.d("StorageService", "Storage service created");
+		try {
+			// The local database is in the internal storage file "doit.json"
+			// The format of the local database is JSON-encoded text
+			StorageManager.setLocalStorage(new LocalJSONFileStorage("doit.json"));
+		} catch (Exception e) {
+			Log.d("LoginActivity", "Could not create local storage.");
+			e.printStackTrace();
+		}
+
+		if (DOTESTS) {
+			try {
+
+				// delete contents of local storage
+				StorageManager.getLocalStorage().delete();
+				CacheManager.syncAll();
+
+				// create a new account
+				AccountManager.getInstance().register("name", "username", "password", "password", "someemail@someplace.com");
+				CacheManager.syncAll();
+
+				// retrieve that account
+				Account a = Account.locate("username");
+
+				if (a == null) {
+					Log.d("Tests", "Account was null");
+					throw new Exception();
+				}
+
+				// add a new list to the account
+				TaskList l = new TaskList();
+				a.getLists().addTaskList(l, "List 1");
+				CacheManager.syncAll();
+
+				// add a new task to the list
+				Task t = new Task();
+				t.setName("Task 1");
+				l.add(t);
+				CacheManager.syncAll();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+}

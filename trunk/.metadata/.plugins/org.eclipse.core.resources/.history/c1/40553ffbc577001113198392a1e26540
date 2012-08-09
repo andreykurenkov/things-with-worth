@@ -1,0 +1,141 @@
+package edu.gatech.fiveminutesleft;
+
+import edu.gatech.fiveminutesleft.model.Account;
+import edu.gatech.fiveminutesleft.model.AccountLists;
+import edu.gatech.fiveminutesleft.model.TaskList;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+/**
+ * Shows a pop-up dialog which allows users to rename and/or delete lists.
+ * @author g
+ *
+ */
+public class EditListActivity extends Activity {
+
+	/**
+	 * Launches this Activity
+	 * @param source
+	 * @param account
+	 * @param list
+	 */
+	public static void launch(Activity source, Account account, TaskList list) {
+		Intent n = new Intent(source, EditListActivity.class);
+		GUISpace.put(EditListActivity.class, "account", account);
+		GUISpace.put(EditListActivity.class, "list", list);
+		GUISpace.put(EditListActivity.class, "name", list.getName());
+		source.startActivity(n);
+	}
+	
+	private TextView nameView;
+	
+	@Override
+	/**
+	 * Set up layout and create instance variables
+	 */
+	public void onCreate(Bundle b) {
+		super.onCreate(b);
+		
+		setContentView(R.layout.edit_list_layout);
+		
+		nameView = (TextView) findViewById(R.id.ListName);
+	}
+	
+	@Override
+	/**
+	 * Restores the text of the name field
+	 */
+	public void onResume() {
+		super.onResume();
+		nameView.setText(GUISpace.getString(getClass(), "name"));
+	}
+	
+	@Override
+	/**
+	 * Saves the text of the name field for rotations and stuff
+	 */
+	public void onPause() {
+		super.onPause();
+		GUISpace.put(getClass(), "name", nameView.getEditableText().toString());
+	}
+	
+	@Override
+	/**
+	 * Clears out the data for this class stored in GUISpace if
+	 * we're finishing
+	 */
+	public void onDestroy() {
+		super.onDestroy();
+		if (isFinishing()) {
+			GUISpace.clearPrefix(getClass());
+		}
+	}
+	
+	/**
+	 * Called by the user when they press the cancel button to
+	 * close this Activity
+	 * @param v
+	 */
+	public void cancel(View v) {
+		finish();
+	}
+	
+	/**
+	 * Renames the list the user was editing and closes this Activity
+	 * @param v
+	 */
+	public void save(View v) {
+		TaskList list = ((TaskList)GUISpace.get(getClass(), "list"));
+		Account account = (Account) GUISpace.get(getClass(), "account");
+		AccountLists lists = account.getLists();
+		String name = nameView.getEditableText().toString();
+		lists.deleteTaskList(list.getName());
+		lists.addTaskList(list, name);
+		finish();
+	}
+	
+	/**
+	 * Called when user presses the delete button. Pops up a dialog
+	 * asking for confirmation, then deletes the list and closes
+	 * the Activity if they say "Yes".
+	 * @param v
+	 */
+	public void delete(View v) {
+		TaskList list = ((TaskList)GUISpace.get(getClass(), "list"));
+		
+		final AlertDialog.Builder b = new AlertDialog.Builder(this);
+		b.setTitle("Confirm Delete");
+		b.setMessage("Area you sure you want to delete \"" + list.getName() + "\"?");
+
+		b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				deleteList();
+			}
+		});
+
+		b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				
+			}
+		});
+
+		b.show();
+	}
+	
+	/**
+	 * Deletes the TaskList this Activity is editing and closes
+	 * the Activity.
+	 */
+	private void deleteList() {
+		TaskList list = ((TaskList)GUISpace.get(getClass(), "list"));
+		Account account = (Account) GUISpace.get(getClass(), "account");
+		AccountLists lists = account.getLists();
+		lists.deleteTaskList(list.getName());
+		finish();
+	}
+}

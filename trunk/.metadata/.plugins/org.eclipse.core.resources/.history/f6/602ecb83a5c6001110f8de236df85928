@@ -1,0 +1,36 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class ControlPanel extends JPanel {
+	private JButton step;
+	private JButton run_pause;
+	private JButton clear;
+	private JTextField rate;
+	private GameOfLife myLife;
+	private LifePanel lifeVisual;
+
+	public ControlPanel(LifePanel visual, GameOfLife life) {
+		myLife = life;
+		lifeVisual = visual;
+		step = new JButton("Step");
+		run_pause = new JButton("Run");
+		clear = new JButton("clear");
+
+		add(step);
+		add(run_pause);
+		add(clear);
+		
+		step.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				myLife.update();
+				lifeVisual.repaint();
+			}
+		});
+	}
+}

@@ -1,0 +1,15 @@
+package edu.gatech.GradeAwesome.FileIO;
+
+import java.io.File;
+
+public class JavaFile extends SmartFile {
+
+	public JavaFile(File f) {
+		super(f);
+	}
+	
+	public JavaFile(String s) {
+		super(s);
+	}
+
+}

@@ -1,0 +1,99 @@
+package edu.gatech.GradeAwesome.GUI.Components;
+
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
+import javax.swing.JFileChooser;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import edu.gatech.GradeAwesome.GUI.Helpers.ConstraintsHelper;
+import edu.gatech.GradeAwesome.GUI.Helpers.Dialogs;
+
+public class FileBrowser extends JPanel {
+	private JList dirChooser;
+	private File currentDir;
+	private final double weightDominant = 10;
+	private final double weightDemanded = 0.1;
+	private final double weightNormal = 1;
+	private BackActionNextButtons downUpDir, BackForwardDir;
+
+	public FileBrowser(Dimension dim, File initialDir) {
+		dirChooser = new JList();
+		currentDir = initialDir;
+		dirChooser.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		dirChooser.setLayoutOrientation(JList.VERTICAL);
+		dirChooser.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				if (dirChooser.getSelectedIndex() == -1) {
+
+				} else {
+
+				}
+			}
+		});
+
+		JScrollPane dirChooserScroller = new JScrollPane(dirChooser);
+
+		dirChooserScroller.setPreferredSize(new Dimension((int) dim.getWidth() / 2, (int) dim.getHeight()));
+		this.setLayout(new GridBagLayout());
+		GridBagConstraints c = ConstraintsHelper.makeConstraints(0, 0, GridBagConstraints.BOTH, weightDominant,
+				weightDominant, GridBagConstraints.RELATIVE, GridBagConstraints.RELATIVE, GridBagConstraints.WEST);
+		this.add(dirChooserScroller, c);
+		c = ConstraintsHelper.makeConstraints(0, 1, GridBagConstraints.BOTH, weightNormal, weightDemanded,
+				GridBagConstraints.RELATIVE, GridBagConstraints.RELATIVE, GridBagConstraints.WEST);
+		JSeparator seph = new JSeparator(JSeparator.HORIZONTAL);
+		seph.setVisible(true);
+		seph.setEnabled(true);
+		this.add(seph, c);
+		c = ConstraintsHelper.makeConstraints(0, 2, GridBagConstraints.BOTH, weightNormal, weightDemanded,
+				GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.WEST);
+		BackActionNextButtons brn = new BackActionNextButtons("Set Directory", true);
+		brn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Dialogs.getFile(null, "Set Directory",
+						"Select the directory you want to view below and click open(not enter)",
+						FileBrowser.this.currentDir, JFileChooser.DIRECTORIES_ONLY);
+			}
+		});
+
+		brn.addNextListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				dirChooser.setSelectedIndex((dirChooser.getSelectedIndex() + 1) % (dirChooser.getLastVisibleIndex() + 1));
+			}
+		});
+		brn.addBackListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				dirChooser.setSelectedIndex((Math.abs(dirChooser.getSelectedIndex() - 1)));
+			}
+		});
+
+		this.add(brn, c);
+	}
+
+	public void addFolderSelectionListener(ListSelectionListener listener) {
+		this.dirChooser.addListSelectionListener(listener);
+	}
+
+	public File[] getCurrentFiles() {
+		if (currentDir.listFiles() == null) {
+			System.err.println("Error at FileBrowser in updateFiles():invalid directory");
+			return null;
+		} else {
+			return currentDir.listFiles();
+		}
+	}
+
+}

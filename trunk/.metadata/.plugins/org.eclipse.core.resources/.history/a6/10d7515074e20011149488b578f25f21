@@ -1,0 +1,83 @@
+package edu.gatech.JThing.GUI;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.io.File;
+
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+import org.ThingsWithWorth.Nicities.GUI.Helpers.Dialogs;
+import org.ThingsWithWorth.Nicities.ModelStorage.Configuration;
+
+/**
+ * Monostate sort of intro thing
+ * 
+ * @author Andrey K.
+ * 
+ */
+public class NewUserDisplay {
+	private final static NewUserDisplay instance = new NewUserDisplay();
+	// TODO: put string constants into some sort of constants file? Maaaybe.
+	private static final String newPersonMessage = "Hello! You, hopefully, are a CS1331 TA. This is a thing made by a random 1331 TA for HW grading.\n"
+			+ "I got annoyed by the need to change directories and compile and run stuff manually, so I just wrote this!\n"
+			+ "I liked it so much, I decided to share. Hopefully it wont break. And will be useful.\n\n";
+	private static final String totallyNewPersonMessage = "To use: You need to set the current directory to be an extracted version of one of the TSquare homework folders. \n"
+			+ "This is after you set up your students, which will happen right after this. Other stuff is hopefully pretty clear.\n\n"
+			+ "So yeah, hopefully this will make grading less of a pain. Have fun!\n" + "-Random 1331 TA";
+	private static final String getStudentsMessage = "Hello again! Now you need to set up your students.\n"
+			+ "Go on TSquare and get the names and gtids of the members of your grading section.\n";
+	private static final String studentsPaste = "Then simply copy and paste all the text of you grading section(names, ids, etc. - all rows & columns).\n"
+			+ "Alternatively you can opt to enter the students in manually by pressing the button below.";
+	private static final String studentsTable = "Then simply enter each name, as on TSquare,\n in the first and second columns and the corresponding tsquare id in the third.";
+	private static final String setBaseDir = "Now to set the base directory.\n"
+			+ "This will simply make the program always start in this directory.";// TODO: make newline actually show up
+
+	private NewUserDisplay() {
+	}
+
+	public static File introduceAndGetFiles(Dimension dim, Configuration config) {
+		JFrame stuffFrame = new JFrame("Intro stuff!");
+		stuffFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		stuffFrame.setPreferredSize(dim);// TODO: figure out if this should be visible
+		introduce(stuffFrame, true, true, config);
+		File toReturn = getDirFile(stuffFrame);
+		while (toReturn == null) {
+			Dialogs.askIfExitApplication(stuffFrame);
+			toReturn = getDirFile(stuffFrame);
+		}
+		stuffFrame.dispose();
+		return toReturn;
+	}
+
+	public static File getDirFile(Window in) {
+		return Dialogs.getFile(in, "Set base directory", "<html>" + setBaseDir + "</html>", null,
+				JFileChooser.DIRECTORIES_ONLY);
+	}
+
+	public static void introduce(Component in, boolean checkBox, boolean newGuy, Configuration modify) {
+		boolean dontShow = showIntro(in, checkBox, newGuy);
+		if (newGuy)
+			modify.setShowIntro(!dontShow);
+	}
+
+	private static boolean showIntro(Component in, boolean checkBox, boolean totallyNew) {
+		JCheckBox checkbox = new JCheckBox("Do not show this message again?");
+		if (checkBox && totallyNew) {
+			Object[] params = { newPersonMessage, totallyNewPersonMessage, checkbox };
+			JOptionPane.showMessageDialog(in, params, "New Person Message :)", JOptionPane.INFORMATION_MESSAGE);
+		} else if (checkBox) {
+			Object[] params = { newPersonMessage + "-Random 1331 TA guy", checkbox };
+			JOptionPane.showMessageDialog(in, params, "New Person Message :)", JOptionPane.INFORMATION_MESSAGE);
+
+		} else
+			JOptionPane.showMessageDialog(in, newPersonMessage + "\n-Random 1331 TA guy", "New Person Message :)",
+					JOptionPane.INFORMATION_MESSAGE);
+
+		return checkbox.isSelected();
+	}
+
+}

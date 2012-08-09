@@ -1,0 +1,7 @@
+package edu.gatech.GradeAwesome;
+
+import java.util.ArrayList;
+ 
+public interface Observer<Observed extends Observable, ArgType> {
+	public void acceptNotification(Observed source, ArgType arg);
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uiBinderReferences>
+<referenceManager>
+<references/>
+</referenceManager>
+<uiBinderSubtypeToOwner/>
+<uiBinderSubtypeToUiXml/>
+<uiXmlReferencedFields>
+<uiField location="/geoChat-AppEngine/src/com/geochat/client/GeoChatWidget.ui.xml" name="sayHelloButton"/>
+<uiField location="/geoChat-AppEngine/src/com/geochat/client/GeoChatWidget.ui.xml" name="sendMessageButton"/>
+<uiField location="/geoChat-AppEngine/src/com/geochat/client/GeoChatWidget.ui.xml" name="recipientArea"/>
+<uiField location="/geoChat-AppEngine/src/com/geochat/client/GeoChatWidget.ui.xml" name="status"/>
+<uiField location="/geoChat-AppEngine/src/com/geochat/client/GeoChatWidget.ui.xml" name="messageArea"/>
+</uiXmlReferencedFields>
+</uiBinderReferences>

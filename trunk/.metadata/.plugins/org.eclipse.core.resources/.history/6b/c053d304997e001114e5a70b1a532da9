@@ -1,0 +1,48 @@
+package edu.gatech.fiveminutesleft.storage;
+
+/**
+ * Represents some object in storage with (C)RUD operations.
+ * 
+ * Storage locations implement their own internal Reference classes, which
+ * through polymorphism allows the semantics of retrieving or storing any
+ * data to be completely hidden.
+ * 
+ * @author Nick Johnson
+ * @param <D>
+ *            The type used to represent the backing store of this object.
+ */
+public interface StorageReference<D> {
+
+	/**
+	 * @return The storage address associated with this object.
+	 */
+	public StorageAddress getAddress();
+	
+	/**
+	 * @return The storage object within which this object is stored.
+	 */
+	public Storage getStorage();
+
+	/**
+	 * Read the current state of the backing store.
+	 * 
+	 * @return a non-null backing store representation. If the backing store does not exist, an empty representation must be
+	 *         returned instead of a null one.
+	 */
+	public D read();
+
+	/**
+	 * Update the state of the backing store. There may be complex merging operations performed when this is called. As a
+	 * result, the backing store may not perfectly reflect the given data even if the call is successful.
+	 * 
+	 * @param D
+	 *            The desired state of the backing store.
+	 */
+	public void update(D data);
+
+	/**
+	 * Delete the backing store.
+	 */
+	public void delete();
+
+}

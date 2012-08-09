@@ -1,0 +1,64 @@
+package edu.gatech.fiveminutesleft.storage;
+
+import java.io.IOException;
+
+/**
+ * A storage location capable of storing task and task list representations 
+ * persistently.
+ * 
+ * The purpose of this class is to provide a uniform interface to some sort of
+ * storage backend driver. It is intended to be managed an interfaced with
+ * largely by StorageManager, which is why its methods are package-scoped.
+ * 
+ * The flush method is intended to be used by cache code, and is therefore
+ * public.
+ * 
+ * @author Nick Johnson
+ */
+public interface Storage {
+	
+	/**
+	 * Attempt to find the task at the given address within this storage.
+	 * 
+	 * @param loc - Storage address of requested task.
+	 * @return A reference to the task on success, null on error.
+	 */
+	TaskReference getTask(StorageAddress addr);
+	
+	/**
+	 * Attempt to create a new task within this storage.
+	 * 
+	 * @return A reference to the new task on success, null on error.
+	 */
+	TaskReference createTask();
+
+	/**
+	 * Attempt to find the task list at the given address within this storage.
+	 * 
+	 * @param loc - Storage address of requested task list.
+	 * @return A reference to the task list on success, null on error.
+	 */
+	TaskListReference getTaskList(StorageAddress addr);
+	
+	/**
+	 * Attempt to create a new task list within this storage.
+	 * 
+	 * @return A reference to the new task list on success, null on error.
+	 */
+	TaskListReference createTaskList();
+	
+	/**
+	 * Get the URI that may be used to look up this storage location.
+	 * 
+	 * @return The URI that may be used to look up this storage location.
+	 */
+	String getServerAddress();
+	
+	/**
+	 * Flush all read/write buffers in the storage location, so that if the
+	 * program were to terminate, no data in that storage location would be
+	 * lost.
+	 */
+	public void flush() throws IOException;
+	
+}

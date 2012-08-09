@@ -1,0 +1,9 @@
+package edu.gatech.fiveminutesleft.model;
+
+public interface TimeUnit<T> extends Comparable<T> {
+	public T getFromTask(Task getFrom);
+
+	public void setInTask(Task setIn);
+
+	public int compareTo(T compare);
+}

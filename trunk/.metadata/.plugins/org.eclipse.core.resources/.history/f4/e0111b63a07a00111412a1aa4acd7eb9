@@ -1,0 +1,10 @@
+package edu.gatech.fiveminutesleft.model;
+
+import edu.gatech.fiveminutesleft.storage.StorageAddress;
+
+public interface StorageObject {
+
+	public StorageAddress getAddress();
+	public void delete();
+	public void bind(? extends StorageReference);
+}

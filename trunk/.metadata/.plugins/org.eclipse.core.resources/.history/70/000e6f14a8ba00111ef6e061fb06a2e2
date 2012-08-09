@@ -1,0 +1,18 @@
+package edu.gatech.RecAwesome.IO;
+
+public class JavaDictionary {
+	private static JavaDictionary instance;
+	private HashMap<String, String> dictionary;
+	public static JavaDictionary getInstance(){
+		if(instance==null)
+			instance=new JavaDictionary();
+		return instance;
+	}
+	
+	private JavaDictionary(){
+		
+		
+	}
+	
+	
+}
