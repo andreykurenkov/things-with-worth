@@ -3,10 +3,11 @@ package org.thingswithworth.nicities.gui.components;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
+
+import org.thingswithworth.nicities.fileio.ImageLoader;
 
 public class BackActionNextButtons extends JPanel {
 	private final JButton back;
@@ -15,7 +16,7 @@ public class BackActionNextButtons extends JPanel {
 
 	public BackActionNextButtons(String back, String actionText, boolean vertical, String next) {
 		this.setLayout(new GridLayout(vertical ? 3 : 1, vertical ? 1 : 3));
-		this.back = new JButton(new ImageIcon(back));
+		this.back = new JButton(ImageLoader.getImageIcon(back));
 		this.add(this.back);
 		if (actionText != null) {
 			this.action = new JButton(actionText);
@@ -23,7 +24,7 @@ public class BackActionNextButtons extends JPanel {
 		} else {
 			this.action = new JButton("");
 		}
-		this.next = new JButton(new ImageIcon(next));
+		this.next = new JButton(ImageLoader.getImageIcon(next));
 		this.add(this.next);
 
 	}
@@ -33,8 +34,8 @@ public class BackActionNextButtons extends JPanel {
 	}
 
 	public BackActionNextButtons(String actionText, boolean vertical) {
-		this("Res/" + (vertical ? "UpArrow.png" : "LeftArrow.png"), actionText, vertical, "Res/"
-				+ (vertical ? "DownArrow.png" : "RightArrow.png"));
+		this((vertical ? "UpArrow.png" : "LeftArrow.png"), actionText, vertical, (vertical ? "DownArrow.png"
+				: "RightArrow.png"));
 	}
 
 	public BackActionNextButtons() {
