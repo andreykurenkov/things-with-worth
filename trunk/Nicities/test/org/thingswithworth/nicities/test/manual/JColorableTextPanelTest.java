@@ -6,7 +6,7 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.thingswithworth.nicities.GUI.Components.JColorableTextPane;
+import org.thingswithworth.nicities.gui.components.JColorableTextPane;
 
 public class JColorableTextPanelTest {
 	private JPanel testPanel;

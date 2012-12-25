@@ -9,7 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.thingswithworth.nicities.GUI.Helpers.Dialogs;
+import org.thingswithworth.nicities.gui.helpers.Dialogs;
 
 public class DialogsTests {
 	private JPanel testPanel;
