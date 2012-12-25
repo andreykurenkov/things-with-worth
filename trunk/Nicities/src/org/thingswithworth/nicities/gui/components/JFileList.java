@@ -20,6 +20,7 @@ import javax.swing.filechooser.FileSystemView;
 
 import org.thingswithworth.nicities.Observable;
 import org.thingswithworth.nicities.Observer;
+import org.thingswithworth.nicities.fileio.ImageLoader;
 import org.thingswithworth.nicities.fileio.FormattedFiles.ExtendedFile;
 
 public class JFileList extends JList implements Observable<JFileList> {
@@ -200,10 +201,11 @@ public class JFileList extends JList implements Observable<JFileList> {
 	}
 
 	public static class FileIconRenderer extends FileNameRenderer {
-		private static final ImageIcon smallFolderBW = new ImageIcon("Res/smallFolderBW.png");
-		private static final ImageIcon smallFolder = new ImageIcon("Res/smallFolder.png");
-		private static final ImageIcon whiteFile = new ImageIcon("Res/whiteFile.png");
-		private static final ImageIcon blackFile = new ImageIcon("Res/blackFile.png");
+
+		private static final ImageIcon smallFolderBW = ImageLoader.getImageIcon("smallFolderBW.png");
+		private static final ImageIcon smallFolder = ImageLoader.getImageIcon("smallFolder.png");
+		private static final ImageIcon whiteFile = ImageLoader.getImageIcon("whiteFile.png");
+		private static final ImageIcon blackFile = ImageLoader.getImageIcon("blackFile.png");
 
 		@Override
 		public Component getListCellRendererComponent(JList list, Object cell, int index, boolean selected, boolean focus) {

@@ -14,7 +14,6 @@ import java.util.EmptyStackException;
 import java.util.Stack;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -24,6 +23,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileSystemView;
 
 import org.thingswithworth.nicities.Observer;
+import org.thingswithworth.nicities.fileio.ImageLoader;
 import org.thingswithworth.nicities.gui.helpers.Dialogs;
 
 public class DirectoryBrowserPanel extends JPanel {
@@ -60,9 +60,9 @@ public class DirectoryBrowserPanel extends JPanel {
 		};
 		currentFolders = new JFileList(dirFilter, startDir);
 		// TODO: make a non-hardcoded icon management thing somehow
-		setDir = new JButton("Set Directory", new ImageIcon("Res/openFolder.png"));
+		setDir = new JButton("Set Directory", ImageLoader.getImageIcon("openFolder.png"));
 		previousNext = new BackActionNextButtons("", false);
-		previousNext.getAction().setIcon(new ImageIcon("Res/UpArrow.png"));
+		previousNext.getAction().setIcon(ImageLoader.getImageIcon("UpArrow.png"));
 		previousNext.getBack().setEnabled(false);
 		previousNext.getNext().setEnabled(false);
 		dirScroll = new JScrollPane(currentFolders);
