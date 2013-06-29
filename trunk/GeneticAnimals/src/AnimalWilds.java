@@ -22,6 +22,9 @@ public class AnimalWilds {
 	
 	public AnimalWilds(int border) {
 
+		animals = new ArrayList<GeneticAnimal>();
+		obstacles = new ArrayList<Point>();
+		food = new ArrayList<Point>();
 	}
 
 	public void randomise(double seed){
@@ -43,6 +46,30 @@ public class AnimalWilds {
 	
 	public void update(){
 		
+		//check for collisions
+		
+		//update momentum
+		
+		//update positions (rotate as needed)
+		
+	}
+
+	private void rotateAnimal(GeneticAnimal animal, Point center ){
+		
+		
+	}
+	
+	private Point rotatePoint(Point pt, Point center, double angleDeg)
+	{
+	    double angleRad = (angleDeg/180)*Math.PI;
+	    double cosAngle = Math.cos(angleRad );
+	    double sinAngle = Math.sin(angleRad );
+	    double dx = (pt.x-center.x);
+	    double dy = (pt.y-center.y);
+
+	    pt.x = center.x + (int) (dx*cosAngle-dy*sinAngle);
+	    pt.y = center.y + (int) (dx*sinAngle+dy*cosAngle);
+	    return pt;
 	}
 	
 	/**
