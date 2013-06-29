@@ -99,7 +99,6 @@ public class ControlPanel extends JPanel {
 	}
 
 	private void pause() {
-		wildsVisual.enable();
 		run_pause.setText("Run");
 		runTimer.stop();
 		wilds.pause();
@@ -117,7 +116,7 @@ public class ControlPanel extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if (!re) {
-				wilds.update(wildsVisual.getWidth(),wildsVisual.getHeight());
+				wilds.update();
 				if (wilds.isStable() && !stableDisplay) {
 					stableDisplay = true;
 					JOptionPane

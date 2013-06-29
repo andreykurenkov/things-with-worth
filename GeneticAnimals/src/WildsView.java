@@ -13,7 +13,9 @@ public class WildsView extends JPanel {
 	}
 	
 	public void paint(Graphics g) {
-
+		for(GeneticAnimal animal:wilds.getAnimals()){
+		    animal.draw(g);	
+		}
 	}
 
 }
