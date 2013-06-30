@@ -3,7 +3,9 @@ import java.awt.Polygon;
 
 
 public class SmartPolygon extends Polygon {
-
+    private double x, y;
+    private int xI, yI;
+    
 	public SmartPolygon(int[] xpoints, int[] ypoints, int numPoints) {
 		super(xpoints, ypoints, numPoints);
 	}
@@ -19,9 +21,24 @@ public class SmartPolygon extends Polygon {
 		return area/2;
 	}
 	
-	private void rotateAbout(Point center ){
+    public void rotateAboutCenterOfMass(double angle){
+		//TODO
+		
+	}
+	
+	private void rotateAbout(Point center, double angle){
 		
 		
+	}
+	
+	public void translate(double dX, double dY){
+		x+= dX;
+		y+= dY;		
+		int newXI = (int)Math.round(x-xI);
+		int newYI = (int)Math.round(y-yI);
+		this.translate(newXI-xI, newYI-yI);
+		xI = newXI;
+		yI = newYI;
 	}
 	
 	private Point rotatePoint(Point pt, Point center, double angleDeg)

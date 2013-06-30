@@ -12,9 +12,8 @@ public class PolygonAnimal extends GeneticAnimal{
 	private static final int NUM_POINTS=12;
 	private static final int LIFE = 50;
 
-
-	public PolygonAnimal(int x, int y, Point[] points) {
-		this(x, y);
+	public PolygonAnimal(int x, int y, double startAngle, Point[] points) {
+		super(LIFE,x,y);
 		this.points=points;
 		int[] xpoints = new int[NUM_POINTS];
 		int[] ypoints = new int[NUM_POINTS];
@@ -22,13 +21,15 @@ public class PolygonAnimal extends GeneticAnimal{
 			xpoints[point] = points[point].x;
 			ypoints[point] = points[point].y;
 		}
+		velX = speed * Math.cos(startAngle);
+		velY = speed * Math.sin(startAngle);
+		velAng = 0;
 		body = new SmartPolygon(xpoints, ypoints, NUM_POINTS);
 		speed = body.getArea(body)/MAX_AREA * MAX_SPEED;
 		body.translate(x, y);
 	}
-
 	
-
+	
 	public static double getAngleOfPoint(Point point){
 		return Math.atan2(point.y, point.x);
 	}
@@ -37,18 +38,26 @@ public class PolygonAnimal extends GeneticAnimal{
 		return Math.sqrt(point.x*point.x+point.y*point.y);
 	}
 
-	public PolygonAnimal(int x, int y) {
-		super(LIFE, x, y);
-	}
-
 	@Override
 	public void draw(Graphics g) {
-
+		//g.drawPolygon(body);
+		g.drawPolyline(body.xpoints, body.ypoints, body.npoints);
 	}
 
 	@Override
 	public void update(AnimalWilds wilds) {
-
+		body.rotateAboutCenterOfMass(velAng);
+		body.translate(velX,velY);
+		for(Point obstacle: wilds.getObstacles()){
+			if(body.contains(obstacle)){
+				//TODO handle collision
+			}
+		}
+		for(Point food: wilds.getFood()){
+			if(body.contains(food)){
+				//TODO handle collision
+			}
+		}
 	}
 
 	public static PolygonAnimal makeRandom(double maxDist, double minSize, double maxSize){
@@ -67,8 +76,9 @@ public class PolygonAnimal extends GeneticAnimal{
 			points[point]=new Point(x,y);
 		}
 		int x = (int)(Math.random()*(maxDist+minPointX))-minPointX;
-		int y = (int)(Math.random()*(maxDist+minPointY))-minPointY;        
-		return new PolygonAnimal(x,y,points);
+		int y = (int)(Math.random()*(maxDist+minPointY))-minPointY;
+		double startAngle = -Math.random() * Math.PI/2;
+		return new PolygonAnimal(x,y,startAngle, points);
 	}
 
 }
