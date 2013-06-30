@@ -2,16 +2,17 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.util.ArrayList;
 
 
 public class PolygonAnimal extends GeneticAnimal{
 
 	private SmartPolygon body;
 	private Point[] points;
-	private static final double MAX_AREA = 3000.0;//TODO: arbitrary num, adjust
+	private static double MAX_AREA = 2000.0;//TODO: arbitrary num, adjust
 	private static final double MAX_SPEED = 1.0;//TODO:adjust
 	private static final int NUM_POINTS=12;
-	private static final int LIFE = 50;
+	private static final double LIFE = 1.0;
 
 	public PolygonAnimal(int x, int y, double startAngle, Point[] points) {
 		super(LIFE,x,y);
@@ -23,11 +24,12 @@ public class PolygonAnimal extends GeneticAnimal{
 			ypoints[point] = points[point].y;
 		}
 		body = new SmartPolygon(xpoints, ypoints, NUM_POINTS);
-		speed = body.getArea()/MAX_AREA * MAX_SPEED;
+		speed = (body.getArea()-1000)/MAX_AREA * MAX_SPEED;
 		velX = speed * Math.cos(startAngle);
 		velY = speed * Math.sin(-startAngle);//flip
 		velAng = 0;
 		body.translate(x, y);
+		alive=true;
 	}
 	
 	
@@ -41,6 +43,8 @@ public class PolygonAnimal extends GeneticAnimal{
 
 	@Override
 	public void draw(Graphics g) {
+		if(!alive)
+			return;
 		//g.drawPolygon(body);
 		g.setColor(Color.BLACK);
 		g.drawPolyline(body.xpoints, body.ypoints, body.npoints);
@@ -49,6 +53,8 @@ public class PolygonAnimal extends GeneticAnimal{
 
 	@Override
 	public void update(AnimalWilds wilds) {
+		if(!alive)
+			return;
 		body.rotateAboutCenterOfMass(velAng);
 		body.translate(velX,velY);
 		for(Point obstacle: wilds.getObstacles()){
@@ -56,14 +62,28 @@ public class PolygonAnimal extends GeneticAnimal{
 				//TODO handle collision
 			}
 		}
+		ArrayList<Point> removeFood = new ArrayList<Point>();
 		for(Point food: wilds.getFood()){
 			if(body.contains(food)){
-				//TODO handle collision
+				removeFood.add(food);
+				life+=0.08;
 			}
 		}
+		for(Point remove:removeFood)
+			wilds.getFood().remove(remove);//TODO: HACKS
+		life-=0.001;
+		alive=life>0;
+	}
+	
+	public SmartPolygon getBody(){
+		return body;
+	}
+	
+	public double getArea(){
+		return body.getArea();
 	}
 
-	public static PolygonAnimal makeRandom(double maxDist, double minSize, double maxSize){
+	public static PolygonAnimal makeRandom(double maxDist, double minSize, double maxSize, int minX, int minY){
 		Point[] points = new Point[NUM_POINTS];
 		double radialDiv = 2*Math.PI/NUM_POINTS;
 		int minPointX = 0;
@@ -78,9 +98,9 @@ public class PolygonAnimal extends GeneticAnimal{
 			minPointY = Math.min(minPointY, y);
 			points[point]=new Point(x,y);
 		}
-		int x = (int)(Math.random()*(maxDist+minPointX))-minPointX;
-		int y = (int)(Math.random()*(maxDist+minPointY))-minPointY;
-		double startAngle = -Math.random() * Math.PI/2;
+		int x = minX + (int)(Math.random()*(maxDist+minPointX))-minPointX;
+		int y = minY + (int)(Math.random()*(maxDist+minPointY))-minPointY;
+		double startAngle = Math.random() * Math.PI * 2;
 		return new PolygonAnimal(x,y,startAngle, points);
 	}
 
