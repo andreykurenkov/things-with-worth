@@ -24,10 +24,6 @@ public class AnimalWilds {
 	
 	public AnimalWilds(){
 		this(600);
-		animals = new ArrayList<GeneticAnimal>();
-		obstacles = new ArrayList<Point>();
-		food = new ArrayList<Point>();
-		reset(0.5);
 	}
 	
 	public AnimalWilds(int border) {
@@ -35,6 +31,7 @@ public class AnimalWilds {
 		animals = new ArrayList<GeneticAnimal>();
 		obstacles = new ArrayList<Point>();
 		food = new ArrayList<Point>();
+		reset(0.5);
 	}
 
 	/**
@@ -49,6 +46,10 @@ public class AnimalWilds {
 		}
 	}
 	
+	public int getBorder(){
+		return border;
+	}
+	
 	/**
 	 * Recreate the entire world
 	 * @param seed
@@ -59,12 +60,12 @@ public class AnimalWilds {
 		food.clear();
 		
 		this.seed = seed % 1.0;
-		divisions = border / (10 + (int)(10*seed));
+		divisions = (8 + (int)(8*seed));
 		numFood = divisions * divisions / 2;
 		int divLength = border/divisions;
 		for(int x=0;x<divisions;x++){
 			for(int y=0;y<divisions;y++){
-				if(!(x==0 && y==0)){
+				if(x>1 || y>1){
 					int newObstacleX = divLength*x+(int)(Math.random()*divLength);
 					int newObstacleY = divLength*y+(int)(Math.random()*divLength);
 					obstacles.add(new Point(newObstacleX,newObstacleY));
@@ -75,7 +76,7 @@ public class AnimalWilds {
 		while(count < numFood){
 			int x=(int)(Math.random()*divisions);
 			int y=(int)(Math.random()*divisions);
-			if(!(x==0 && y==0)){
+			if(x>1 || y>1){
 				count++;
 				int newObstacleX = divLength*x+(int)(Math.random()*divLength);
 				int newObstacleY = divLength*y+(int)(Math.random()*divLength);
@@ -84,7 +85,7 @@ public class AnimalWilds {
 		}
 		
 		for(int i=0;i<NUM_ANIMALS;i++){
-			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*4/5.0));
+			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*3/5.0));
 		}
 	}
 
@@ -97,7 +98,8 @@ public class AnimalWilds {
 	}
 	
 	public void update(){
-		
+		for(GeneticAnimal animal:animals)
+			animal.update(this);
 		//check for collisions
 		
 		//update momentum

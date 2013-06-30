@@ -34,7 +34,10 @@ public class AnimalEvolution {
 		int input = -1;
 		while (!validInput) {
 			try {
-				input = Integer.parseInt(JOptionPane.showInputDialog(checkMessage));
+				String response = JOptionPane.showInputDialog(checkMessage);
+				if(response == null)
+					System.exit(0);
+				input = Integer.parseInt(response);
 				validInput = true;
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(null, ":(. Thats not a valid int input. Try again.");
