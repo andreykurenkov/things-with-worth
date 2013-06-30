@@ -8,7 +8,7 @@ public abstract class GeneticAnimal {
 	protected boolean alive;
 	protected double speed;
 	protected double velX, velY, velAng;
-	protected int size, x, y;
+	protected double size, x, y;
 	
 	public GeneticAnimal(int life, int x, int y){
 		this.life=life;
@@ -24,15 +24,15 @@ public abstract class GeneticAnimal {
 		return alive;
 	}
 	
-	public int getSize(){
+	public double getSize(){
 		return size;
 	}
 	
-	public int getX(){
+	public double getX(){
 		return x;
 	}
 	
-	public int getY(){
+	public double getY(){
 		return y;
 	}
 		
