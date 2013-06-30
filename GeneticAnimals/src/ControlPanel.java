@@ -89,8 +89,8 @@ public class ControlPanel extends JPanel {
 					JOptionPane.showMessageDialog(ControlPanel.this, "Not valid double input");
 				}
 				if (valid) {
-					wilds.reset();
-					wilds.randomise(Double.parseDouble(percent.getText()));
+					wilds.reset(Double.parseDouble(percent.getText()));
+					wilds.randomise();
 					wildsVisual.repaint();
 				}
 
@@ -124,7 +124,7 @@ public class ControlPanel extends JPanel {
 									"It is stable!\nNo further changes, except oscillation, will occur.\nGen count is stopped, thought enjoy the lightshow.");
 				}
 			} else {
-				wilds.reset();
+				wilds.reset(Double.parseDouble(percent.getText()));
 				stableDisplay = false;
 				pause();
 			}
