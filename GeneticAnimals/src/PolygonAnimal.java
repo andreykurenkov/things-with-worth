@@ -5,7 +5,7 @@ import java.awt.Polygon;
 
 public class PolygonAnimal extends GeneticAnimal{
 
-	private Polygon body;
+	private SmartPolygon body;
 	private Point[] points;
 	private static final double MAX_AREA = 50.0;//TODO: arbitrary num, adjust
 	private static final double MAX_SPEED = 1.0;//TODO:adjust
@@ -22,21 +22,12 @@ public class PolygonAnimal extends GeneticAnimal{
 			xpoints[point] = points[point].x;
 			ypoints[point] = points[point].y;
 		}
-		body = new Polygon(xpoints, ypoints, NUM_POINTS);
-		speed = getArea(body)/MAX_AREA * MAX_SPEED;
+		body = new SmartPolygon(xpoints, ypoints, NUM_POINTS);
+		speed = body.getArea(body)/MAX_AREA * MAX_SPEED;
 		body.translate(x, y);
 	}
 
-	public static double getArea(Polygon polygon){
-		double  area = 0;         // Accumulates area in the loop
-		int numPoints = polygon.npoints;
-		int j = numPoints-1;  // The last vertex is the 'previous' one to the first
-		for (int i=0; i<numPoints; i++) { 
-			area = area +  (polygon.xpoints[j]+polygon.xpoints[i]) * (polygon.ypoints[j]-polygon.ypoints[i]); 
-			j = i;  //j is previous vertex to i
-		}
-		return area/2;
-	}
+	
 
 	public static double getAngleOfPoint(Point point){
 		return Math.atan2(point.y, point.x);
