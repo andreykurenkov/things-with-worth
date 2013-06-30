@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -7,7 +8,7 @@ public class PolygonAnimal extends GeneticAnimal{
 
 	private SmartPolygon body;
 	private Point[] points;
-	private static final double MAX_AREA = 50.0;//TODO: arbitrary num, adjust
+	private static final double MAX_AREA = 3000.0;//TODO: arbitrary num, adjust
 	private static final double MAX_SPEED = 1.0;//TODO:adjust
 	private static final int NUM_POINTS=12;
 	private static final int LIFE = 50;
@@ -21,11 +22,11 @@ public class PolygonAnimal extends GeneticAnimal{
 			xpoints[point] = points[point].x;
 			ypoints[point] = points[point].y;
 		}
-		velX = speed * Math.cos(startAngle);
-		velY = speed * Math.sin(startAngle);
-		velAng = 0;
 		body = new SmartPolygon(xpoints, ypoints, NUM_POINTS);
-		speed = body.getArea(body)/MAX_AREA * MAX_SPEED;
+		speed = body.getArea()/MAX_AREA * MAX_SPEED;
+		velX = speed * Math.cos(startAngle);
+		velY = speed * Math.sin(-startAngle);//flip
+		velAng = 0;
 		body.translate(x, y);
 	}
 	
@@ -41,7 +42,9 @@ public class PolygonAnimal extends GeneticAnimal{
 	@Override
 	public void draw(Graphics g) {
 		//g.drawPolygon(body);
+		g.setColor(Color.BLACK);
 		g.drawPolyline(body.xpoints, body.ypoints, body.npoints);
+		g.drawLine(body.xpoints[0], body.ypoints[0], body.xpoints[NUM_POINTS-1], body.ypoints[NUM_POINTS-1]);
 	}
 
 	@Override

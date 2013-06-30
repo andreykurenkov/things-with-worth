@@ -28,18 +28,18 @@ public class ControlPanel extends JPanel {
 		random = new JButton("Random");
 		rate = new JTextField(3);
 		percent = new JTextField(3);
-		JLabel rateLabel = new JLabel("Hz Rate:");
-		JLabel percentLabel = new JLabel("Live ratio:");
-		gen = new JLabel("Gen  0");
+		JLabel rateLabel = new JLabel("Updates/Sec:");
+		JLabel percentLabel = new JLabel("World seed:");
+		gen = new JLabel("Gen 0");
 		add(gen);
 		add(step);
 		add(clear);
-			add(run_pause);
-			add(rateLabel);
-			add(rate);
-			add(random);
-			add(percentLabel);
-			add(percent);
+		add(run_pause);
+		add(rateLabel);
+		add(rate);
+		add(random);
+		add(percentLabel);
+		add(percent);
 		runTimer = new Timer(500, new UpdateListener(false));
 		run_pause.addActionListener(new ActionListener() {
 			@Override
@@ -119,16 +119,12 @@ public class ControlPanel extends JPanel {
 				wilds.update();
 				if (wilds.isStable() && !stableDisplay) {
 					stableDisplay = true;
-					JOptionPane
-							.showMessageDialog(ControlPanel.this,
-									"It is stable!\nNo further changes, except oscillation, will occur.\nGen count is stopped, thought enjoy the lightshow.");
 				}
 			} else {
 				wilds.reset(Double.parseDouble(percent.getText()));
 				stableDisplay = false;
 				pause();
 			}
-
 			wildsVisual.repaint();
 			gen.setText("Gen " + wilds.getGenerations());
 

@@ -10,12 +10,12 @@ public class SmartPolygon extends Polygon {
 		super(xpoints, ypoints, numPoints);
 	}
 
-	public double getArea(Polygon polygon){
+	public double getArea(){
 		double  area = 0;         // Accumulates area in the loop
-		int numPoints = polygon.npoints;
+		int numPoints = npoints;
 		int j = numPoints-1;  // The last vertex is the 'previous' one to the first
 		for (int i=0; i<numPoints; i++) { 
-			area = area +  (polygon.xpoints[j]+polygon.xpoints[i]) * (polygon.ypoints[j]-polygon.ypoints[i]); 
+			area = area +  (xpoints[j]+xpoints[i]) * (ypoints[i]-ypoints[j]); 
 			j = i;  //j is previous vertex to i
 		}
 		return area/2;
@@ -34,8 +34,8 @@ public class SmartPolygon extends Polygon {
 	public void translate(double dX, double dY){
 		x+= dX;
 		y+= dY;		
-		int newXI = (int)Math.round(x-xI);
-		int newYI = (int)Math.round(y-yI);
+		int newXI = xI+(int)Math.round(x-xI);
+		int newYI = yI+(int)Math.round(y-yI);
 		this.translate(newXI-xI, newYI-yI);
 		xI = newXI;
 		yI = newYI;
