@@ -41,8 +41,9 @@ public class AnimalWilds {
 	public void randomise(){
 		animals.clear();
 		int divLength = border/divisions;
+		int placeAt=divLength*divisions/2;
 		for(int i=0;i<NUM_ANIMALS;i++){
-			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*4/5.0));
+			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*4/5.0,placeAt,placeAt));
 		}
 	}
 	
@@ -61,11 +62,14 @@ public class AnimalWilds {
 		
 		this.seed = seed % 1.0;
 		divisions = (8 + (int)(8*seed));
-		numFood = divisions * divisions / 2;
+		if(divisions%2==0)
+			divisions++;
+		numFood = divisions * divisions/2;
 		int divLength = border/divisions;
+		int placeAt=divisions/2;
 		for(int x=0;x<divisions;x++){
 			for(int y=0;y<divisions;y++){
-				if(x>1 || y>1){
+				if(Math.abs(placeAt-x)>1 || Math.abs(placeAt-y)>1){
 					int newObstacleX = divLength*x+(int)(Math.random()*divLength);
 					int newObstacleY = divLength*y+(int)(Math.random()*divLength);
 					obstacles.add(new Point(newObstacleX,newObstacleY));
@@ -76,16 +80,16 @@ public class AnimalWilds {
 		while(count < numFood){
 			int x=(int)(Math.random()*divisions);
 			int y=(int)(Math.random()*divisions);
-			if(x>1 || y>1){
+			if(Math.abs(placeAt-x)>1 || Math.abs(placeAt-y)>1){
 				count++;
 				int newObstacleX = divLength*x+(int)(Math.random()*divLength);
 				int newObstacleY = divLength*y+(int)(Math.random()*divLength);
 				food.add(new Point(newObstacleX,newObstacleY));
 			}
 		}
-		
+		placeAt=placeAt*divLength;
 		for(int i=0;i<NUM_ANIMALS;i++){
-			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*3/5.0));
+			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*3/5.0,placeAt,placeAt));
 		}
 	}
 

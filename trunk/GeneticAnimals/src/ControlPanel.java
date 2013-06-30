@@ -41,7 +41,7 @@ public class ControlPanel extends JPanel {
 		add(percentLabel);
 		add(percent);
 		runTimer = new Timer(500, new UpdateListener(false));
-		run_pause.addActionListener(new ActionListener() {
+		ActionListener runPauseListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (run_pause.getText().equals(("Run"))) {
@@ -69,7 +69,9 @@ public class ControlPanel extends JPanel {
 
 			}
 
-		});
+		};
+		rate.addActionListener(runPauseListener);
+		run_pause.addActionListener(runPauseListener);
 
 		step.addActionListener(new UpdateListener(false));
 		clear.addActionListener(new UpdateListener(true));

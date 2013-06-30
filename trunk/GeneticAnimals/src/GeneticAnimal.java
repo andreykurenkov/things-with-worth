@@ -10,7 +10,7 @@ public abstract class GeneticAnimal {
 	protected double velX, velY, velAng;
 	protected double size, x, y;
 	
-	public GeneticAnimal(int life, int x, int y){
+	public GeneticAnimal(double life, int x, int y){
 		this.life=life;
 		this.x=x;
 		this.y=y;
@@ -39,5 +39,7 @@ public abstract class GeneticAnimal {
 	public abstract void draw(Graphics g);
 		
 	public abstract void update(AnimalWilds wilds);
+	
+	public abstract double getArea();
 
 }
