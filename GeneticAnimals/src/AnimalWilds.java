@@ -43,6 +43,7 @@ public class AnimalWilds {
 	 */
 	public void randomise(){
 		animals.clear();
+		int divLength = border/divisions;
 		for(int i=0;i<NUM_ANIMALS;i++){
 			animals.add(PolygonAnimal.makeRandom(divLength, divLength/5.0, divLength*4/5.0));
 		}
