@@ -1,3 +1,7 @@
+
+
+
+
 import java.awt.Graphics;
 import java.util.List;
 
@@ -42,4 +46,7 @@ public abstract class GeneticAnimal {
 	
 	public abstract double getArea();
 
+        public abstract GeneticAnimal getCross(GeneticAnimal mate);
+        
+        public abstract double[] getGeneticCode();
 }
