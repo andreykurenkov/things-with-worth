@@ -9,9 +9,11 @@ import java.util.ArrayList;
 public class PolygonAnimal extends GeneticAnimal {
 
     private SmartPolygon body;
-    private Point[] points;
-    private int startX, startY;
-    private double startAngle;
+    
+    //returns a 3+2*NUM_POINTS entry array
+    //Entries 0,1,2 are startX, startY, startAngle
+    //Entries 3-3+2*NUM_POINTS-1 are x1,y1,x2,y2,...xNUM_POINTS,yNUM_POINTS
+    private double[] code;
     private static double MAX_AREA = 2000.0;//TODO: arbitrary num, adjust
     private static final double MAX_SPEED = 1.0;//TODO:adjust
     private static final int NUM_POINTS = 12;
@@ -31,16 +33,23 @@ public class PolygonAnimal extends GeneticAnimal {
 
     public PolygonAnimal(int x, int y, double angle, Point[] points) {
         super(LIFE, x, y);
-        startX = x;
-        startY = y;
-        startAngle = angle;
-        this.points = points;
+        
+        code = new double[3 + 2 * NUM_POINTS];
+        code[0] = x;
+        code[1] = y;
+        code[2] = angle;
+        for (int i = 0; i < NUM_POINTS; i++) {
+            code[3 + 2 * i] = points[i].x;
+            code[3 + 2 * i + 1] = points[i].y;
+        }
+        
         int[] xpoints = new int[NUM_POINTS];
         int[] ypoints = new int[NUM_POINTS];
         for (int point = 0; point < NUM_POINTS; point++) {
             xpoints[point] = points[point].x;
             ypoints[point] = points[point].y;
         }
+    
         body = new SmartPolygon(xpoints, ypoints, NUM_POINTS);
         speed = (body.getArea() - 1000) / MAX_AREA * MAX_SPEED;
         velX = speed * Math.cos(angle);
@@ -60,37 +69,40 @@ public class PolygonAnimal extends GeneticAnimal {
 
     @Override
     public void draw(Graphics g) {
-        if (!alive) {
+        if (!alive) 
             return;
-        }
+        
+        body.draw(g);
         //g.drawPolygon(body);
-        g.setColor(Color.BLACK);
-        g.drawPolyline(body.xpoints, body.ypoints, body.npoints);
-        g.drawLine(body.xpoints[0], body.ypoints[0], body.xpoints[NUM_POINTS - 1], body.ypoints[NUM_POINTS - 1]);
     }
 
     @Override
     public void update(AnimalWilds wilds) {
-        if (!alive) {
+        if (!alive) 
             return;
-        }
-        body.rotateAboutCenterOfMass(velAng);
+        
         body.translate(velX, velY);
-        for (Point obstacle : wilds.getObstacles()) {
+        for (Point obstacle : wilds.getObstacles())
             if (body.contains(obstacle)) {
                 //TODO handle collision
+            	body.translate(-velX, -velY);
+            	
+            	Pair<Double, Double> temp = new Pair<Double, Double>(velX, velY);
+            	body.rotate(obstacle, temp);
+            	
+            	
             }
-        }
+        
         ArrayList<Point> removeFood = new ArrayList<Point>();
-        for (Point food : wilds.getFood()) {
+        for (Point food : wilds.getFood())
             if (body.contains(food)) {
                 removeFood.add(food);
                 life += 0.08;
             }
-        }
-        for (Point remove : removeFood) {
+        
+        for (Point remove : removeFood)
             wilds.eatFood(remove);//TODO: HACKS
-        }
+        
         life -= 0.001;
         alive = life > 0;
     }
@@ -152,18 +164,9 @@ public class PolygonAnimal extends GeneticAnimal {
         }
     }
 
-    //returns a 3+2*NUM_POINTS entry array
-    //Entries 0,1,2 are startX, startY, startAngle
-    //Entries 3-3+2*NUM_POINTS-1 are x1,y1,x2,y2,...xNUM_POINTS,yNUM_POINTS
+
     public double[] getGeneticCode() {
-        double[] code = new double[3 + 2 * NUM_POINTS];
-        code[0] = startX;
-        code[1] = startY;
-        code[2] = startAngle;
-        for (int i = 0; i < NUM_POINTS; i++) {
-            code[3 + 2 * i] = points[i].x;
-            code[3 + 2 * i + 1] = points[i].y;
-        }
+
         return code;
     }
 }

@@ -9,7 +9,6 @@ public class AnimalWilds {
     private int generations;
     private ArrayList<Point> obstacles;
     private ArrayList<Point> availableFood;
-    private ArrayList<Point> eatenFood;
     private int border;
     private int divisions;
     private int numFood;
@@ -33,7 +32,6 @@ public class AnimalWilds {
         animals = new ArrayList<GeneticAnimal>();
         obstacles = new ArrayList<Point>();
         availableFood = new ArrayList<Point>();
-        eatenFood = new ArrayList<Point>();
         reset(0.5);
     }
 
@@ -62,7 +60,6 @@ public class AnimalWilds {
         animals.clear();
         obstacles.clear();
         availableFood.clear();
-        eatenFood.clear(); 
         this.seed = seed % 1.0;
         divisions = (8 + (int) (8 * seed));
         if (divisions % 2 == 0) {
@@ -144,10 +141,6 @@ public class AnimalWilds {
                 nextGen.add(male.getCross(female));
             }
             animals = nextGen;
-            for(Point a: eatenFood){
-                availableFood.add(a);
-            }
-            eatenFood.clear();
         }
 
     }
@@ -174,7 +167,6 @@ public class AnimalWilds {
 
     public void eatFood(Point food){
         if(availableFood.remove(food)){
-                eatenFood.add(food);
         }
         
     }
