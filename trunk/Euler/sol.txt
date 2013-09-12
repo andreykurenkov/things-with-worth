@@ -1,0 +1,5 @@
+Hey everyone,
+
+This is just going to be a fast note on how I worked with python for this class last year, in case you dont have a prefered IDE solution for that better than IDLE. I am leaving this here rather than on TSquare to allow you to leave your suggestions, since I worked very little with python prior to this class and this solution is just what worked for me when I took it. I used the PyDev plugin for Eclipse (http://pydev.org/) and had a rather enjoyable experience - indentation management was easy, auto-completion worked nicely, and it was easy to set up multiple run setups to reuse with a click of the mouse instead of just running things in terminal each time. Of course, you should feel free to explore other IDEs (I also used vim with plugins for python development all summer quite successfully). If you are already experienced with python and have a favorite IDE that worked in your experience, 
+
+#python
