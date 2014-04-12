@@ -3,7 +3,7 @@ package org.thingswithworth.circuitscan.model;
 import java.io.File;
 
 public abstract class Component {
-	public final File SCHEMATIC_FOLDER = new File("Components");
+	public final File SCHEMATIC_FOLDER = new File("res/omponents");
 	
 	protected double x,y;
 	protected int net;
