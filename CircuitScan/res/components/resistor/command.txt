@@ -1,0 +1,2 @@
+C:\Code\CircuitScan\res\components\resistor>opencv-createsamples -info positives
+.txt -bg negatives.txt -vec samples_out.vec  -w  150 -h 70 -num 1500
