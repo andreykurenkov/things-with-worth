@@ -1,0 +1,26 @@
+#workmainmenu ul { 
+	margin: 0; 
+	width:10%;
+	height:318px;
+	float:left;
+	list-style-type: none; /* Needed to eliminate list item marker */ 
+	text-align: left; /* Centers navigation bar */ 
+	background-color: #000;  
+} 
+
+#workmainmenu ul li { 
+	padding-top:22px;
+	padding-bottom:22px;
+} 
+
+#workmainmenu ul li h2{ 
+	font-weight: bold;
+	text-decoration: none; 
+	padding: .2em 1em; 
+	color: #000;  
+	background-color: #fff;
+} 
+
+#maincategory h2{
+	background-color: #fff;
+}
