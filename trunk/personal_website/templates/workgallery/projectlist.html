@@ -1,0 +1,15 @@
+<ul id="projectList">
+	{% for project in projects %}
+		{% if forloop.first %}
+			<li><div class="textimage" id="firstproject">
+							<img src={{project.image}}/>
+							<h2><span>{{project.name}}</span></h2>
+				</div></a></li>
+		{% else %}
+			<li><div class="textimage">
+							<img src={{project.image}}/>
+							<h2><span>{{project.name}}</span></h2>
+				</div></a></li>
+		{% endif %}
+	{% endfor %}
+</ul>

@@ -1,0 +1,9 @@
+<ul id ="categoryList">
+	{% for category in categories %}
+		{% if forloop.first %}
+			<li id="firstcategory"><h2>{{category}}</h2></li> 
+		{% else %}
+			<li><h2>{{category}}</h2></li> 
+		{% endif %}
+	{% endfor %}
+</ul>
