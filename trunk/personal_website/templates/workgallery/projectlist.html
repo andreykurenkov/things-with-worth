@@ -2,14 +2,16 @@
 	{% for project in projects %}
 		{% if forloop.first %}
 			<li><div class="textimage" id="firstproject">
-							<img src={{project.image}}/>
-							<h2><span>{{project.name}}</span></h2>
-				</div></a></li>
+							<img src="{{ MEDIA_URL }}{{ project.image}}"/>
+							<h2><span>{{ MEDIA_URL }}</span></h2>
+				</div></a>
+			</li>
 		{% else %}
 			<li><div class="textimage">
-							<img src={{project.image}}/>
+							<img src="{{ MEDIA_URL }}{{project.image}}"/>
 							<h2><span>{{project.name}}</span></h2>
-				</div></a></li>
+				</div></a>
+			</li>
 		{% endif %}
 	{% endfor %}
 </ul>

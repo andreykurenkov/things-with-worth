@@ -14,7 +14,7 @@
 		</tr>
 		<tr>
 			<td><h1>Details</h1></td>
-			<td><h2>{{project.detail}}</h2></td>
+			<td><h2>{{project.details}}</h2></td>
 		</tr>
 </table>
 
@@ -25,8 +25,8 @@
 			<img src={{image.image}} alt={{image.alt}}>
 			{%if image.caption%}
 				<figcaption>{{image.caption}}</figcaption>
-			{%endif}
+			{%endif%}
 		</figure></li>
-		{endfor}
+		{%endfor%}
 	</ul>
 </div>

@@ -1,3 +1,6 @@
 from django.contrib import admin
+from workgallery.models import *
 
-# Register your models here.
+admin.site.register(WorkCategory)
+admin.site.register(Project)
+admin.site.register(ProjectImages)

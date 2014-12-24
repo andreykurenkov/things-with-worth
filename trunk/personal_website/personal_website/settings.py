@@ -42,6 +42,7 @@ INSTALLED_APPS = (
   'mptt',
   'zinnia',
   "workgallery",
+  "homepage",
 )
 
 MIDDLEWARE_CLASSES = (
@@ -66,6 +67,8 @@ WSGI_APPLICATION = 'personal_website.wsgi.application'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'http://127.0.0.1:8000/media/'
+STATIC_URL = '/static/'
+SITE_ID="1"
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -93,9 +96,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-
-STATIC_URL = '/static/'
-
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR,'templates') # Change this to your own directory.
+)
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+	os.path.join(BASE_DIR, "static/css"),
+	os.path.join(BASE_DIR, "static/images"),
 )

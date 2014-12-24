@@ -12,8 +12,8 @@ class WorkCategory(models.Model):
     
 class Project(models.Model):
     category = models.ForeignKey(WorkCategory)
-    name = models.CharField(max_length=25)
-    image = models.ImageField()
+    name = models.CharField(max_length=50)
+    image = models.ImageField(upload_to = 'projects')
     votes = models.IntegerField()
     what = models.TextField()
     when = models.TextField()
@@ -21,19 +21,19 @@ class Project(models.Model):
     details = models.TextField()
     
     def __unicode__(self):
-        return self.choice_text
+        return self.name
     
     def __str__(self):
-        return self.choice_text
+        return self.name
     
 class ProjectImages(models.Model):
     project = models.ForeignKey(Project)
-    image = models.ImageField()
+    image = models.ImageField(upload_to = 'projectimages')
     name = models.CharField(max_length=25)
     caption = models.TextField()
     
     def __unicode__(self):
-        return self.choice_text
+        return self.name
     
     def __str__(self):
-        return self.choice_text
+        return self.name

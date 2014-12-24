@@ -107,6 +107,7 @@ nav ul li a:hover {
 	font-weight:bold;
 	color:#000;
 }
+
 #worksubmenu a:active, #worksubmenu a:focus, #worksubmenu a:hover {
 	color:#FFF;
 }
