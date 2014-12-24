@@ -1,14 +1,21 @@
 from django.conf.urls import patterns, include, url
-import settings
+from django.conf import settings
 from django.contrib import admin
+from homepage import views as hviews
+from workgallery import views as wviews
+from django.conf.urls.static import static
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^blog/', include('blog.urls')),
-    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT }),
-    url(r'^weblog/', include('zinnia.urls')),
+	url(r'^$', hviews.index),
+	url(r'^gallery/$', wviews.gallery),	
+    url(r'^writing/', include('zinnia.urls')),
     url(r'^comments/', include('django.contrib.comments.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^/', include('personal_website.homepage.url'), name="Andrey Kurenkov's Site"),
 )
+
+if settings.DEBUG:
+	urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    

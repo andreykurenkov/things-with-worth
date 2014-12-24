@@ -1,22 +1,23 @@
 {% extends "website_navbar.html" %}
+{% load staticfiles %}
 
 {% block title %}Andrey Kurenkov's Work Gallery{% endblock %}
 
 {% block extra_head %}
-<LINK href="categoryliststyle.css" rel="stylesheet" type="text/css">
-<LINK href="projectliststyle.css" rel="stylesheet" type="text/css">
-<LINK href="projectdetailsstyle.css" rel="stylesheet" type="text/css">
+<LINK href="{% static "css/categoryliststyle.css" %}" rel="stylesheet" type="text/css">
+<LINK href="{% static "css/projectliststyle.css" %}" rel="stylesheet" type="text/css">
+<LINK href="{% static "css/projectdetailsstyle.css" %}" rel="stylesheet" type="text/css">
 
 {% endblock %}
 
 {% block extra_body %}	
 	<div id="workselect">
-		<div id="workmainmenu">{% include categorylist.html %}</div>
-		<div id="worksubmenu">{% include projectlist.html %}</div>
+		<div id="workmainmenu">{% include "workgallery/categorylist.html" %}</div>
+		<div id="worksubmenu">{% include "workgallery/projectlist.html" %}</div>
 	</div>
 		
 	<div id="workspecific" width="100%" height="55%">
-		{% include projectdetails.html %}
+		{% include "workgallery/projectdetails.html" %}
 	</div>
 	
 	<script>
