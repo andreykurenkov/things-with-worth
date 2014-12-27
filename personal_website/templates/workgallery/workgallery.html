@@ -7,47 +7,21 @@
 <LINK href="{% static "css/categoryliststyle.css" %}" rel="stylesheet" type="text/css">
 <LINK href="{% static "css/projectliststyle.css" %}" rel="stylesheet" type="text/css">
 <LINK href="{% static "css/projectdetailsstyle.css" %}" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="{% static "jquery-1.2.6.min.js" %}"></script>
 
 {% endblock %}
 
 {% block extra_body %}	
 	<div id="workselect">
-		<div id="workmainmenu">{% include "workgallery/categorylist.html" %}</div>
-		<div id="worksubmenu">{% include "workgallery/projectlist.html" %}</div>
+		<div id="workmainmenu"><ul id ="categoryList">{% include "workgallery/categorylist.html" %}</ul></div>
+		<div id="worksubmenu"><ul id="projectList">{% include "workgallery/projectlist.html" %}</ul></div>
 	</div>
 		
-	<div id="workspecific" width="100%" height="55%">
+	<div id="workspecific" width="100%" height="100%">
 		{% include "workgallery/projectdetails.html" %}
 	</div>
 	
-	<script>
-		$(document).ready(function() {
-			var focusCategory = document.getElementById("firstCategory");
-			var focusProject = document.getElementById("firstProject");
-			var categoryList = document.getElementById("categoryList");
-			var projectList = document.getElementById("projectList");
-		    
-			categoryList.addEventListener("mouseover", function( event ) {   
-				if(event.target!=focusCategory){
-					event.target.style.background-color = "white";
-					event.target.h2.style.background-color = "white";
-					event.target.h2.style.color = "black";
-					
-					focusCategory.style.background-color = "black";
-					focusCategory.h2.style.background-color = "black";
-					focusCategory.h2.style.color = "white";
-					
-					focusCategory = event.target;
-				}
-			});
-			
-			projectList.addEventListener("mouseover", function( event ) {   
-				if(event.target!=focusProject){
-					event.target.style.color = "orange";
-				}
-			});
-			
-	</script>
+	<script type="text/javascript" src="{% static "js/workgalleryjs.js" %}"></script>
 {% endblock %}
 
 

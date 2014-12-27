@@ -18,6 +18,21 @@ body{
     margin-right: auto;
 }
 	
+#wrap {
+ height: 100%;
+  /* equal to footer height */
+  margin-bottom: -20px; 
+}
+
+#wrap:after {
+  content: "";
+  display: block;
+}
+
+footer, #page-wrap:after {
+  height: 20px; 
+}
+
 nav ul { 
 	margin: 0; 
 	padding: 5px; /* Set margin and padding for cross browser consistency. */ 
