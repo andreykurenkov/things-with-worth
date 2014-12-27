@@ -58,6 +58,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
   'django.contrib.auth.context_processors.auth',
   'django.core.context_processors.i18n',
   'django.core.context_processors.request',
+  "django.core.context_processors.media",
   'zinnia.context_processors.version',  # Optional
 )
 
@@ -66,7 +67,7 @@ ROOT_URLCONF = 'personal_website.urls'
 WSGI_APPLICATION = 'personal_website.wsgi.application'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'http://127.0.0.1:8000/media/'
+MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 SITE_ID="1"
 

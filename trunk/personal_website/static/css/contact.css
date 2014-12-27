@@ -1,0 +1,9 @@
+#text {
+	margin-right: 35%;
+    margin-left: 35%;
+	margin-top: 20%;
+	text-align:center; 
+	display:table-cell;
+	position: absolute; 
+    vertical-align: middle;	
+}
